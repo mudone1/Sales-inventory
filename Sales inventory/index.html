@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spring XCEL Water — POS</title>
+<title>A-lect — POS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -76,6 +76,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 /* TOPBAR */
 .topbar{background:var(--sb-bg);border-bottom:1px solid var(--sb-brd);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0;}
 .tb-left{display:flex;align-items:center;gap:10px;}
+.mobile-menu-toggle{display:none;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;border:1.5px solid var(--brd);background:var(--surf);color:var(--txt);cursor:pointer;font-size:16px;}
+.mobile-menu-toggle i{font-size:18px;}
 .tb-icon{width:29px;height:29px;border-radius:8px;background:linear-gradient(135deg,#1a5fcb,#0a2d80);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
 .tb-title{font-size:14px;font-weight:600;color:#c8dfff;}
 .tb-right{display:flex;align-items:center;gap:10px;}
@@ -119,6 +121,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 .card{background:var(--surf);border:1.5px solid var(--brd);border-radius:var(--r-lg);padding:1.25rem 1.5rem;}
 .card-sm{padding:1rem 1.25rem;}
 .card-title{font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.9rem;display:flex;align-items:center;gap:6px;}
+.recent-sales-list{display:grid;gap:10px;}
+.recent-sale-item{background:var(--surf2);border:1px solid var(--brd);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.recent-sale-meta{display:flex;flex-direction:column;gap:4px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center;z-index:2500;padding:18px;}
+.modal-overlay.open{display:flex;}
+.confirm-modal{background:var(--surf);border-radius:var(--r-xl);padding:24px;max-width:440px;width:100%;box-shadow:0 28px 90px rgba(0,0,0,.3);}
+.confirm-modal h3{font-size:18px;margin-bottom:10px;color:var(--txt);}
+.confirm-modal p{font-size:14px;color:var(--txt3);line-height:1.7;margin-bottom:20px;}
+.confirm-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;}
 
 /* METRICS */
 .mrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:11px;margin-bottom:1.5rem;}
@@ -264,7 +275,14 @@ table.dt tbody tr:hover td{background:var(--surf2);}
 #toast.te{border-color:var(--red-m);background:#1e0a0a;}
 
 @media(max-width:700px){
-  .sidebar,.ll{display:none;}
+  .sidebar{display:flex;position:fixed;inset:52px auto auto 0;width:240px;max-height:calc(100vh - 52px);transform:translateX(-100%);transition:transform .25s ease;overflow-y:auto;box-shadow:12px 0 30px rgba(0,0,0,.22);z-index:1002;}
+  .sidebar.open{transform:translateX(0);} 
+  .sidebar-backdrop{display:block;position:fixed;inset:52px 0 0 0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:1000;}
+  .sidebar-backdrop.show{opacity:1;pointer-events:auto;}
+  .mobile-menu-toggle{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;border:1.5px solid var(--brd);background:var(--surf);color:var(--txt);cursor:pointer;font-size:16px;}
+  #login-screen .mobile-menu-toggle{display:none;}
+  .tb-left{display:flex;align-items:center;gap:10px;}
+  .ll{display:none;}
   .lr{width:100%;padding:2rem 1.5rem;}
   .pos,.cgrid,.fg{grid-template-columns:1fr;}
   .content{padding:1rem;}
@@ -300,14 +318,14 @@ table.dt tbody tr:hover td{background:var(--surf2);}
   <div class="lw">
     <div class="ll">
       <div class="ll-brand">
-        <img class="brand-logo" src="spring-xcel-water-logo.png" alt="Spring XCEL Water logo">
-        <div><div class="ll-bname">Spring XCEL Water</div><div class="ll-bsub">Operations Portal</div></div>
+        <img class="brand-logo" src="A-lect water.png" alt="A-lect logo">
+        <div><div class="ll-bname">A-lect</div><div class="ll-bsub">Operations Portal</div></div>
       </div>
       <div class="ll-hero">
-        <h1>Spring XCEL<br>Water Portal</h1>
+        <h1>A-lect<br>Water Portal</h1>
         <p>Production, sales, inventory and expenses — protected from staff view.</p>
       </div>
-      <div class="ll-foot">© 2025 Spring XCEL Water</div>
+      <div class="ll-foot">© 2026 A-lect</div>
     </div>
     <div class="lr">
       <h2>Sign in</h2>
@@ -325,8 +343,9 @@ table.dt tbody tr:hover td{background:var(--surf2);}
 <div id="app">
   <div class="topbar">
     <div class="tb-left">
-      <img class="brand-logo" src="spring-xcel-water-logo.png" alt="Spring XCEL Water logo">
-      <span class="tb-title">Spring XCEL Water</span>
+      <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Open menu"><i class="ti ti-menu"></i></button>
+      <img class="brand-logo" src="A-lect water.png" alt="A-lect logo">
+      <span class="tb-title">A-lect</span>
     </div>
     <div class="tb-right">
       <span class="role-pill rp-staff" id="topbar-role">Staff</span>
@@ -341,6 +360,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
       <div class="sb-sec">My work</div>
       <button class="nav-item active" onclick="goPage('sale',this)" id="nav-sale"><i class="ti ti-shopping-cart"></i> Record sale</button>
       <button class="nav-item" onclick="goPage('prod',this)" id="nav-prod"><i class="ti ti-packages"></i> Log production</button>
+      <button class="nav-item" onclick="goPage('raw',this)" id="nav-raw"><i class="ti ti-box"></i> Log raw materials used</button>
       <button class="nav-item" onclick="goPage('exp',this)" id="nav-exp"><i class="ti ti-receipt-2"></i> Log expense</button>
       <button class="nav-item" onclick="goPage('mysales',this)" id="nav-mysales"><i class="ti ti-clock-hour-4"></i> My sales</button>
 
@@ -352,9 +372,10 @@ table.dt tbody tr:hover td{background:var(--surf2);}
       <button class="nav-item admin-nav" style="display:none" onclick="goPage('users',this)" id="nav-users"><i class="ti ti-users"></i> Manage staff</button>
 
       <div class="sb-foot">
-        <div class="sb-foot-text"><strong>Spring XCEL Water</strong><br>Data stays in browser<br><span style="font-family:'DM Mono',monospace;">v1.0 · 2025</span></div>
+        <div class="sb-foot-text"><strong>A-lect</strong><br>Data stays in browser<br><span style="font-family:'DM Mono',monospace;">v1.0 · 2025</span></div>
       </div>
     </aside>
+    <div class="sidebar-backdrop" onclick="closeMobileMenu()"></div>
 
     <main class="content">
 
@@ -464,6 +485,23 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <div class="r-lock"><i class="ti ti-lock" style="font-size:11px"></i> Revenue figures are admin-only</div>
           </div>
         </div>
+        <div class="card" style="margin-top:1.25rem;">
+          <div class="card-title"><i class="ti ti-clock"></i> Recent sales</div>
+          <div id="recent-sales-list" class="recent-sales-list">
+            <div class="empty" style="padding:22px 0;">No recent sales yet</div>
+          </div>
+        </div>
+      </div>
+      <div id="sale-confirm-modal" class="modal-overlay" onclick="closeSaleConfirm(event)">
+        <div class="confirm-modal" onclick="event.stopPropagation()">
+          <h3>Confirm sale</h3>
+          <p id="sale-confirm-text">Confirm this sale before saving.</p>
+          <div class="confirm-actions">
+            <button class="btn btn-primary" onclick="confirmSaveSale()"><i class="ti ti-check"></i> Confirm & Save</button>
+            <button class="btn btn-outline" onclick="confirmSavePrintSale()"><i class="ti ti-printer"></i> Save & Print</button>
+            <button class="btn btn-danger" onclick="closeSaleConfirm()"><i class="ti ti-x"></i> Cancel</button>
+          </div>
+        </div>
       </div>
 
       <!-- LOG PRODUCTION -->
@@ -499,13 +537,43 @@ table.dt tbody tr:hover td{background:var(--surf2);}
               <div class="srow"><span class="sl">Batches logged</span><span class="sv" id="p-count">0</span></div>
               <div class="srow"><span class="sl">Total bags produced</span><span class="sv" id="p-total">0</span></div>
               <div class="srow"><span class="sl">Total damaged</span><span class="sv" style="color:var(--red)" id="p-tdmg">0</span></div>
+              <div class="srow"><span class="sl">Total material cost</span><span class="sv" id="p-mat-cost">₦0</span></div>
+              <div class="srow"><span class="sl">Production per KG</span><span class="sv" id="p-per-kg">—</span></div>
             </div>
             <div class="r-lock" style="margin:0 1.2rem 1.2rem"><i class="ti ti-lock" style="font-size:11px"></i> Inventory totals visible to admin only</div>
           </div>
         </div>
       </div>
 
-      <!-- LOG EXPENSE -->
+          <!-- LOG RAW MATERIALS -->
+          <div class="page" id="page-raw">
+            <div class="ph"><div><div class="ph-title">Log raw materials used</div><div class="ph-sub">Record rolls and kilograms used per date and category</div></div></div>
+            <div class="card">
+              <div class="fg">
+                <div class="field"><label>Date</label><input type="date" id="rm-date"></div>
+                <div class="field"><label>Category</label>
+                  <select id="rm-cat"><option>Packing</option><option>Film</option><option>Labels</option><option>Cap</option><option>Other</option></select>
+                </div>
+                <div class="field"><label>No. Roll per PK</label><input type="number" id="rm-rolls-pk" min="0" value="0" oninput="calcRMTotals()"></div>
+                <div class="field"><label>Unit cost (₦ per KG)</label><input type="number" id="rm-unit-cost" min="0" value="0" oninput="calcRMTotals()"></div>
+                <div class="field full">
+                  <label>Fig of roll entries (each row is KG)</label>
+                  <div id="fig-rows" style="display:grid;gap:6px"></div>
+                  <div style="margin-top:8px"><button class="btn btn-outline btn-sm" onclick="addFigRow()"><i class="ti ti-plus"></i> Add figure row</button></div>
+                </div>
+                <div class="field"><label>Qty of KG (sum)</label><input type="number" id="rm-qty-kg" readonly></div>
+                <div class="field"><label>Amount (₦)</label><input type="number" id="rm-amount" readonly></div>
+                <div class="field full"><label>Note</label><input type="text" id="rm-note" placeholder="Optional note"></div>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-primary" onclick="saveRawMaterial()">Save raw material</button><button class="btn btn-outline" onclick="clearRawMaterialForm()">Clear</button></div>
+            </div>
+            <div class="card" style="margin-top:1rem">
+              <div class="card-title"><i class="ti ti-list"></i> Raw materials (by date)</div>
+              <div id="raw-list">No records yet</div>
+            </div>
+          </div>
+
+          <!-- LOG EXPENSE -->
       <div class="page" id="page-exp">
         <div class="ph"><div><div class="ph-title">Log expense</div><div class="ph-sub">Record any business cost or payment</div></div></div>
         <div class="pos">
@@ -676,7 +744,7 @@ const DB={
     {id:2,name:'Owner',username:'admin',password:'admin99',role:'admin',active:true},
     {id:3,name:'Manager',username:'manager',password:'mgr456',role:'manager',active:true},
   ],
-  sales:[],production:[],expenses:[],
+  sales:[],production:[],expenses:[],rawMaterials:[],
   _id:100,nid(){return++this._id;}
 };
 let CU=null,delT={t:null,id:null},sM='CASH',chPay=null,chExp=null;
@@ -713,6 +781,18 @@ function doLogout(){
 }
 
 /* NAV */
+function toggleMobileMenu(){
+  const sb = document.querySelector('.sidebar');
+  const bg = document.querySelector('.sidebar-backdrop');
+  if(sb){ sb.classList.toggle('open'); }
+  if(bg){ bg.classList.toggle('show'); }
+}
+function closeMobileMenu(){
+  const sb = document.querySelector('.sidebar');
+  const bg = document.querySelector('.sidebar-backdrop');
+  if(sb){ sb.classList.remove('open'); }
+  if(bg){ bg.classList.remove('show'); }
+}
 function goPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -720,6 +800,10 @@ function goPage(name,btn){
   if(btn)btn.classList.add('active');
   const map={mysales:renderMySales,dash:renderDash,asales:()=>renderAS(''),aprod:renderAP,aexp:renderAE,users:renderUsers};
   if(map[name])map[name]();
+  if(name==='sale') renderRecentSales();
+  if(name==='prod') generateBatchCode();
+  if(name==='raw') renderRawMaterials();
+  if(window.innerWidth <= 700) closeMobileMenu();
 }
 
 function setDates(){
@@ -730,6 +814,7 @@ function setDates(){
 
 /* SALE */
 const TODAY = new Date().toISOString().split('T')[0];
+let pendingSale = null;
 
 function openDatePicker(){
   const inp = document.getElementById('s-date');
@@ -848,13 +933,16 @@ function submitSale(){
   const cashSplit= isSplit ? (parseFloat(document.getElementById('s-cash-split').value)||0) : 0;
   const otherSplit=isSplit ? (parseFloat(document.getElementById('s-other-split').value)||0) : 0;
 
-  DB.sales.push({
+  pendingSale = {
     id:DB.nid(), date, product, qty, price, damaged:dmg, method:sM,
     note, staff:CU.name, staffId:CU.id, amount:qty*price,
     cashReceived:received, changeGiven:change, netCash:received-change,
     cashSplit, otherSplit
-  });
-  showOk('sale-ok'); clearSale(); toast('Sale recorded!','s');
+  };
+  const total = pendingSale.amount;
+  document.getElementById('sale-confirm-text').textContent =
+    `Confirm sale of ${qty} ${qty===1?'unit':'units'} of ${product} for ₦${total.toLocaleString()}?`;
+  document.getElementById('sale-confirm-modal').classList.add('open');
 }
 
 function clearSale(){
@@ -881,6 +969,49 @@ function clearSale(){
   document.getElementById('r-split-other-row').style.display='none';
 }
 
+function saveConfirmedSale(printAfter){
+  if(!pendingSale){ closeSaleConfirm(); return; }
+  DB.sales.push(pendingSale);
+  renderRecentSales();
+  showOk('sale-ok');
+  if(printAfter) printSaleReceipt(pendingSale);
+  toast('Sale recorded!','s');
+  pendingSale = null;
+  closeSaleConfirm();
+  clearSale();
+}
+function confirmSaveSale(){ saveConfirmedSale(false); }
+function confirmSavePrintSale(){ saveConfirmedSale(true); }
+function closeSaleConfirm(event){
+  if(event && event.target !== event.currentTarget) return;
+  const modal = document.getElementById('sale-confirm-modal');
+  if(modal) modal.classList.remove('open');
+  pendingSale = null;
+}
+function printSaleReceipt(sale){
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Receipt</title><style>body{font-family:Arial,sans-serif;color:#111;padding:24px;}h1{margin-bottom:16px;}table{width:100%;border-collapse:collapse;margin-top:16px;}td{padding:8px 0;}td.label{color:#555;width:45%;}td.value{text-align:right;} .total{font-weight:700;border-top:1px solid #ddd;padding-top:14px;margin-top:14px;} .note{margin-top:16px;color:#555;font-size:13px;}</style></head><body><h1>Sale Receipt</h1><table><tr><td class="label">Date</td><td class="value">${sale.date}</td></tr><tr><td class="label">Product</td><td class="value">${sale.product}</td></tr><tr><td class="label">Quantity</td><td class="value">${sale.qty}</td></tr><tr><td class="label">Unit price</td><td class="value">₦${sale.price.toLocaleString()}</td></tr><tr><td class="label">Damaged</td><td class="value">${sale.damaged} units</td></tr><tr><td class="label">Payment method</td><td class="value">${sale.method.replace('_',' + ')}</td></tr><tr class="total"><td class="label">Total cost</td><td class="value">₦${sale.amount.toLocaleString()}</td></tr></table>${sale.note?`<div class="note">Note: ${sale.note}</div>`:''}</body></html>`;
+  const win = window.open('','_blank');
+  if(win){ win.document.write(html); win.document.close(); win.focus(); win.print(); }
+}
+function renderRecentSales(){
+  const list = document.getElementById('recent-sales-list');
+  if(!list) return;
+  const recent = DB.sales.slice(-5).reverse();
+  if(!recent.length){
+    list.innerHTML = '<div class="empty" style="padding:22px 0;">No recent sales yet</div>';
+    return;
+  }
+  list.innerHTML = recent.map(s=>`
+    <div class="recent-sale-item">
+      <div class="recent-sale-meta">
+        <strong>${s.product}</strong>
+        <span>${s.qty} ${s.qty===1?'unit':'units'} · ₦${s.amount.toLocaleString()}</span>
+        <span style="font-size:12px;color:${s.damaged? 'var(--red)' :'var(--txt3)'}">${s.damaged? `${s.damaged} damaged` : 'No damage'}</span>
+      </div>
+      <div style="text-align:right;font-size:12px;color:var(--txt3);">${s.date}</div>
+    </div>`).join('');
+}
+
 /* PRODUCTION */
 function submitProd(){
   const date=document.getElementById('p-date').value;
@@ -895,10 +1026,82 @@ function submitProd(){
   showOk('prod-ok');clearProd();toast('Batch logged!','s');updateProdPanel();
 }
 function clearProd(){['p-batch','p-qty','p-note'].forEach(id=>document.getElementById(id).value='');document.getElementById('p-dmg').value='0';setDates();}
+
+
+function generateBatchCode(){
+  const date = document.getElementById('p-date') && document.getElementById('p-date').value ? document.getElementById('p-date').value : TODAY;
+  const ymd = date.replace(/-/g,'');
+  const rand = Math.floor(Math.random()*9000)+1000;
+  const code = `PB${ymd}-${rand}`;
+  const el = document.getElementById('p-batch'); if(el) el.value = code;
+}
+
+function calcRMTotals(){
+  const rows = Array.from(document.querySelectorAll('#fig-rows input[data-fig]')).map(i=>parseFloat(i.value)||0);
+  const sum = rows.reduce((a,b)=>a+b,0);
+  document.getElementById('rm-qty-kg').value = sum;
+  const unit = parseFloat(document.getElementById('rm-unit-cost').value)||0;
+  document.getElementById('rm-amount').value = (sum * unit).toFixed(2);
+}
+
+function addFigRow(val){
+  const container = document.getElementById('fig-rows');
+  if(!container) return;
+  const count = container.querySelectorAll('.fig-row').length;
+  if(count>=20){toast('Maximum 20 figure rows allowed','e');return;}
+  const div = document.createElement('div'); div.className='fig-row';
+  div.innerHTML = `<input data-fig type="number" min="0" step="0.01" value="${val||0}" oninput="calcRMTotals()" style="width:70%"> <button class="btn btn-sm btn-danger" onclick="this.parentElement.remove();calcRMTotals()"><i class="ti ti-trash"></i></button>`;
+  container.appendChild(div);
+  calcRMTotals();
+}
+
+function clearRawMaterialForm(){
+  document.getElementById('rm-date').value='';
+  document.getElementById('rm-cat').value='Packing';
+  document.getElementById('rm-rolls-pk').value='0';
+  document.getElementById('rm-unit-cost').value='0';
+  document.getElementById('rm-qty-kg').value='';
+  document.getElementById('rm-amount').value='';
+  document.getElementById('rm-note').value='';
+  document.getElementById('fig-rows').innerHTML='';
+}
+
+function saveRawMaterial(){
+  const date = document.getElementById('rm-date').value || TODAY;
+  const cat = document.getElementById('rm-cat').value;
+  const rollsPk = parseFloat(document.getElementById('rm-rolls-pk').value)||0;
+  const unitCost = parseFloat(document.getElementById('rm-unit-cost').value)||0;
+  const qtyKg = parseFloat(document.getElementById('rm-qty-kg').value)||0;
+  const amount = parseFloat(document.getElementById('rm-amount').value)||0;
+  const note = document.getElementById('rm-note').value;
+  if(!cat||qtyKg<=0||unitCost<=0){toast('Provide category, KG and unit cost','e');return;}
+  DB.rawMaterials.push({id:DB.nid(),date,category:cat,rollsPerPK:rollsPk,qtyKg,unitCost,amount,note});
+  toast('Raw material logged','s');
+  clearRawMaterialForm();
+  renderRawMaterials();
+  updateProdPanel();
+}
+
+function renderRawMaterials(){
+  const el = document.getElementById('raw-list');
+  if(!el) return;
+  if(!DB.rawMaterials.length){el.innerHTML='<div class="empty">No raw material records yet</div>';return;}
+  const rows = DB.rawMaterials.slice().reverse().map(r=>`<div style="padding:10px;border-bottom:1px solid var(--brd)"><div style="display:flex;justify-content:space-between"><div><strong>${r.category}</strong> — ${r.date}</div><div>₦${r.amount.toLocaleString()}</div></div><div style="font-size:13px;color:var(--txt3)">KG: ${r.qtyKg} · Rolls/PK: ${r.rollsPerPK} ${r.note? '· '+r.note : ''}</div></div>`).join('');
+  el.innerHTML = rows;
+}
+
 function updateProdPanel(){
   document.getElementById('p-count').textContent=DB.production.length;
   document.getElementById('p-total').textContent=DB.production.reduce((a,p)=>a+p.qty,0).toLocaleString();
   document.getElementById('p-tdmg').textContent=DB.production.reduce((a,p)=>a+p.damaged,0).toLocaleString();
+  // totals by selected date
+  const date = document.getElementById('p-date') && document.getElementById('p-date').value ? document.getElementById('p-date').value : TODAY;
+  const mats = DB.rawMaterials.filter(r=>r.date===date);
+  const totalMatCost = mats.reduce((a,m)=>a + (parseFloat(m.amount)||0),0);
+  const totalMatKg = mats.reduce((a,m)=>a + (parseFloat(m.qtyKg)||0),0);
+  const totalProdQty = DB.production.filter(p=>p.date===date).reduce((a,p)=>a + p.qty,0);
+  document.getElementById('p-mat-cost').textContent = '₦'+totalMatCost.toLocaleString();
+  document.getElementById('p-per-kg').textContent = totalMatKg>0 ? (totalProdQty/totalMatKg).toFixed(2) : '—';
 }
 
 /* EXPENSE */
