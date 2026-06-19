@@ -1,0 +1,1 @@
+Patching index.html: update raw material categories, clear form default, and generateBatchCode to daily sequential numbering.
