@@ -1,0 +1,30 @@
+Patching index.html: update raw material categories, clear form default, and generateBatchCode to daily sequential numbering.
+
+Record sale:
+
+Log Producion:
+
+Log raw materials used(stockin):
+ Fig of roll entries (each row is KG) = Number of roll intake
+ Total number rows
+ NO.roll per kg=Total No.of row
+Packing bag:
+No roll per pk = Number of bundle
+Unit cost (₦ per KG) Unit cost per boundle
+two type of packing bag (Plain and printed)
+remove, from figure of rolls
+Log expenses:
+
+My sales:
+
+Dashboard:
+
+All sales:
+
+All Production: 
+
+All expenses:
+
+Manager staff:
+
+(New futures):

@@ -1,0 +1,704 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font-sans);background:#1a0a0a;min-height:100vh;font-size:13px;color:#fff}
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:68px;background:#12070a;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px;flex-shrink:0;border-right:1px solid #2a1010}
+.slogo{width:38px;height:38px;border-radius:50%;border:2px solid #DAA520;overflow:hidden;margin-bottom:16px;flex-shrink:0;background:#6B0000;display:flex;align-items:center;justify-content:center}
+.slogo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.slogo-fallback{color:#DAA520;font-weight:700;font-size:11px}
+.nav-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#5a3a3a;font-size:20px;transition:all 0.15s;position:relative}
+.nav-icon:hover{background:#2a1010;color:#DAA520}
+.nav-icon.active{background:#8B0000;color:#fff}
+.nav-icon .tooltip{position:absolute;left:54px;background:#1e0c0c;color:#fff;font-size:11px;padding:4px 10px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;border:1px solid #3a1a1a;z-index:100}
+.nav-icon:hover .tooltip{opacity:1}
+.nav-sep{width:32px;height:1px;background:#2a1010;margin:8px 0}
+.nav-bottom{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:4px}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#1a0a0a}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid #2a1010;flex-shrink:0}
+.page-title{font-size:17px;font-weight:500;color:#fff}
+.page-sub{font-size:12px;color:#5a3a3a;margin-top:1px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.search-wrap{display:flex;align-items:center;background:#12070a;border:1px solid #2a1010;border-radius:10px;padding:7px 12px;gap:8px;width:200px}
+.search-wrap i{color:#5a3a3a;font-size:15px}
+.search-wrap input{background:none;border:none;outline:none;color:#fff;font-size:12px;width:100%}
+.search-wrap input::placeholder{color:#4a2a2a}
+.user-pill{display:flex;align-items:center;gap:8px;background:#12070a;border:1px solid #2a1010;border-radius:10px;padding:6px 12px;cursor:pointer}
+.user-avatar{width:26px;height:26px;border-radius:50%;background:#8B0000;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#fff;flex-shrink:0}
+.user-name{font-size:12px;color:#ccc}
+.user-role-badge{font-size:10px;font-weight:600;padding:1px 7px;border-radius:20px;background:#DAA520;color:#12070a}
+
+/* BODY */
+.body{flex:1;display:flex;overflow:hidden}
+
+/* CONTENT AREA */
+.content{flex:1;overflow-y:auto;padding:16px 20px}
+.page{display:none}
+.page.active{display:block}
+
+/* CATEGORY PILLS */
+.cat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.cat-pill{padding:6px 16px;border-radius:30px;border:1px solid #2a1010;background:transparent;color:#5a3a3a;font-size:12px;cursor:pointer;transition:all 0.15s}
+.cat-pill:hover{border-color:#8B0000;color:#DAA520}
+.cat-pill.active{background:#8B0000;border-color:#8B0000;color:#fff}
+
+/* PRODUCT GRID */
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}
+.prod-card{background:#12070a;border:1px solid #2a1010;border-radius:16px;padding:16px 12px;cursor:pointer;transition:all 0.18s;text-align:center;position:relative}
+.prod-card:hover{border-color:#8B0000;background:#1e0a0a}
+.prod-card.out{opacity:0.45;pointer-events:none}
+.prod-icon-wrap{width:52px;height:52px;border-radius:14px;background:#1e0a0a;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;color:#DAA520}
+.prod-card.active-card .prod-icon-wrap{background:#8B0000;color:#fff}
+.prod-name{font-size:12px;font-weight:500;color:#ddd;margin-bottom:4px;line-height:1.3}
+.prod-price{font-size:14px;font-weight:600;color:#DAA520}
+.prod-stock{font-size:10px;color:#4a2a2a;margin-top:2px}
+.prod-add{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:#8B0000;color:#fff;border:none;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity 0.15s}
+.prod-card:hover .prod-add{opacity:1}
+
+/* SECTION LABEL */
+.sec-label{font-size:11px;color:#4a2a2a;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;margin-top:4px}
+
+/* CART PANEL */
+.cart-panel{width:300px;background:#12070a;border-left:1px solid #2a1010;display:flex;flex-direction:column;flex-shrink:0}
+.cart-header{padding:14px 16px;border-bottom:1px solid #2a1010;display:flex;align-items:center;justify-content:space-between}
+.cart-title{font-size:14px;font-weight:500;color:#fff;display:flex;align-items:center;gap:8px}
+.cart-count-badge{background:#8B0000;color:#fff;font-size:10px;font-weight:600;padding:1px 7px;border-radius:20px}
+.cart-customer{padding:10px 16px;border-bottom:1px solid #1e0a0a}
+.cart-customer input{width:100%;background:#1a0808;border:1px solid #2a1010;border-radius:8px;padding:7px 10px;color:#ccc;font-size:12px;outline:none}
+.cart-customer input::placeholder{color:#4a2a2a}
+.cart-customer input:focus{border-color:#8B0000}
+.cart-items{flex:1;overflow-y:auto;padding:8px}
+.cart-item{display:flex;align-items:center;gap:8px;padding:10px 8px;border-bottom:1px solid #1e0a0a}
+.cart-item-icon{width:34px;height:34px;border-radius:9px;background:#1e0a0a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#DAA520;flex-shrink:0}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-name{font-size:12px;font-weight:500;color:#ddd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-item-unit{font-size:10px;color:#4a2a2a}
+.cart-qty{display:flex;align-items:center;gap:4px}
+.qty-btn{width:20px;height:20px;border-radius:6px;background:#1e0a0a;border:1px solid #2a1010;color:#ccc;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1}
+.qty-btn:hover{background:#8B0000;border-color:#8B0000;color:#fff}
+.qty-n{font-size:12px;min-width:18px;text-align:center;color:#fff}
+.cart-item-price{font-size:12px;font-weight:500;color:#DAA520;white-space:nowrap}
+.cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#3a1a1a;text-align:center;gap:8px}
+.cart-empty i{font-size:36px}
+.cart-empty p{font-size:12px}
+
+/* CART FOOTER */
+.cart-footer{padding:12px 16px;border-top:1px solid #2a1010}
+.tot-row{display:flex;justify-content:space-between;font-size:12px;color:#5a3a3a;margin-bottom:6px}
+.tot-row.grand{color:#fff;font-size:15px;font-weight:500;margin-top:8px;padding-top:8px;border-top:1px solid #2a1010;margin-bottom:0}
+.disc-input{width:44px;background:#1a0808;border:1px solid #2a1010;border-radius:5px;padding:2px 5px;color:#ccc;font-size:11px;text-align:center;outline:none}
+.disc-input:focus{border-color:#8B0000}
+.pay-section{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pay-btn{padding:11px 0;border:none;border-radius:11px;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity 0.15s}
+.pay-btn:hover{opacity:0.88}
+.pay-cash{background:#DAA520;color:#12070a}
+.pay-transfer{background:#8B0000;color:#fff}
+.clear-btn{width:100%;margin-top:8px;padding:8px;border:1px solid #2a1010;border-radius:9px;background:transparent;color:#5a3a3a;font-size:11px;cursor:pointer;transition:all 0.15s}
+.clear-btn:hover{border-color:#8B0000;color:#DAA520}
+
+/* DASHBOARD */
+.dash-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+.dstat{background:#12070a;border:1px solid #2a1010;border-radius:14px;padding:14px 16px}
+.dstat .dl{font-size:10px;color:#4a2a2a;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.dstat .dv{font-size:20px;font-weight:500;color:#fff}
+.dstat .ds{font-size:10px;color:#4a2a2a;margin-top:2px}
+.dstat.gold .dv{color:#DAA520}
+.dstat.red .dv{color:#c0392b}
+.dstat.green .dv{color:#27ae60}
+.chart-wrap{background:#12070a;border:1px solid #2a1010;border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.bar-item{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bar-label{font-size:11px;color:#6a4a4a;width:90px;flex-shrink:0}
+.bar-track{flex:1;background:#1e0a0a;border-radius:4px;height:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:#8B0000;transition:width 0.9s ease}
+.bar-fill.gold{background:#DAA520}
+.bar-val{font-size:11px;color:#5a3a3a;white-space:nowrap;width:80px;text-align:right}
+.txn-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #1e0a0a}
+.txn-name{font-size:12px;font-weight:500;color:#ddd}
+.txn-sub{font-size:10px;color:#4a2a2a}
+.txn-amt{font-size:12px;font-weight:500;color:#DAA520}
+.txn-badge{font-size:10px;padding:2px 8px;border-radius:20px;margin-top:2px;display:inline-block}
+.tb-cash{background:#1a2e1a;color:#27ae60}
+.tb-transfer{background:#2a1a0a;color:#DAA520}
+
+/* EXPENSES */
+.exp-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.exp-form-grid .span2{grid-column:span 2}
+.flabel{font-size:10px;color:#4a2a2a;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px}
+.finput{width:100%;background:#12070a;border:1px solid #2a1010;border-radius:9px;padding:8px 11px;color:#ddd;font-size:12px;outline:none}
+.finput:focus{border-color:#8B0000}
+.finput option{background:#12070a}
+.btn-submit{padding:9px 22px;background:#8B0000;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer}
+.btn-submit:hover{background:#6B0000}
+.exp-table{width:100%;border-collapse:collapse}
+.exp-table th{text-align:left;padding:8px 10px;font-size:10px;color:#4a2a2a;border-bottom:1px solid #2a1010;letter-spacing:0.5px;text-transform:uppercase}
+.exp-table td{padding:9px 10px;border-bottom:1px solid #1e0a0a;font-size:12px;color:#bbb}
+.exp-table tr:hover td{background:#12070a}
+
+/* INVENTORY */
+.inv-table{width:100%;border-collapse:collapse}
+.inv-table th{text-align:left;padding:8px 10px;font-size:10px;color:#4a2a2a;border-bottom:1px solid #2a1010;letter-spacing:0.5px;text-transform:uppercase}
+.inv-table td{padding:9px 10px;border-bottom:1px solid #1e0a0a;font-size:12px;color:#bbb}
+.inv-table tr:hover td{background:#12070a}
+.stock-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500}
+.sb-ok{background:#1a2e1a;color:#27ae60}
+.sb-low{background:#2a2a0a;color:#DAA520}
+.sb-out{background:#2a0a0a;color:#c0392b}
+.restock-btn{border:1px solid #2a1010;background:transparent;color:#DAA520;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer}
+.restock-btn:hover{border-color:#DAA520}
+
+/* STAFF */
+.staff-card{background:#12070a;border:1px solid #2a1010;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.staff-av{width:38px;height:38px;border-radius:50%;background:#8B0000;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#fff;flex-shrink:0}
+.staff-name{font-size:13px;font-weight:500;color:#ddd}
+.staff-un{font-size:11px;color:#4a2a2a}
+.role-chip{font-size:10px;padding:2px 9px;border-radius:20px;font-weight:500}
+.rc-staff{background:#1a0a2a;color:#a78bfa}
+.rc-manager{background:#2a1a0a;color:#DAA520}
+.rc-admin{background:#2a0a0a;color:#e74c3c}
+.staff-sales{margin-left:auto;text-align:right}
+.staff-sales .sv{font-size:14px;font-weight:500;color:#DAA520}
+.staff-sales .sl{font-size:10px;color:#4a2a2a}
+
+/* TRANSACTIONS */
+.txn-table{width:100%;border-collapse:collapse}
+.txn-table th{text-align:left;padding:8px 10px;font-size:10px;color:#4a2a2a;border-bottom:1px solid #2a1010;letter-spacing:0.5px;text-transform:uppercase}
+.txn-table td{padding:9px 10px;border-bottom:1px solid #1e0a0a;font-size:12px;color:#bbb}
+.txn-table tr:hover td{background:#12070a}
+
+/* LOGIN */
+.login-screen{display:none;align-items:center;justify-content:center;min-height:100vh;background:#0e0508}
+.login-screen.active{display:flex}
+.login-card{background:#12070a;border:1px solid #2a1010;border-radius:20px;padding:2.25rem;width:340px}
+.login-logo{text-align:center;margin-bottom:1.75rem}
+.login-logo-img{width:72px;height:72px;border-radius:50%;border:2.5px solid #DAA520;overflow:hidden;margin:0 auto 0.75rem;background:#6B0000;display:flex;align-items:center;justify-content:center}
+.login-logo-img img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.login-brand{font-size:18px;font-weight:600;color:#fff;letter-spacing:1px}
+.login-sub{font-size:10px;color:#5a3a3a;letter-spacing:2px;margin-top:2px}
+.login-heading{font-size:13px;color:#6a4a4a;text-align:center;margin-bottom:1.25rem}
+.lfield{margin-bottom:1rem}
+.lfield label{display:block;font-size:10px;color:#4a2a2a;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:5px}
+.lfield input{width:100%;background:#1a0808;border:1px solid #2a1010;border-radius:10px;padding:10px 13px;color:#ddd;font-size:13px;outline:none;transition:border 0.2s}
+.lfield input:focus{border-color:#8B0000}
+.lfield input::placeholder{color:#3a1a1a}
+.btn-login{width:100%;padding:11px;background:#8B0000;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;margin-top:0.5rem;letter-spacing:0.5px}
+.btn-login:hover{background:#6B0000}
+.login-tagline{text-align:center;font-size:10px;color:#3a1a1a;margin-top:1rem}
+.login-err{background:#2a0a0a;border:1px solid #5a1a1a;border-radius:8px;padding:8px 12px;font-size:11px;color:#e74c3c;margin-bottom:0.75rem;display:none}
+
+/* MODAL */
+.modal-bg{display:none;align-items:center;justify-content:center;position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:200}
+.modal-bg.open{display:flex}
+.modal-box{background:#12070a;border:1px solid #2a1010;border-radius:18px;padding:1.75rem;width:320px;text-align:center}
+.modal-icon{width:52px;height:52px;border-radius:50%;background:#1e0a0a;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:24px;color:#DAA520}
+.modal-title{font-size:16px;font-weight:500;color:#fff;margin-bottom:4px}
+.modal-sub{font-size:12px;color:#5a3a3a;margin-bottom:1rem}
+.modal-total{font-size:28px;font-weight:600;color:#DAA520;margin-bottom:1rem}
+.receipt-lines{text-align:left;border-top:1px dashed #2a1010;padding-top:10px;margin-top:4px;font-size:11px;color:#6a4a4a}
+.r-row{display:flex;justify-content:space-between;margin:3px 0}
+.r-row.bold{color:#ccc;font-weight:500}
+.receipt-brand{text-align:center;font-size:11px;color:#8B0000;font-weight:500;margin-bottom:4px}
+.modal-btns{display:flex;gap:8px;margin-top:1rem;justify-content:center}
+.modal-cancel{padding:9px 22px;background:#1e0a0a;color:#aaa;border:1px solid #2a1010;border-radius:9px;font-size:12px;cursor:pointer}
+.modal-confirm{padding:9px 22px;background:#DAA520;color:#12070a;border:none;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer}
+
+/* TOAST */
+.toast{position:absolute;bottom:20px;right:20px;background:#1e0a0a;border:1px solid #3a1010;color:#ddd;padding:10px 16px;border-radius:10px;font-size:12px;z-index:300;display:none;max-width:260px}
+.toast.success{border-color:#27ae60;color:#27ae60}
+.toast.error{border-color:#c0392b;color:#e74c3c}
+</style>
+
+<div style="position:relative;overflow:hidden;height:680px">
+
+<!-- LOGIN -->
+<div class="login-screen active" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-img">
+        <img src="/mnt/user-data/uploads/abbeylect_logo-removebg-preview.png" alt="Abbeylect" onerror="this.style.display='none';this.parentNode.innerHTML='<span style=color:#DAA520;font-weight:700;font-size:14px>AL</span>'">
+      </div>
+      <div class="login-brand">ABBEYLECT</div>
+      <div class="login-sub">Solutions Enterprise · BN2938643</div>
+    </div>
+    <p class="login-heading">Enter your credentials to continue</p>
+    <div class="login-err" id="login-err">Invalid username or password</div>
+    <div class="lfield">
+      <label>Username</label>
+      <input id="lu" type="text" placeholder="e.g. staff1, admin" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <div class="lfield">
+      <label>Password</label>
+      <input id="lp" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button class="btn-login" onclick="login()"><i class="ti ti-login" aria-hidden="true"></i> Sign in</button>
+    <p class="login-tagline">... light is life!</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="app" style="display:none">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="slogo">
+      <img src="/mnt/user-data/uploads/abbeylect_logo-removebg-preview.png" alt="AL" onerror="this.style.display='none';this.parentNode.innerHTML='<span class=slogo-fallback>AL</span>'">
+    </div>
+    <div class="nav-icon active" id="ni-pos" onclick="nav('pos',this)" aria-label="Point of sale"><i class="ti ti-cash-register" aria-hidden="true"></i><span class="tooltip">Point of sale</span></div>
+    <div class="nav-icon" id="ni-dashboard" onclick="nav('dashboard',this)" aria-label="Dashboard"><i class="ti ti-layout-dashboard" aria-hidden="true"></i><span class="tooltip">Dashboard</span></div>
+    <div class="nav-icon" id="ni-transactions" onclick="nav('transactions',this)" aria-label="Transactions"><i class="ti ti-receipt" aria-hidden="true"></i><span class="tooltip">Transactions</span></div>
+    <div class="nav-icon" id="ni-expenses" onclick="nav('expenses',this)" aria-label="Expenses"><i class="ti ti-credit-card" aria-hidden="true"></i><span class="tooltip">Expenses</span></div>
+    <div class="nav-sep"></div>
+    <div class="nav-icon" id="ni-inventory" onclick="nav('inventory',this)" aria-label="Inventory" style="display:none"><i class="ti ti-box" aria-hidden="true"></i><span class="tooltip">Inventory</span></div>
+    <div class="nav-icon" id="ni-staff" onclick="nav('staff',this)" aria-label="Staff" style="display:none"><i class="ti ti-users" aria-hidden="true"></i><span class="tooltip">Staff</span></div>
+    <div class="nav-bottom">
+      <div class="nav-sep"></div>
+      <div class="nav-icon" onclick="logout()" aria-label="Logout"><i class="ti ti-logout" aria-hidden="true"></i><span class="tooltip">Logout</span></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="page-title">Point of sale</div>
+        <div class="page-sub" id="page-sub">Select products and process payment</div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-wrap">
+          <i class="ti ti-search" aria-hidden="true"></i>
+          <input id="psearch" type="text" placeholder="Search products..." oninput="filterProds()">
+        </div>
+        <div class="user-pill">
+          <div class="user-avatar" id="u-av">S</div>
+          <div>
+            <div class="user-name" id="u-name">staff1</div>
+          </div>
+          <span class="user-role-badge" id="u-role">STAFF</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="body">
+      <div class="content">
+
+        <!-- POS PAGE -->
+        <div class="page active" id="pg-pos">
+          <div class="cat-row" id="cat-row"></div>
+          <p class="sec-label">Products</p>
+          <div class="prod-grid" id="prod-grid"></div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="page" id="pg-dashboard">
+          <div class="dash-stats" id="dash-stats"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="chart-wrap">
+              <p class="sec-label" style="margin-bottom:12px">Sales by category</p>
+              <div id="cat-bars"></div>
+            </div>
+            <div class="chart-wrap">
+              <p class="sec-label" style="margin-bottom:12px">Recent transactions</p>
+              <div id="recent-txns"></div>
+            </div>
+          </div>
+          <div class="chart-wrap" style="margin-top:12px">
+            <p class="sec-label" style="margin-bottom:10px">Low stock alert</p>
+            <div id="low-stock" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+          </div>
+        </div>
+
+        <!-- TRANSACTIONS -->
+        <div class="page" id="pg-transactions">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <p class="sec-label" style="margin:0">All transactions</p>
+            <input type="date" id="txn-date" class="finput" style="width:160px" onchange="renderTxns()">
+          </div>
+          <div style="overflow-x:auto">
+            <table class="txn-table">
+              <thead><tr><th>#</th><th>Date & time</th><th>Customer</th><th>Items</th><th>Payment</th><th>Amount</th><th>Staff</th></tr></thead>
+              <tbody id="txn-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- EXPENSES -->
+        <div class="page" id="pg-expenses">
+          <div class="chart-wrap" style="margin-bottom:12px">
+            <p class="sec-label" style="margin-bottom:12px">Log new expense</p>
+            <div class="exp-form-grid">
+              <div><div class="flabel">Category</div><select class="finput" id="ec"><option>Electricity</option><option>Rent</option><option>Transport</option><option>Supplies</option><option>Staff salary</option><option>Equipment</option><option>Maintenance</option><option>Other</option></select></div>
+              <div><div class="flabel">Amount (₦)</div><input class="finput" type="number" id="ea" placeholder="0.00"></div>
+              <div><div class="flabel">Date</div><input class="finput" type="date" id="ed"></div>
+              <div><div class="flabel">Paid to</div><input class="finput" type="text" id="ep" placeholder="Vendor or person"></div>
+              <div class="span2"><div class="flabel">Description</div><input class="finput" type="text" id="edesc" placeholder="Brief description"></div>
+            </div>
+            <button class="btn-submit" onclick="addExp()"><i class="ti ti-plus" aria-hidden="true"></i> Add expense</button>
+          </div>
+          <div class="chart-wrap">
+            <p class="sec-label" style="margin-bottom:10px">Expense log</p>
+            <div style="overflow-x:auto"><table class="exp-table"><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Paid to</th><th>Amount</th><th>By</th><th></th></tr></thead><tbody id="exp-tbody"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- INVENTORY -->
+        <div class="page" id="pg-inventory">
+          <div class="chart-wrap">
+            <p class="sec-label" style="margin-bottom:10px">Product inventory</p>
+            <div style="overflow-x:auto"><table class="inv-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead><tbody id="inv-tbody"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- STAFF -->
+        <div class="page" id="pg-staff">
+          <p class="sec-label" style="margin-bottom:12px">Staff management</p>
+          <div id="staff-list"></div>
+        </div>
+
+      </div>
+
+      <!-- CART PANEL (only on POS) -->
+      <div class="cart-panel" id="cart-panel">
+        <div class="cart-header">
+          <div class="cart-title"><i class="ti ti-shopping-cart" aria-hidden="true"></i> Current order <span class="cart-count-badge" id="cart-badge">0</span></div>
+        </div>
+        <div class="cart-customer">
+          <input id="cust-name" type="text" placeholder="Customer name (optional)">
+        </div>
+        <div class="cart-items" id="cart-items">
+          <div class="cart-empty"><i class="ti ti-shopping-cart-off" aria-hidden="true"></i><p>Cart is empty<br><span style="font-size:10px;color:#3a1a1a">Tap a product to add</span></p></div>
+        </div>
+        <div class="cart-footer">
+          <div class="tot-row"><span>Subtotal</span><span id="t-sub">₦0.00</span></div>
+          <div class="tot-row"><span>VAT (7.5%)</span><span id="t-vat">₦0.00</span></div>
+          <div class="tot-row"><span>Discount</span><span><input class="disc-input" type="number" id="disc" min="0" max="100" value="0"> %</span></div>
+          <div class="tot-row grand"><span>Total</span><span id="t-total">₦0.00</span></div>
+          <div class="pay-section">
+            <button class="pay-btn pay-cash" onclick="pay('Cash')"><i class="ti ti-cash" aria-hidden="true"></i> Cash</button>
+            <button class="pay-btn pay-transfer" onclick="pay('Transfer')"><i class="ti ti-building-bank" aria-hidden="true"></i> Transfer</button>
+          </div>
+          <button class="clear-btn" onclick="clearCart()"><i class="ti ti-trash" aria-hidden="true"></i> Clear cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal-box">
+    <div class="modal-icon"><i class="ti ti-receipt" aria-hidden="true"></i></div>
+    <div class="modal-title" id="m-title">Confirm payment</div>
+    <div class="modal-sub" id="m-sub"></div>
+    <div class="modal-total" id="m-total"></div>
+    <div class="receipt-lines" id="m-receipt"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmPay()">Confirm & record</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+const USERS={
+  staff1:{pw:'pass123',role:'Staff',name:'Adaeze Okonkwo'},
+  cashier1:{pw:'pass123',role:'Staff',name:'Emeka Eze'},
+  manager1:{pw:'mgr456',role:'Manager',name:'Ngozi Adeyemi'},
+  admin:{pw:'admin123',role:'Admin',name:'Abbey Emmanuel'},
+};
+
+const PRODUCTS=[
+  {id:1,name:'LED Bulb 9W',cat:'Lighting',price:850,stock:45,icon:'ti-bulb'},
+  {id:2,name:'LED Bulb 15W',cat:'Lighting',price:1200,stock:32,icon:'ti-bulb'},
+  {id:3,name:'Fluorescent Tube',cat:'Lighting',price:650,stock:28,icon:'ti-bulb'},
+  {id:4,name:'Power Strip 4-Way',cat:'Accessories',price:3500,stock:18,icon:'ti-plug'},
+  {id:5,name:'Extension 5m',cat:'Cables',price:2800,stock:22,icon:'ti-plug-connected'},
+  {id:6,name:'Extension 10m',cat:'Cables',price:4500,stock:12,icon:'ti-plug-connected'},
+  {id:7,name:'MCB Switch 32A',cat:'Switches',price:2200,stock:15,icon:'ti-toggle-right'},
+  {id:8,name:'Socket Outlet',cat:'Accessories',price:1800,stock:35,icon:'ti-bolt'},
+  {id:9,name:'Light Switch',cat:'Switches',price:450,stock:60,icon:'ti-toggle-left'},
+  {id:10,name:'Ceiling Fan',cat:'Appliances',price:22000,stock:8,icon:'ti-wind'},
+  {id:11,name:'Standing Fan',cat:'Appliances',price:18500,stock:6,icon:'ti-wind'},
+  {id:12,name:'PVC Cable 1.5mm',cat:'Cables',price:18000,stock:10,icon:'ti-cable'},
+  {id:13,name:'PVC Cable 2.5mm',cat:'Cables',price:26000,stock:8,icon:'ti-cable'},
+  {id:14,name:'Conduit Pipe',cat:'Fittings',price:1500,stock:50,icon:'ti-line'},
+  {id:15,name:'Electrical Tape',cat:'Accessories',price:350,stock:80,icon:'ti-circle'},
+  {id:16,name:'Inverter 1.5KVA',cat:'Power',price:95000,stock:4,icon:'ti-battery'},
+  {id:17,name:'Solar Panel 200W',cat:'Power',price:85000,stock:3,icon:'ti-sun'},
+  {id:18,name:'Voltage Stabilizer',cat:'Power',price:35000,stock:7,icon:'ti-adjustments'},
+];
+
+const STAFF_LIST=[
+  {name:'Adaeze Okonkwo',un:'staff1',role:'Staff'},
+  {name:'Emeka Eze',un:'cashier1',role:'Staff'},
+  {name:'Ngozi Adeyemi',un:'manager1',role:'Manager'},
+  {name:'Abbey Emmanuel',un:'admin',role:'Admin'},
+];
+
+let CU='',CR='',CN='';
+let cart=[],txns=[],exps=[],pendingPay='';
+let activeCat='All';
+
+function login(){
+  const u=document.getElementById('lu').value.trim();
+  const p=document.getElementById('lp').value;
+  const rec=USERS[u];
+  const err=document.getElementById('login-err');
+  if(rec&&rec.pw===p){
+    CU=u;CR=rec.role;CN=rec.name;
+    err.style.display='none';
+    document.getElementById('u-av').textContent=CN.charAt(0);
+    document.getElementById('u-name').textContent=CN;
+    document.getElementById('u-role').textContent=CR.toUpperCase();
+    ['ni-inventory','ni-staff'].forEach(id=>{
+      document.getElementById(id).style.display=(CR==='Admin'||CR==='Manager')?'':'none';
+    });
+    document.getElementById('login-screen').classList.remove('active');
+    document.getElementById('app').style.display='flex';
+    document.getElementById('ed').value=today();
+    seedData();
+    renderProds();renderDash();renderTxns();renderExp();renderInv();renderStaff();
+  } else {
+    err.style.display='block';
+    document.getElementById('lp').value='';
+  }
+}
+function logout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').classList.add('active');
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
+  cart=[];
+}
+function today(){return new Date().toISOString().split('T')[0];}
+
+function seedData(){
+  if(txns.length) return;
+  const now=new Date();
+  txns=[
+    {id:'TXN001',date:new Date(now-3600e3).toISOString(),cust:'Chioma Bello',items:[{n:'LED Bulb 9W',q:4,p:850},{n:'Light Switch',q:2,p:450}],total:4300,pay:'Cash',staff:'staff1'},
+    {id:'TXN002',date:new Date(now-7200e3).toISOString(),cust:'Tunde Okafor',items:[{n:'Ceiling Fan',q:1,p:22000},{n:'Power Strip 4-Way',q:1,p:3500}],total:25500,pay:'Transfer',staff:'cashier1'},
+    {id:'TXN003',date:new Date(now-86400e3).toISOString(),cust:'Walk-in',items:[{n:'PVC Cable 2.5mm',q:1,p:26000}],total:26000,pay:'Cash',staff:'staff1'},
+  ];
+  exps=[
+    {id:'E001',date:today(),cat:'Electricity',desc:'EEDC bill',payee:'EEDC',amt:45000,by:'admin'},
+    {id:'E002',date:today(),cat:'Transport',desc:'Delivery run',payee:'Dispatch',amt:3500,by:'manager1'},
+  ];
+}
+
+const PAGE_META={
+  pos:{title:'Point of sale',sub:'Select products and process payment'},
+  dashboard:{title:'Dashboard',sub:'Sales overview and analytics'},
+  transactions:{title:'Transactions',sub:'Full record of all sales'},
+  expenses:{title:'Expenses',sub:'Log and track business expenses'},
+  inventory:{title:'Inventory',sub:'Manage product stock levels'},
+  staff:{title:'Staff',sub:'View team performance'},
+};
+
+function nav(pg,el){
+  document.querySelectorAll('.nav-icon').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pg-'+pg).classList.add('active');
+  document.getElementById('cart-panel').style.display=pg==='pos'?'flex':'none';
+  const m=PAGE_META[pg];
+  document.getElementById('page-title').textContent=m.title;
+  document.getElementById('page-sub').textContent=m.sub;
+  document.getElementById('psearch').style.display=pg==='pos'?'':'none';
+  if(pg==='dashboard') renderDash();
+  if(pg==='transactions') renderTxns();
+  if(pg==='expenses') renderExp();
+}
+
+function renderProds(){
+  const cats=['All',...new Set(PRODUCTS.map(p=>p.cat))];
+  document.getElementById('cat-row').innerHTML=cats.map(c=>`<button class="cat-pill${c===activeCat?' active':''}" onclick="setCat('${c}',this)">${c}</button>`).join('');
+  filterProds();
+}
+function setCat(c,el){
+  activeCat=c;
+  document.querySelectorAll('.cat-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  filterProds();
+}
+function filterProds(){
+  const q=(document.getElementById('psearch').value||'').toLowerCase();
+  const list=PRODUCTS.filter(p=>(activeCat==='All'||p.cat===activeCat)&&(p.name.toLowerCase().includes(q)));
+  document.getElementById('prod-grid').innerHTML=list.map(p=>`
+    <div class="prod-card${p.stock<=0?' out':''}" onclick="addCart(${p.id})">
+      <button class="prod-add" onclick="event.stopPropagation();addCart(${p.id})" aria-label="Add ${p.name}">+</button>
+      <div class="prod-icon-wrap"><i class="ti ${p.icon}" aria-hidden="true"></i></div>
+      <div class="prod-name">${p.name}</div>
+      <div class="prod-price">₦${p.price.toLocaleString()}</div>
+      <div class="prod-stock">${p.stock>0?p.stock+' in stock':'Out of stock'}</div>
+    </div>`).join('');
+}
+
+function addCart(id){
+  const p=PRODUCTS.find(x=>x.id===id);
+  if(!p||p.stock<=0){toast('Out of stock','error');return;}
+  const ex=cart.find(c=>c.id===id);
+  if(ex){if(ex.qty>=p.stock){toast('Max stock reached','error');return;}ex.qty++;}
+  else cart.push({...p,qty:1});
+  renderCart();
+}
+function chQty(id,d){
+  const i=cart.findIndex(c=>c.id===id);
+  if(i<0) return;
+  cart[i].qty+=d;
+  if(cart[i].qty<=0) cart.splice(i,1);
+  renderCart();
+}
+function clearCart(){cart=[];renderCart();}
+
+function renderCart(){
+  const el=document.getElementById('cart-items');
+  const total=cart.reduce((s,c)=>s+c.qty,0);
+  document.getElementById('cart-badge').textContent=total;
+  if(!cart.length){
+    el.innerHTML='<div class="cart-empty"><i class="ti ti-shopping-cart-off" aria-hidden="true"></i><p>Cart is empty<br><span style="font-size:10px;color:#3a1a1a">Tap a product to add</span></p></div>';
+    calcTotals(0,0,0);return;
+  }
+  el.innerHTML=cart.map(c=>`
+    <div class="cart-item">
+      <div class="cart-item-icon"><i class="ti ${c.icon}" aria-hidden="true"></i></div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${c.name}</div>
+        <div class="cart-item-unit">₦${c.price.toLocaleString()} each</div>
+      </div>
+      <div class="cart-qty">
+        <button class="qty-btn" onclick="chQty(${c.id},-1)">−</button>
+        <span class="qty-n">${c.qty}</span>
+        <button class="qty-btn" onclick="chQty(${c.id},1)">+</button>
+      </div>
+      <div class="cart-item-price">₦${(c.price*c.qty).toLocaleString()}</div>
+    </div>`).join('');
+  const sub=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const vat=sub*0.075;
+  const disc=parseFloat(document.getElementById('disc').value)||0;
+  calcTotals(sub,vat,sub+vat-sub*(disc/100));
+}
+document.addEventListener('input',e=>{if(e.target.id==='disc') renderCart();});
+
+function calcTotals(sub,vat,total){
+  const fmt=n=>n.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('t-sub').textContent='₦'+fmt(sub);
+  document.getElementById('t-vat').textContent='₦'+fmt(vat);
+  document.getElementById('t-total').textContent='₦'+fmt(total);
+}
+
+function pay(method){
+  if(!cart.length){toast('Cart is empty','error');return;}
+  const sub=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const vat=sub*0.075;
+  const disc=parseFloat(document.getElementById('disc').value)||0;
+  const total=sub+vat-sub*(disc/100);
+  pendingPay=method;
+  const cust=document.getElementById('cust-name').value||'Walk-in';
+  document.getElementById('m-title').textContent='Confirm '+method.toLowerCase()+' payment';
+  document.getElementById('m-sub').textContent='Customer: '+cust;
+  document.getElementById('m-total').textContent='₦'+total.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('m-receipt').innerHTML=`
+    <div class="receipt-brand">ABBEYLECT SOLUTIONS ENTERPRISE</div>
+    <div style="text-align:center;font-size:10px;color:#4a2a2a;margin-bottom:6px">BN2938643 · ... light is life!</div>
+    ${cart.map(c=>`<div class="r-row"><span>${c.name} ×${c.qty}</span><span>₦${(c.price*c.qty).toLocaleString()}</span></div>`).join('')}
+    <div class="r-row" style="border-top:1px dashed #2a1010;margin-top:4px;padding-top:4px"><span>VAT 7.5%</span><span>₦${vat.toFixed(2)}</span></div>
+    ${disc>0?`<div class="r-row"><span>Discount ${disc}%</span><span>−₦${(sub*disc/100).toFixed(2)}</span></div>`:''}
+    <div class="r-row bold"><span>Total</span><span>₦${total.toFixed(2)}</span></div>
+    <div class="r-row"><span>Method</span><span>${method}</span></div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function confirmPay(){
+  const sub=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const vat=sub*0.075;
+  const disc=parseFloat(document.getElementById('disc').value)||0;
+  const total=parseFloat((sub+vat-sub*(disc/100)).toFixed(2));
+  txns.unshift({id:'TXN'+Date.now().toString().slice(-5),date:new Date().toISOString(),cust:document.getElementById('cust-name').value||'Walk-in',items:cart.map(c=>({n:c.name,q:c.qty,p:c.price})),total,pay:pendingPay,staff:CU});
+  cart.forEach(c=>{const p=PRODUCTS.find(x=>x.id===c.id);if(p)p.stock-=c.qty;});
+  cart=[];
+  document.getElementById('cust-name').value='';
+  document.getElementById('disc').value='0';
+  closeModal();renderCart();filterProds();
+  toast('Sale recorded — ₦'+total.toLocaleString(),'success');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+
+function renderDash(){
+  const td=new Date().toDateString();
+  const todT=txns.filter(t=>new Date(t.date).toDateString()===td);
+  const todS=todT.reduce((s,t)=>s+t.total,0);
+  const monS=txns.reduce((s,t)=>s+t.total,0);
+  const totE=exps.reduce((s,e)=>s+e.amt,0);
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="dstat green"><div class="dl"><i class="ti ti-trending-up" aria-hidden="true"></i>Today's sales</div><div class="dv">₦${todS.toLocaleString()}</div><div class="ds">${todT.length} transactions</div></div>
+    <div class="dstat gold"><div class="dl"><i class="ti ti-calendar" aria-hidden="true"></i>Monthly revenue</div><div class="dv">₦${monS.toLocaleString()}</div><div class="ds">${txns.length} total</div></div>
+    <div class="dstat red"><div class="dl"><i class="ti ti-credit-card" aria-hidden="true"></i>Total expenses</div><div class="dv">₦${totE.toLocaleString()}</div><div class="ds">This month</div></div>
+    <div class="dstat"><div class="dl"><i class="ti ti-coin" aria-hidden="true"></i>Net profit</div><div class="dv">₦${(monS-totE).toLocaleString()}</div><div class="ds">Revenue − expenses</div></div>`;
+  const catT={};
+  txns.forEach(t=>t.items.forEach(it=>{const p=PRODUCTS.find(x=>x.name===it.n);const c=p?p.cat:'Other';catT[c]=(catT[c]||0)+it.p*it.q;}));
+  const mx=Math.max(...Object.values(catT),1);
+  document.getElementById('cat-bars').innerHTML=Object.entries(catT).slice(0,6).map(([c,v],i)=>`
+    <div class="bar-item"><span class="bar-label">${c}</span><div class="bar-track"><div class="bar-fill${i===0?'':' gold'}" style="width:${Math.round(v/mx*100)}%"></div></div><span class="bar-val">₦${v.toLocaleString()}</span></div>`).join('')||'<p style="font-size:12px;color:#4a2a2a">No data yet</p>';
+  document.getElementById('recent-txns').innerHTML=txns.slice(0,4).map(t=>`
+    <div class="txn-item"><div><div class="txn-name">${t.cust}</div><div class="txn-sub">${new Date(t.date).toLocaleString()}</div></div><div style="text-align:right"><div class="txn-amt">₦${t.total.toLocaleString()}</div><span class="txn-badge ${t.pay==='Cash'?'tb-cash':'tb-transfer'}">${t.pay}</span></div></div>`).join('')||'<p style="font-size:12px;color:#4a2a2a">No transactions yet</p>';
+  const low=PRODUCTS.filter(p=>p.stock<=10);
+  document.getElementById('low-stock').innerHTML=low.length?low.map(p=>`<span style="background:#2a0a0a;color:#e74c3c;padding:4px 10px;border-radius:6px;font-size:11px">${p.name} — ${p.stock} left</span>`).join(''):'<span style="color:#27ae60;font-size:12px">✓ All products well stocked</span>';
+}
+
+function renderTxns(){
+  const fd=document.getElementById('txn-date').value;
+  const list=fd?txns.filter(t=>t.date.startsWith(fd)):txns;
+  document.getElementById('txn-tbody').innerHTML=list.map(t=>`
+    <tr><td style="color:#4a2a2a">${t.id}</td><td>${new Date(t.date).toLocaleString()}</td><td>${t.cust}</td><td style="color:#6a4a4a">${t.items.map(i=>i.n+' ×'+i.q).join(', ')}</td><td><span class="txn-badge ${t.pay==='Cash'?'tb-cash':'tb-transfer'}">${t.pay}</span></td><td style="color:#DAA520;font-weight:500">₦${t.total.toLocaleString()}</td><td style="color:#6a4a4a">${t.staff}</td></tr>`).join('')||`<tr><td colspan="7" style="text-align:center;color:#4a2a2a;padding:1.5rem">No transactions found</td></tr>`;
+}
+
+function addExp(){
+  const amt=parseFloat(document.getElementById('ea').value);
+  const date=document.getElementById('ed').value;
+  if(!amt||amt<=0){toast('Enter a valid amount','error');return;}
+  if(!date){toast('Select a date','error');return;}
+  exps.unshift({id:'E'+Date.now().toString().slice(-4),date,cat:document.getElementById('ec').value,desc:document.getElementById('edesc').value||document.getElementById('ec').value,payee:document.getElementById('ep').value||'—',amt,by:CU});
+  document.getElementById('ea').value='';document.getElementById('ep').value='';document.getElementById('edesc').value='';
+  renderExp();toast('Expense logged: ₦'+amt.toLocaleString(),'success');
+}
+function delExp(id){
+  if(!confirm('Delete this expense?')) return;
+  exps=exps.filter(e=>e.id!==id);renderExp();
+}
+function renderExp(){
+  document.getElementById('exp-tbody').innerHTML=exps.map(e=>`
+    <tr><td>${e.date}</td><td><span style="background:#2a0a0a;color:#DAA520;padding:2px 8px;border-radius:20px;font-size:10px">${e.cat}</span></td><td>${e.desc}</td><td>${e.payee}</td><td style="color:#DAA520;font-weight:500">₦${e.amt.toLocaleString()}</td><td style="color:#6a4a4a">${e.by}</td><td><button onclick="delExp('${e.id}')" style="background:none;border:none;color:#4a2a2a;cursor:pointer;font-size:16px"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`).join('')||`<tr><td colspan="7" style="text-align:center;color:#4a2a2a;padding:1.5rem">No expenses yet</td></tr>`;
+}
+
+function renderInv(){
+  document.getElementById('inv-tbody').innerHTML=PRODUCTS.map(p=>`
+    <tr><td style="color:#ddd;font-weight:500">${p.name}</td><td><span style="background:#1e0a0a;color:#6a4a4a;padding:2px 8px;border-radius:20px;font-size:10px">${p.cat}</span></td><td style="color:#DAA520">₦${p.price.toLocaleString()}</td><td>${p.stock}</td><td><span class="stock-badge ${p.stock>10?'sb-ok':p.stock>0?'sb-low':'sb-out'}">${p.stock>10?'In stock':p.stock>0?'Low stock':'Out of stock'}</span></td><td><button class="restock-btn" onclick="restock(${p.id})">Restock</button></td></tr>`).join('');
+}
+function restock(id){
+  const q=parseInt(prompt('Units to add:')||'0');
+  if(q>0){const p=PRODUCTS.find(x=>x.id===id);if(p){p.stock+=q;renderInv();filterProds();toast(p.name+' restocked +'+q,'success');}}
+}
+
+function renderStaff(){
+  document.getElementById('staff-list').innerHTML=STAFF_LIST.map(s=>{
+    const sales=txns.filter(t=>t.staff===s.un&&new Date(t.date).toDateString()===new Date().toDateString()).reduce((sum,t)=>sum+t.total,0);
+    const ini=s.name.split(' ').map(w=>w[0]).join('').slice(0,2);
+    return `<div class="staff-card"><div class="staff-av">${ini}</div><div><div class="staff-name">${s.name}</div><div class="staff-un">${s.un}</div></div><span class="role-chip ${s.role==='Admin'?'rc-admin':s.role==='Manager'?'rc-manager':'rc-staff'}">${s.role}</span><div class="staff-sales"><div class="sv">₦${sales.toLocaleString()}</div><div class="sl">Today's sales</div></div></div>`;
+  }).join('');
+}
+
+function toast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+(type||'');t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+</script>
