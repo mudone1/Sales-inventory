@@ -76,6 +76,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 /* TOPBAR */
 .topbar{background:var(--sb-bg);border-bottom:1px solid var(--sb-brd);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0;}
 .tb-left{display:flex;align-items:center;gap:10px;}
+.hamburger-btn{display:none;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:none;border:1.5px solid var(--sb-brd);color:var(--sb-text);font-size:16px;cursor:pointer;flex-shrink:0;}
+.hamburger-btn:hover{background:var(--sb-act);color:#d0e8ff;}
+.sidebar-overlay{display:none;position:fixed;inset:52px 0 0 0;background:rgba(2,8,16,.55);z-index:499;}
+.sidebar-overlay.open{display:block;}
 .tb-icon{width:29px;height:29px;border-radius:8px;background:linear-gradient(135deg,#1a5fcb,#0a2d80);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
 .tb-title{font-size:14px;font-weight:600;color:#c8dfff;}
 .tb-right{display:flex;align-items:center;gap:10px;}
@@ -264,11 +268,15 @@ table.dt tbody tr:hover td{background:var(--surf2);}
 #toast.te{border-color:var(--red-m);background:#1e0a0a;}
 
 @media(max-width:700px){
-  .sidebar,.ll{display:none;}
+  .ll{display:none;}
   .lr{width:100%;padding:2rem 1.5rem;}
   .pos,.cgrid,.fg{grid-template-columns:1fr;}
   .content{padding:1rem;}
   .mrow{grid-template-columns:1fr 1fr;}
+  .hamburger-btn{display:flex;}
+  .tb-title{display:none;}
+  .sidebar{position:fixed;top:52px;left:0;bottom:0;z-index:500;width:230px;max-width:78vw;transform:translateX(-100%);transition:transform .22s ease;box-shadow:8px 0 24px rgba(0,0,0,.3);}
+  .sidebar.open{transform:translateX(0);}
 }
 
 /* DATE BUTTON */
@@ -325,6 +333,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
 <div id="app">
   <div class="topbar">
     <div class="tb-left">
+      <button class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Toggle menu"><i class="ti ti-menu-2"></i></button>
       <img class="brand-logo" src="spring-xcel-water-logo.png" alt="Spring XCEL Water logo">
       <span class="tb-title">Spring XCEL Water</span>
     </div>
@@ -337,7 +346,8 @@ table.dt tbody tr:hover td{background:var(--surf2);}
   </div>
 
   <div class="app-body">
-    <aside class="sidebar">
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
       <div class="sb-sec">My work</div>
       <button class="nav-item active" onclick="goPage('sale',this)" id="nav-sale"><i class="ti ti-shopping-cart"></i> Record sale</button>
       <button class="nav-item" onclick="goPage('prod',this)" id="nav-prod"><i class="ti ti-packages"></i> Log production</button>
@@ -710,9 +720,18 @@ function doLogout(){
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('lu').value='';document.getElementById('lp').value='';
   document.querySelectorAll('.admin-nav').forEach(el=>el.style.display='none');
+  closeSidebar();
 }
 
 /* NAV */
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
 function goPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -720,6 +739,7 @@ function goPage(name,btn){
   if(btn)btn.classList.add('active');
   const map={mysales:renderMySales,dash:renderDash,asales:()=>renderAS(''),aprod:renderAP,aexp:renderAE,users:renderUsers};
   if(map[name])map[name]();
+  closeSidebar();
 }
 
 function setDates(){
