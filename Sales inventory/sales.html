@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>BarTrack Inventory</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #C9A84C; --gold-light: #E8C97A; --gold-dark: #9B7A2E;
+  --vip: #8B2FC9; --vip-light: #B86FE8; --vip-dim: #2D1040;
+  --bg: #0A0A0F; --surface: #12121A; --surface2: #1C1C28; --surface3: #252535;
+  --border: #2A2A3C; --text: #F0EDE8; --muted: #8885A0; --danger: #E05C5C;
+  --success: #4CAF78; --font-display: 'Playfair Display', serif;
+  --font-body: 'DM Sans', sans-serif; --r: 12px;
+}
+body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 240px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px 16px; gap: 4px; flex-shrink: 0; }
+.logo { font-family: var(--font-display); font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--gold); margin-bottom: 8px; padding: 0 8px 20px; border-bottom: 1px solid var(--border); }
+.logo span { color: var(--text); }
+.nav-btn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-family: var(--font-body); font-size: 14px; font-weight: 500; width: 100%; text-align: left; transition: all .2s; }
+.nav-btn:hover { background: var(--surface2); color: var(--text); }
+.nav-btn.active { background: linear-gradient(135deg, #1E1708, #2A1F08); color: var(--gold); border: 1px solid var(--gold-dark); }
+.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); padding: 16px 8px 0; }
+.bar-toggle { display: flex; background: var(--surface2); border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 24px; border: 1px solid var(--border); }
+.toggle-btn { flex: 1; padding: 8px 12px; border-radius: 7px; border: none; cursor: pointer; font-family: var(--font-body); font-size: 13px; font-weight: 600; transition: all .25s; display: flex; align-items: center; justify-content: center; gap: 6px; background: transparent; color: var(--muted); }
+.toggle-btn.regular.active { background: linear-gradient(135deg, #2A1F08, #3A2A10); color: var(--gold); box-shadow: 0 2px 8px rgba(201,168,76,.2); }
+.toggle-btn.vip.active { background: linear-gradient(135deg, var(--vip-dim), #3A1060); color: var(--vip-light); box-shadow: 0 2px 8px rgba(139,47,201,.3); }
+.main { flex: 1; padding: 32px; overflow-y: auto; max-height: 100vh; }
+.page-title { font-family: var(--font-display); font-size: 28px; font-weight: 900; margin-bottom: 24px; color: var(--text); }
+.page-title span { color: var(--gold); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; }
+.card-sm { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; font-weight: 600; margin-bottom: 6px; }
+.stat-value { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
+.stat-value.gold { color: var(--gold); }
+.stat-value.vip { color: var(--vip-light); }
+.stat-value.green { color: var(--success); }
+.stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--surface2); padding: 12px 14px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
+td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-regular { background: rgba(201,168,76,.15); color: var(--gold); }
+.badge-vip { background: rgba(139,47,201,.2); color: var(--vip-light); }
+.badge-low { background: rgba(224,92,92,.15); color: var(--danger); }
+.badge-ok { background: rgba(76,175,120,.15); color: var(--success); }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-family: var(--font-body); font-size: 14px; font-weight: 600; transition: all .2s; }
+.btn-gold { background: linear-gradient(135deg, var(--gold-dark), var(--gold)); color: #0A0A0F; }
+.btn-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-vip { background: linear-gradient(135deg, var(--vip), var(--vip-light)); color: #fff; }
+.btn-vip:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--surface3); }
+.btn-danger { background: rgba(224,92,92,.15); color: var(--danger); border: 1px solid rgba(224,92,92,.3); }
+.btn-danger:hover { background: rgba(224,92,92,.25); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; }
+.modal-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+.form-group { margin-bottom: 16px; }
+label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+input, select, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-family: var(--font-body); font-size: 14px; outline: none; transition: border .2s; }
+input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+select option { background: var(--surface2); }
+.chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 120px; padding: 12px 0 0; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.bar-fill { width: 100%; border-radius: 4px 4px 0 0; min-height: 2px; transition: height .4s; }
+.bar-label { font-size: 10px; color: var(--muted); }
+.bar-amount { font-size: 10px; color: var(--muted); }
+.alert { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 8px; }
+.alert-warning { background: rgba(224,92,92,.1); border: 1px solid rgba(224,92,92,.3); color: var(--danger); }
+.toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 200; animation: slideUp .3s; }
+.toast-success { background: var(--success); color: #fff; }
+.toast-error { background: var(--danger); color: #fff; }
+@keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.section-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+.row { display: flex; align-items: center; gap: 10px; }
+.spacer { flex: 1; }
+.text-muted { color: var(--muted); font-size: 13px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.empty { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+@media (max-width: 900px) {
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .sidebar { width: 200px; }
+}
+@media (max-width: 640px) {
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 12px; }
+  .main { padding: 16px; }
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main" id="main"></main>
+</div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script>
+// ─── Data ─────────────────────────────────────────────────────────────────
+const LOW = 10;
+const categories = ['Spirits','Beer','Wine','Champagne','Mixer','Other'];
+
+const state = {
+  stock: [
+    { id: 1, name: "Hennessy VS", category: "Spirits", unit: "bottle", costPrice: 45, sellPrice: 80, regularStock: 20, vipStock: 10 },
+    { id: 2, name: "Johnnie Walker Black", category: "Spirits", unit: "bottle", costPrice: 38, sellPrice: 65, regularStock: 15, vipStock: 8 },
+    { id: 3, name: "Moet Chandon", category: "Champagne", unit: "bottle", costPrice: 55, sellPrice: 110, regularStock: 8, vipStock: 12 },
+    { id: 4, name: "Heineken", category: "Beer", unit: "bottle", costPrice: 2.5, sellPrice: 6, regularStock: 120, vipStock: 60 },
+    { id: 5, name: "Corona", category: "Beer", unit: "bottle", costPrice: 2.8, sellPrice: 6.5, regularStock: 100, vipStock: 50 },
+    { id: 6, name: "Absolut Vodka", category: "Spirits", unit: "bottle", costPrice: 30, sellPrice: 55, regularStock: 12, vipStock: 6 },
+    { id: 7, name: "Jack Daniel's", category: "Spirits", unit: "bottle", costPrice: 32, sellPrice: 58, regularStock: 10, vipStock: 5 },
+    { id: 8, name: "Coca Cola", category: "Mixer", unit: "can", costPrice: 0.8, sellPrice: 3, regularStock: 200, vipStock: 80 },
+    { id: 9, name: "Red Bull", category: "Mixer", unit: "can", costPrice: 1.5, sellPrice: 5, regularStock: 80, vipStock: 60 },
+    { id: 10, name: "Dom Perignon", category: "Champagne", unit: "bottle", costPrice: 150, sellPrice: 350, regularStock: 0, vipStock: 6 },
+  ],
+  sales: [],
+  nextSaleId: 1,
+  nextStockId: 11,
+  tab: 'dashboard',
+  barType: 'regular',
+  filterDate: '',
+  modal: null,
+  editTargetId: null,
+  saleForm: { stockId: '', qty: 1, date: '', notes: '' },
+  stockForm: { name: '', category: 'Spirits', unit: 'bottle', costPrice: '', sellPrice: '', regularStock: 0, vipStock: 0 },
+  restockForm: { stockId: '', barType: 'regular', qty: 1 },
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+function fmt(n){ return '$' + Number(n || 0).toFixed(2); }
+function todayStr(){ return new Date().toISOString().split('T')[0]; }
+function escapeHtml(str){
+  if (str === undefined || str === null) return '';
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+const iconPaths = {
+  bar: "M4 22V14H2V8h20v6h-2v8H4zm2-2h12v-6H6v6zm-2-8h16V10H4v2zM9 5V3h6v2H9z",
+  vip: "M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z",
+  chart: "M4 20V10l8-8 8 8v10H4zm2-2h4v-6H6v6zm6 0h4v-4h-4v4zm0-6h4v-2h-4v2zM10 8V6l2-2 2 2v2h-4z",
+  stock: "M20 7H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 11H5V9h14v9zM1 5h22v2H1z",
+  plus: "M19 13H13v6h-2v-6H5v-2h6V5h2v6h6v2z",
+  sales: "M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.8 14h9.4c.7 0 1.4-.4 1.7-1L21 7H5.2l-.9-3H1v2h3l3.6 13.6L7.8 14z",
+  trash: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z",
+  edit: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z",
+  warning: "M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z",
+  save: "M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z",
+  close: "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z",
+};
+function svgIcon(name, size){
+  size = size || 18;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;vertical-align:middle;"><path d="${iconPaths[name] || iconPaths.bar}"/></svg>`;
+}
+
+function salesByBar(bar){ return state.sales.filter(s => s.barType === bar); }
+function totalRevenue(bar){ return salesByBar(bar).reduce((a, s) => a + s.total, 0); }
+function totalProfit(bar){ return salesByBar(bar).reduce((a, s) => a + (s.profit || 0), 0); }
+function lowStockItems(){ return state.stock.filter(s => s.regularStock < LOW || s.vipStock < LOW); }
+function last7Days(){
+  return Array.from({length:7}, (_,i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().split('T')[0];
+  });
+}
+function revenueByDay(bar){
+  return last7Days().map(d => ({
+    date: d.slice(5),
+    revenue: state.sales.filter(s => s.barType === bar && s.date === d).reduce((a,s) => a + s.total, 0),
+  }));
+}
+function topItems(bar){
+  const map = {};
+  state.sales.filter(s => s.barType === bar).forEach(s => { map[s.itemName] = (map[s.itemName] || 0) + s.total; });
+  return Object.entries(map).sort((a,b) => b[1] - a[1]).slice(0,5);
+}
+
+// ─── Chart ────────────────────────────────────────────────────────────────
+function renderChartHTML(bar){
+  const days = revenueByDay(bar);
+  const max = Math.max(...days.map(d => d.revenue), 1);
+  const color = bar === 'vip' ? 'var(--vip-light)' : 'var(--gold)';
+  return `<div class="chart-bars">${days.map(d => `
+    <div class="bar-col">
+      <div class="bar-amount">${d.revenue > 0 ? '$' + Math.round(d.revenue) : ''}</div>
+      <div class="bar-fill" style="height:${(d.revenue / max) * 80}px;background:${color};opacity:.85;"></div>
+      <div class="bar-label">${d.date}</div>
+    </div>`).join('')}</div>`;
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────
+function renderSidebar(){
+  const tabs = [
+    {id:'dashboard', label:'Dashboard', icon:'chart'},
+    {id:'sales', label:'Sales', icon:'sales'},
+    {id:'inventory', label:'Inventory', icon:'stock'},
+    {id:'analysis', label:'Analysis', icon:'vip'},
+  ];
+  document.getElementById('sidebar').innerHTML = `
+    <div class="logo">Bar<span>Track</span></div>
+    ${tabs.map(t => `<button class="nav-btn ${state.tab===t.id?'active':''}" onclick="setTab('${t.id}')">${svgIcon(t.icon,16)} ${t.label}</button>`).join('')}
+    <div class="sidebar-footer">${state.stock.length} items in stock<br>${state.sales.length} total transactions</div>
+  `;
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────
+function renderDashboardHTML(){
+  const bar = state.barType;
+  const rev = totalRevenue(bar), profit = totalProfit(bar), count = salesByBar(bar).length;
+  const todayRev = state.sales.filter(s => s.barType === bar && s.date === todayStr()).reduce((a,s) => a + s.total, 0);
+  const top = topItems(bar);
+  const low = lowStockItems();
+  return `
+  <h1 class="page-title">Dashboard <span>Overview</span></h1>
+  <div class="bar-toggle">
+    <button class="toggle-btn regular ${bar==='regular'?'active':''}" onclick="setBarType('regular')">${svgIcon('bar',14)} Regular Bar</button>
+    <button class="toggle-btn vip ${bar==='vip'?'active':''}" onclick="setBarType('vip')">${svgIcon('vip',14)} VIP Bar</button>
+  </div>
+  <div class="grid-4">
+    <div class="card-sm"><div class="stat-label">Total Revenue</div><div class="stat-value ${bar==='vip'?'vip':'gold'}">${fmt(rev)}</div><div class="stat-sub">All time</div></div>
+    <div class="card-sm"><div class="stat-label">Total Profit</div><div class="stat-value green">${fmt(profit)}</div><div class="stat-sub">After cost</div></div>
+    <div class="card-sm"><div class="stat-label">Total Sales</div><div class="stat-value">${count}</div><div class="stat-sub">Transactions</div></div>
+    <div class="card-sm"><div class="stat-label">Today's Revenue</div><div class="stat-value ${bar==='vip'?'vip':'gold'}">${fmt(todayRev)}</div><div class="stat-sub">${todayStr()}</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="section-title mb-16">7-Day Revenue</div>${renderChartHTML(bar)}</div>
+    <div class="card"><div class="section-title mb-16">Top Selling Items</div>
+      ${top.length===0?'<div class="empty">No sales yet</div>':top.map(([name,r],i)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:${i<top.length-1?'1px solid var(--border)':'none'};">
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span style="width:22px;height:22px;border-radius:50%;background:${bar==='vip'?'var(--vip-dim)':'#2A1F08'};color:${bar==='vip'?'var(--vip-light)':'var(--gold)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">${i+1}</span>
+            <span style="font-size:13px;">${escapeHtml(name)}</span>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:${bar==='vip'?'var(--vip-light)':'var(--gold)'};">${fmt(r)}</span>
+        </div>`).join('')}
+    </div>
+  </div>
+  ${low.length>0?`
+  <div class="card">
+    <div class="section-title mb-16" style="color:var(--danger);">⚠ Low Stock Alerts</div>
+    ${low.map(item=>`<div class="alert alert-warning">${svgIcon('warning',16)}<strong>${escapeHtml(item.name)}</strong> — Regular: ${item.regularStock} | VIP: ${item.vipStock} units remaining</div>`).join('')}
+  </div>`:''}
+  `;
+}
+
+// ─── Sales tab ────────────────────────────────────────────────────────────
+function renderSalesHTML(){
+  const bar = state.barType;
+  const filtered = state.sales.filter(s => s.barType === bar)
+    .filter(s => state.filterDate ? s.date === state.filterDate : true)
+    .sort((a,b) => b.date.localeCompare(a.date));
+  return `
+  <div class="section-header">
+    <h1 class="page-title" style="margin-bottom:0;">Sales <span>Records</span></h1>
+    <button class="btn ${bar==='vip'?'btn-vip':'btn-gold'}" onclick="openAddSaleModal()">${svgIcon('plus',16)} Record Sale</button>
+  </div>
+  <div class="bar-toggle mb-24">
+    <button class="toggle-btn regular ${bar==='regular'?'active':''}" onclick="setBarType('regular')">${svgIcon('bar',14)} Regular Bar</button>
+    <button class="toggle-btn vip ${bar==='vip'?'active':''}" onclick="setBarType('vip')">${svgIcon('vip',14)} VIP Bar</button>
+  </div>
+  <div class="row mb-16">
+    <input type="date" value="${state.filterDate}" style="width:auto;max-width:200px;" onchange="setFilterDate(this.value)" />
+    ${state.filterDate?`<button class="btn btn-ghost btn-sm" onclick="clearFilterDate()">Clear</button>`:''}
+    <div class="spacer"></div>
+    <span class="text-muted">${filtered.length} records</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Profit</th><th>Notes</th></tr></thead>
+      <tbody>
+        ${filtered.length===0?`<tr><td colspan="7" class="empty">No sales records found</td></tr>`:filtered.map(s=>`
+          <tr>
+            <td>${s.date}</td>
+            <td><strong>${escapeHtml(s.itemName)}</strong></td>
+            <td>${s.qty}</td>
+            <td>${fmt(s.sellPrice)}</td>
+            <td style="color:var(--gold);font-weight:700;">${fmt(s.total)}</td>
+            <td style="color:var(--success);">${fmt(s.profit)}</td>
+            <td style="color:var(--muted);font-size:12px;">${s.notes?escapeHtml(s.notes):'—'}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// ─── Inventory tab ────────────────────────────────────────────────────────
+function renderInventoryHTML(){
+  return `
+  <div class="section-header">
+    <h1 class="page-title" style="margin-bottom:0;">Inventory <span>Stock</span></h1>
+    <div class="row">
+      <button class="btn btn-ghost" onclick="openRestockModal()">${svgIcon('plus',16)} Restock</button>
+      <button class="btn btn-gold" onclick="openAddStockModal()">${svgIcon('plus',16)} Add Item</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Item</th><th>Category</th><th>Cost</th><th>Sell Price</th><th>Regular Stock</th><th>VIP Stock</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${state.stock.map(item=>`
+          <tr>
+            <td><strong>${escapeHtml(item.name)}</strong><div style="font-size:11px;color:var(--muted);">${escapeHtml(item.unit)}</div></td>
+            <td><span class="badge badge-ok">${escapeHtml(item.category)}</span></td>
+            <td>${fmt(item.costPrice)}</td>
+            <td style="color:var(--gold);font-weight:600;">${fmt(item.sellPrice)}</td>
+            <td><span class="badge ${item.regularStock<LOW?'badge-low':'badge-ok'}">${item.regularStock}</span></td>
+            <td><span class="badge ${item.vipStock<LOW?'badge-low':'badge-vip'}">${item.vipStock}</span></td>
+            <td><div class="row">
+              <button class="btn btn-ghost btn-sm" onclick="openEditStockModal(${item.id})">${svgIcon('edit',14)}</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteStock(${item.id})">${svgIcon('trash',14)}</button>
+            </div></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// ─── Analysis tab ─────────────────────────────────────────────────────────
+function renderAnalysisHTML(){
+  const combinedRevenue = totalRevenue('regular') + totalRevenue('vip');
+  const combinedProfit = totalProfit('regular') + totalProfit('vip');
+  const margin = combinedRevenue > 0 ? ((combinedProfit / combinedRevenue) * 100).toFixed(1) : 0;
+  const todayRev = state.sales.filter(s => s.date === todayStr()).reduce((a,s) => a + s.total, 0);
+  const topReg = topItems('regular'), topVip = topItems('vip');
+  return `
+  <h1 class="page-title">Sales <span>Analysis</span></h1>
+  <div class="grid-4 mb-24">
+    <div class="card-sm"><div class="stat-label">Combined Revenue</div><div class="stat-value gold">${fmt(combinedRevenue)}</div></div>
+    <div class="card-sm"><div class="stat-label">Combined Profit</div><div class="stat-value green">${fmt(combinedProfit)}</div></div>
+    <div class="card-sm"><div class="stat-label">Profit Margin</div><div class="stat-value">${margin}%</div></div>
+    <div class="card-sm"><div class="stat-label">Today Revenue</div><div class="stat-value gold">${fmt(todayRev)}</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="section-title mb-16">Regular Bar — 7-Day Trend</div>${renderChartHTML('regular')}
+      <div style="margin-top:16px;display:flex;gap:20px;">
+        <div><div class="stat-label">Revenue</div><div style="color:var(--gold);font-weight:700;">${fmt(totalRevenue('regular'))}</div></div>
+        <div><div class="stat-label">Profit</div><div style="color:var(--success);font-weight:700;">${fmt(totalProfit('regular'))}</div></div>
+        <div><div class="stat-label">Sales</div><div style="font-weight:700;">${salesByBar('regular').length}</div></div>
+      </div>
+    </div>
+    <div class="card"><div class="section-title mb-16">VIP Bar — 7-Day Trend</div>${renderChartHTML('vip')}
+      <div style="margin-top:16px;display:flex;gap:20px;">
+        <div><div class="stat-label">Revenue</div><div style="color:var(--vip-light);font-weight:700;">${fmt(totalRevenue('vip'))}</div></div>
+        <div><div class="stat-label">Profit</div><div style="color:var(--success);font-weight:700;">${fmt(totalProfit('vip'))}</div></div>
+        <div><div class="stat-label">Sales</div><div style="font-weight:700;">${salesByBar('vip').length}</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="section-title mb-16">Top Items — Regular Bar</div>
+      ${topReg.length===0?'<div class="empty">No data</div>':topReg.map(([name,r],i)=>`
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:${i<topReg.length-1?'1px solid var(--border)':'none'};font-size:13px;">
+          <span>#${i+1} ${escapeHtml(name)}</span><span style="color:var(--gold);font-weight:600;">${fmt(r)}</span>
+        </div>`).join('')}
+    </div>
+    <div class="card"><div class="section-title mb-16">Top Items — VIP Bar</div>
+      ${topVip.length===0?'<div class="empty">No data</div>':topVip.map(([name,r],i)=>`
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:${i<topVip.length-1?'1px solid var(--border)':'none'};font-size:13px;">
+          <span>#${i+1} ${escapeHtml(name)}</span><span style="color:var(--vip-light);font-weight:600;">${fmt(r)}</span>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ─── Main render ──────────────────────────────────────────────────────────
+function renderMain(){
+  const main = document.getElementById('main');
+  if (state.tab === 'dashboard') main.innerHTML = renderDashboardHTML();
+  else if (state.tab === 'sales') main.innerHTML = renderSalesHTML();
+  else if (state.tab === 'inventory') main.innerHTML = renderInventoryHTML();
+  else if (state.tab === 'analysis') main.innerHTML = renderAnalysisHTML();
+}
+function setTab(tab){ state.tab = tab; renderSidebar(); renderMain(); }
+function setBarType(bar){ state.barType = bar; renderMain(); }
+function setFilterDate(val){ state.filterDate = val; renderMain(); }
+function clearFilterDate(){ state.filterDate = ''; renderMain(); }
+
+// ─── Toast ────────────────────────────────────────────────────────────────
+function showToast(msg, type){
+  const root = document.getElementById('toast-root');
+  root.innerHTML = `<div class="toast toast-${type||'success'}">${escapeHtml(msg)}</div>`;
+  setTimeout(() => { root.innerHTML = ''; }, 3000);
+}
+
+// ─── Modals ───────────────────────────────────────────────────────────────
+function closeModal(){ state.modal = null; document.getElementById('modal-root').innerHTML = ''; }
+function renderModal(){
+  const root = document.getElementById('modal-root');
+  if (!state.modal) { root.innerHTML = ''; return; }
+  if (state.modal === 'addSale') root.innerHTML = addSaleModalHTML();
+  else if (state.modal === 'addStock' || state.modal === 'editStock') root.innerHTML = stockModalHTML();
+  else if (state.modal === 'restock') root.innerHTML = restockModalHTML();
+  updateSalePreview();
+}
+
+function openAddSaleModal(){
+  state.saleForm = { stockId: '', qty: 1, date: todayStr(), notes: '' };
+  state.modal = 'addSale';
+  renderModal();
+}
+function openAddStockModal(){
+  state.stockForm = { name: '', category: 'Spirits', unit: 'bottle', costPrice: '', sellPrice: '', regularStock: 0, vipStock: 0 };
+  state.modal = 'addStock';
+  renderModal();
+}
+function openEditStockModal(id){
+  const item = state.stock.find(s => s.id === id);
+  if (!item) return;
+  state.editTargetId = id;
+  state.stockForm = { name: item.name, category: item.category, unit: item.unit, costPrice: item.costPrice, sellPrice: item.sellPrice, regularStock: item.regularStock, vipStock: item.vipStock };
+  state.modal = 'editStock';
+  renderModal();
+}
+function openRestockModal(){
+  state.restockForm = { stockId: '', barType: 'regular', qty: 1 };
+  state.modal = 'restock';
+  renderModal();
+}
+
+// Sale modal
+function addSaleModalHTML(){
+  const bar = state.barType;
+  return `
+  <div class="overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <div class="modal-title">Record Sale <span class="badge ${bar==='vip'?'badge-vip':'badge-regular'}">${bar==='vip'?'VIP':'Regular'}</span>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">${svgIcon('close',16)}</button>
+      </div>
+      <div class="form-group">
+        <label>Item</label>
+        <select onchange="onSaleStockChange(this.value)">
+          <option value="">— Select item —</option>
+          ${state.stock.map(s=>{
+            const avail = bar==='regular'?s.regularStock:s.vipStock;
+            return `<option value="${s.id}" ${String(state.saleForm.stockId)===String(s.id)?'selected':''}>${escapeHtml(s.name)} (${avail} available) — ${fmt(s.sellPrice)}</option>`;
+          }).join('')}
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Quantity</label>
+          <input type="number" min="1" value="${state.saleForm.qty}" oninput="onSaleQtyInput(this.value)" />
+        </div>
+        <div class="form-group"><label>Date</label>
+          <input type="date" value="${state.saleForm.date}" oninput="onSaleFieldInput('date',this.value)" />
+        </div>
+      </div>
+      <div class="form-group"><label>Notes (optional)</label>
+        <input type="text" placeholder="e.g. Table 5, Birthday party" value="${escapeHtml(state.saleForm.notes)}" oninput="onSaleFieldInput('notes',this.value)" />
+      </div>
+      <div id="sale-preview"></div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn ${bar==='vip'?'btn-vip':'btn-gold'}" onclick="addSale()">${svgIcon('save',16)} Save Sale</button>
+      </div>
+    </div>
+  </div>`;
+}
+function onSaleFieldInput(field, val){ state.saleForm[field] = val; }
+function onSaleQtyInput(val){ state.saleForm.qty = val; updateSalePreview(); }
+function onSaleStockChange(val){ state.saleForm.stockId = val; updateSalePreview(); }
+function updateSalePreview(){
+  const preview = document.getElementById('sale-preview');
+  if (!preview) return;
+  const item = state.stock.find(s => s.id === Number(state.saleForm.stockId));
+  if (!item) { preview.innerHTML = ''; return; }
+  const qty = Number(state.saleForm.qty) || 0;
+  const total = item.sellPrice * qty;
+  const profit = (item.sellPrice - item.costPrice) * qty;
+  preview.innerHTML = `<div class="card-sm mb-16" style="background:var(--surface3);">
+    <div class="row"><span class="text-muted">Total:</span> <strong style="color:var(--gold);">${fmt(total)}</strong> <span class="text-muted">Profit:</span> <strong style="color:var(--success);">${fmt(profit)}</strong></div>
+  </div>`;
+}
+function addSale(){
+  const item = state.stock.find(s => s.id === Number(state.saleForm.stockId));
+  const qty = Number(state.saleForm.qty);
+  if (!item || !qty || qty < 1) { showToast('Fill all fields','error'); return; }
+  const bar = state.barType;
+  const key = bar === 'regular' ? 'regularStock' : 'vipStock';
+  if (qty > item[key]) { showToast(`Only ${item[key]} units available`,'error'); return; }
+  const total = item.sellPrice * qty;
+  const profit = (item.sellPrice - item.costPrice) * qty;
+  state.sales.push({ id: state.nextSaleId++, stockId: item.id, itemName: item.name, barType: bar, qty, sellPrice: item.sellPrice, total, profit, date: state.saleForm.date || todayStr(), notes: state.saleForm.notes });
+  item[key] -= qty;
+  closeModal();
+  renderMain();
+  renderSidebar();
+  showToast('Sale recorded!');
+}
+
+// Stock modal (add/edit)
+function stockModalHTML(){
+  const isEdit = state.modal === 'editStock';
+  return `
+  <div class="overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <div class="modal-title">${isEdit?'Edit Item':'Add New Item'}
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">${svgIcon('close',16)}</button>
+      </div>
+      <div class="form-group"><label>Item Name *</label>
+        <input placeholder="e.g. Hennessy VSOP" value="${escapeHtml(state.stockForm.name)}" oninput="onStockFieldInput('name',this.value)" />
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Category</label>
+          <select onchange="onStockFieldInput('category',this.value)">
+            ${categories.map(c=>`<option ${state.stockForm.category===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label>Unit</label>
+          <select onchange="onStockFieldInput('unit',this.value)">
+            ${['bottle','can','glass','shot','litre','pack'].map(u=>`<option ${state.stockForm.unit===u?'selected':''}>${u}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Cost Price *</label>
+          <input type="number" min="0" step="0.01" placeholder="0.00" value="${state.stockForm.costPrice}" oninput="onStockFieldInput('costPrice',this.value)" />
+        </div>
+        <div class="form-group"><label>Sell Price *</label>
+          <input type="number" min="0" step="0.01" placeholder="0.00" value="${state.stockForm.sellPrice}" oninput="onStockFieldInput('sellPrice',this.value)" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Regular Stock</label>
+          <input type="number" min="0" value="${state.stockForm.regularStock}" oninput="onStockFieldInput('regularStock',this.value)" />
+        </div>
+        <div class="form-group"><label>VIP Stock</label>
+          <input type="number" min="0" value="${state.stockForm.vipStock}" oninput="onStockFieldInput('vipStock',this.value)" />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-gold" onclick="${isEdit?'updateStock()':'addStock()'}">${svgIcon('save',16)} ${isEdit?'Update Item':'Add Item'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+function onStockFieldInput(field, val){ state.stockForm[field] = val; }
+function addStock(){
+  if (!state.stockForm.name || !state.stockForm.sellPrice) { showToast('Fill required fields','error'); return; }
+  state.stock.push({
+    id: state.nextStockId++,
+    name: state.stockForm.name,
+    category: state.stockForm.category,
+    unit: state.stockForm.unit,
+    costPrice: Number(state.stockForm.costPrice) || 0,
+    sellPrice: Number(state.stockForm.sellPrice) || 0,
+    regularStock: Number(state.stockForm.regularStock) || 0,
+    vipStock: Number(state.stockForm.vipStock) || 0,
+  });
+  closeModal();
+  renderMain();
+  renderSidebar();
+  showToast('Item added to inventory!');
+}
+function updateStock(){
+  const item = state.stock.find(s => s.id === state.editTargetId);
+  if (!item) return;
+  item.name = state.stockForm.name;
+  item.category = state.stockForm.category;
+  item.unit = state.stockForm.unit;
+  item.costPrice = Number(state.stockForm.costPrice) || 0;
+  item.sellPrice = Number(state.stockForm.sellPrice) || 0;
+  item.regularStock = Number(state.stockForm.regularStock) || 0;
+  item.vipStock = Number(state.stockForm.vipStock) || 0;
+  closeModal();
+  renderMain();
+  showToast('Item updated!');
+}
+function deleteStock(id){
+  state.stock = state.stock.filter(s => s.id !== id);
+  renderMain();
+  renderSidebar();
+  showToast('Item removed');
+}
+
+// Restock modal
+function restockModalHTML(){
+  return `
+  <div class="overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <div class="modal-title">Restock Item
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">${svgIcon('close',16)}</button>
+      </div>
+      <div class="form-group"><label>Item</label>
+        <select onchange="onRestockFieldInput('stockId',this.value)">
+          <option value="">— Select item —</option>
+          ${state.stock.map(s=>`<option value="${s.id}" ${String(state.restockForm.stockId)===String(s.id)?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Bar</label>
+          <select onchange="onRestockFieldInput('barType',this.value)">
+            <option value="regular" ${state.restockForm.barType==='regular'?'selected':''}>Regular Bar</option>
+            <option value="vip" ${state.restockForm.barType==='vip'?'selected':''}>VIP Bar</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Quantity to Add</label>
+          <input type="number" min="1" value="${state.restockForm.qty}" oninput="onRestockFieldInput('qty',this.value)" />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-gold" onclick="doRestock()">${svgIcon('save',16)} Restock</button>
+      </div>
+    </div>
+  </div>`;
+}
+function onRestockFieldInput(field, val){ state.restockForm[field] = val; }
+function doRestock(){
+  const item = state.stock.find(s => s.id === Number(state.restockForm.stockId));
+  const qty = Number(state.restockForm.qty);
+  if (!item || !qty || qty < 1) { showToast('Fill all fields','error'); return; }
+  const key = state.restockForm.barType === 'regular' ? 'regularStock' : 'vipStock';
+  item[key] += qty;
+  closeModal();
+  renderMain();
+  renderSidebar();
+  showToast(`Restocked ${item.name} (+${qty})`);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+renderSidebar();
+renderMain();
+</script>
+</body>
+</html>
