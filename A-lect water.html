@@ -1706,7 +1706,7 @@ async function loadFromFirebase(){
   }
   toast('Syncing data…','');
   try{
-    const cols=['sales','production','expenses','rawmats'];
+    const cols=['sales','production','expenses','rawmats','attendance'];
     for(const col of cols){
       const snap=await fsGetDocs(fsCol(col));
       snap.forEach(d=>{
@@ -1722,7 +1722,8 @@ async function loadFromFirebase(){
     updateExpPanel();updateProdPanel();renderRecentSales();
     updateRMPanel();renderRawMat('');renderInvSummary('');
     updateStockHint();populateBatchSelect();populateMatLotSelect();
-    if(CU&&CU.role!=='staff') renderDash();
+    updateAttStatusBar();renderAttMy();
+    if(CU&&CU.role!=='staff'){renderDash();renderAttAdmin('');}
     toast('Data synced ✓','s');
   } catch(e){
     console.warn('Firebase load error:',e);
@@ -1741,7 +1742,7 @@ function attSignIn(user){
   // Don't double-create if somehow already open
   const existing = DB.attendance.find(r=>r.userId===user.id && r.date===todayKey && !r.signOut);
   if(!existing){
-    DB.attendance.push({
+    const rec = {
       id: DB.nid(),
       userId: user.id,
       name: user.name,
@@ -1749,7 +1750,15 @@ function attSignIn(user){
       date: todayKey,
       signIn: now.toISOString(),
       signOut: null
-    });
+    };
+    DB.attendance.push(rec);
+    // ── Firebase save ──
+    if(window.fsReady){
+      const clean = Object.fromEntries(Object.entries(rec).filter(([,v])=>v!==undefined&&v!==null));
+      window.fsAddDoc(window.fsCol('attendance'), clean)
+        .then(ref=>{ rec._fbId = ref.id; })
+        .catch(e=>console.warn('FS attendance sign-in write:', e));
+    }
   }
   updateAttStatusBar();
   renderAttMy();
@@ -1770,6 +1779,11 @@ function confirmSignOut(){
   const rec = DB.attendance.find(r=>r.userId===CU.id && r.date===todayKey && !r.signOut);
   if(rec){
     rec.signOut = new Date().toISOString();
+    // ── Firebase sync sign-out ──
+    if(window.fsReady && rec._fbId){
+      window.fsUpdateDoc(window.fsDoc('attendance', rec._fbId), { signOut: rec.signOut })
+        .catch(e=>console.warn('FS attendance sign-out sync:', e));
+    }
   }
   updateAttStatusBar();
   renderAttMy();
