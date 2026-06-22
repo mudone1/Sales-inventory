@@ -1212,6 +1212,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
           <div class="mc g"><div class="mc-ico"><i class="ti ti-users"></i></div><div class="mc-lbl">Staff present today</div><div class="mc-val" id="att-today-count">0</div></div>
           <div class="mc b"><div class="mc-ico"><i class="ti ti-calendar"></i></div><div class="mc-lbl">Total records</div><div class="mc-val" id="att-total-count">0</div></div>
           <div class="mc a"><div class="mc-ico"><i class="ti ti-clock"></i></div><div class="mc-lbl">Currently signed in</div><div class="mc-val" id="att-active-count">0</div></div>
+          <div class="mc r"><div class="mc-ico"><i class="ti ti-alert-triangle"></i></div><div class="mc-lbl">Forgot to sign out</div><div class="mc-val" id="att-forgot-count">0</div></div>
         </div>
         <div class="card">
           <div class="card-title"><i class="ti ti-table"></i> All attendance records</div>
@@ -1562,6 +1563,12 @@ function geoDistance(lat1,lon1,lat2,lon2){
 
 // State for pending login (geofence check is async)
 let _pendingLoginUser = null;
+// Geofence can be triggered for two purposes: 'login' (sign-in) or 'signout' (sign-out).
+// Logging out of the app (closing the session) is NOT the same as ending the
+// shift — staff can log out and log back in and their sign-in time/elapsed
+// duration carries on unchanged. Only an actual SIGN OUT ends the shift, and
+// because of that, sign-out must also be geofence-verified.
+let _geoMode = 'login';
 
 /* =============================================
    AUTH  (with geofencing)
@@ -1588,6 +1595,7 @@ function doLogin(){
   }
 
   // Show geofence overlay and start checking
+  _geoMode = 'login';
   document.getElementById('geo-overlay').classList.remove('hidden');
   geoCheck();
 }
@@ -1595,11 +1603,14 @@ function doLogin(){
 function geoCheck(){
   const el=(id)=>document.getElementById(id);
   el('geo-icon').className='geo-icon checking'; el('geo-icon').innerHTML='<i class="ti ti-map-pin"></i>';
-  el('geo-title').textContent='Verifying Location';
+  el('geo-title').textContent = _geoMode==='signout' ? 'Verifying Location to Sign Out' : 'Verifying Location';
   el('geo-msg').textContent='Please allow location access when prompted…';
   el('geo-dist').textContent='';
   el('geo-retry-btn').style.display='none';
   el('geo-back-btn').style.display='none';
+  el('geo-back-btn').innerHTML = _geoMode==='signout'
+    ? '<i class="ti ti-arrow-left"></i> Cancel'
+    : '<i class="ti ti-arrow-left"></i> Back to Login';
   el('geo-admin-bypass').style.display='none';
 
   if(!navigator.geolocation){
@@ -1608,9 +1619,10 @@ function geoCheck(){
   navigator.geolocation.getCurrentPosition(
     (pos)=>{
       const sLat=getStoreLat(), sLng=getStoreLng(), sRad=getStoreRadius();
+      const activeUser = _geoMode==='signout' ? CU : _pendingLoginUser;
       if(sLat===null||sLng===null){
         // No store location set — only admins can proceed
-        if(_pendingLoginUser && _pendingLoginUser.role!=='staff'){
+        if(activeUser && activeUser.role!=='staff'){
           showGeoOk(); return;
         }
         showGeoFail('The store location has not been configured yet. Please ask your admin to set it up.', false);
@@ -1621,7 +1633,8 @@ function geoCheck(){
       if(dist<=sRad){
         showGeoOk();
       } else {
-        showGeoFail('You are too far from the store ('+Math.round(dist)+' m away). Please move closer and try again.', false);
+        const action = _geoMode==='signout' ? 'sign out' : 'sign in';
+        showGeoFail('You are too far from the store ('+Math.round(dist)+' m away). Please move closer to '+action+'.', false);
       }
     },
     (err)=>{
@@ -1639,8 +1652,13 @@ function showGeoOk(){
   const el=(id)=>document.getElementById(id);
   el('geo-icon').className='geo-icon ok'; el('geo-icon').innerHTML='<i class="ti ti-circle-check"></i>';
   el('geo-title').textContent='Location Confirmed ✓';
-  el('geo-msg').textContent='You are at the store. Signing you in…';
-  setTimeout(()=>{ document.getElementById('geo-overlay').classList.add('hidden'); finaliseLogin(_pendingLoginUser); }, 900);
+  if(_geoMode==='signout'){
+    el('geo-msg').textContent='You are at the store. Confirming sign out…';
+    setTimeout(()=>{ document.getElementById('geo-overlay').classList.add('hidden'); openSignOutMo(); }, 900);
+  } else {
+    el('geo-msg').textContent='You are at the store. Signing you in…';
+    setTimeout(()=>{ document.getElementById('geo-overlay').classList.add('hidden'); finaliseLogin(_pendingLoginUser); }, 900);
+  }
 }
 
 function showGeoFail(msg, allowBypass){
@@ -1651,7 +1669,8 @@ function showGeoFail(msg, allowBypass){
   el('geo-retry-btn').style.display='';
   el('geo-back-btn').style.display='';
   // Only admins/managers get bypass link
-  if(_pendingLoginUser && _pendingLoginUser.role!=='staff'){
+  const activeUser = _geoMode==='signout' ? CU : _pendingLoginUser;
+  if(activeUser && activeUser.role!=='staff'){
     el('geo-admin-bypass').style.display='';
   }
 }
@@ -1659,10 +1678,20 @@ function showGeoFail(msg, allowBypass){
 function geoRetry(){ geoCheck(); }
 function geoBack(){
   document.getElementById('geo-overlay').classList.add('hidden');
+  if(_geoMode==='signout'){
+    // Cancel the sign-out attempt — shift stays in progress, nothing changes
+    _geoMode='login';
+    return;
+  }
   _pendingLoginUser=null;
 }
 function geoAdminBypass(){
   document.getElementById('geo-overlay').classList.add('hidden');
+  if(_geoMode==='signout'){
+    openSignOutMo();
+    _geoMode='login';
+    return;
+  }
   finaliseLogin(_pendingLoginUser);
 }
 
@@ -1735,6 +1764,50 @@ async function loadFromFirebase(){
    ============================================= */
 let _attClockInterval = null;
 
+/* =============================================
+   AUTO SIGN-OUT  (store closes 7pm — by 9pm, anyone
+   still "signed in" is auto-closed so admins can see
+   who's been ignoring sign-out)
+   ============================================= */
+const AUTO_SIGNOUT_HOUR = 21; // 9pm, 24h clock
+
+function checkAutoSignOut(){
+  const now = new Date();
+  if(now.getHours() < AUTO_SIGNOUT_HOUR) return;
+  const todayKey = now.toISOString().split('T')[0];
+  const cutoff = new Date(now);
+  cutoff.setHours(AUTO_SIGNOUT_HOUR,0,0,0);
+
+  let changed = false, closedCurrentUser = false;
+  DB.attendance.forEach(r=>{
+    if(r.date===todayKey && !r.signOut){
+      r.signOut = cutoff.toISOString();
+      r.autoSignOut = true;
+      changed = true;
+      if(CU && r.userId===CU.id) closedCurrentUser = true;
+    }
+  });
+  if(!changed) return;
+
+  if(CU){
+    if(CU.role!=='staff'){
+      const q=document.querySelector('#page-att-admin input[type="text"]');
+      renderAttAdmin(q?q.value:'');
+    }
+    renderAttMy();
+    updateAttStatusBar();
+  }
+  if(closedCurrentUser){
+    toast("It's past 9:00 PM (store closing time) — you were automatically signed out because you didn't sign out yourself. Please remember to sign out at the end of your shift.",'e');
+    setTimeout(()=>doLogout(), 3000);
+  }
+}
+// Run once on load (covers the case where the page was already open before 9pm)
+// and keep checking every minute, regardless of whether anyone is logged in —
+// this is what lets admins see, the next morning, exactly who ignored sign-out.
+checkAutoSignOut();
+setInterval(checkAutoSignOut, 60*1000);
+
 function attSignIn(user){
   const now = new Date();
   const todayKey = now.toISOString().split('T')[0];
@@ -1758,6 +1831,14 @@ function attSignIn(user){
 
 function attSignOut(){
   if(!CU) return;
+  // Sign-out must be geofence-verified too — staff must physically be at the
+  // store to end their shift, same as signing in.
+  _geoMode = 'signout';
+  document.getElementById('geo-overlay').classList.remove('hidden');
+  geoCheck();
+}
+function openSignOutMo(){
+  if(!CU) return;
   document.getElementById('signout-mo').classList.add('open');
 }
 function closeSignOutMo(){
@@ -1766,6 +1847,7 @@ function closeSignOutMo(){
 function confirmSignOut(){
   if(!CU) return;
   document.getElementById('signout-mo').classList.remove('open');
+  _geoMode = 'login';
   const todayKey = new Date().toISOString().split('T')[0];
   const rec = DB.attendance.find(r=>r.userId===CU.id && r.date===todayKey && !r.signOut);
   if(rec){
@@ -1790,8 +1872,8 @@ function updateAttStatusBar(){
   if(!rec){ statusText.textContent='Not signed in'; statusSub.textContent='—'; dot.className='att-dot out'; btn.style.display='none'; return; }
   if(rec.signOut){
     dot.className='att-dot out';
-    statusText.textContent='Shift complete';
-    statusSub.textContent='Signed out at '+fmtTime(rec.signOut);
+    statusText.textContent = rec.autoSignOut ? 'Shift auto-closed' : 'Shift complete';
+    statusSub.textContent = (rec.autoSignOut ? 'Auto signed out at ' : 'Signed out at ')+fmtTime(rec.signOut)+(rec.autoSignOut?' (you forgot to sign out)':'');
     btn.style.display='none';
   } else {
     dot.className='att-dot in';
@@ -1809,6 +1891,7 @@ function startAttClock(){
     const el=document.getElementById('att-live-clock');
     if(el) el.textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
     // keep the "since X · Yh Zm elapsed" line and sign-out gating accurate every second
+    checkAutoSignOut();
     updateAttStatusBar();
     // also re-render the attendance tables periodically so durations/counts
     // for the active staff and admin views stay up to date in real time
@@ -1835,7 +1918,7 @@ function renderAttMy(){
     <td style="font-family:'DM Mono',monospace">${fmtTime(r.signIn)}</td>
     <td style="font-family:'DM Mono',monospace">${r.signOut?fmtTime(r.signOut):'<span class="att-signout-pending">Active</span>'}</td>
     <td style="font-family:'DM Mono',monospace">${r.signOut?calcDuration(r.signIn,r.signOut):'<span class="att-signout-pending">—</span>'}</td>
-    <td><span class="badge ${r.signOut?'bg':'ba'}">${r.signOut?'Complete':'Active'}</span></td>
+    <td><span class="badge ${r.signOut?(r.autoSignOut?'ba':'bg'):'ba'}">${r.signOut?(r.autoSignOut?'Auto signed out':'Complete'):'Active'}</span></td>
   </tr>`).join('');
 }
 
@@ -1847,6 +1930,7 @@ function renderAttAdmin(q){
   if(document.getElementById('att-today-count')) document.getElementById('att-today-count').textContent = DB.attendance.filter(r=>r.date===today).length;
   if(document.getElementById('att-total-count')) document.getElementById('att-total-count').textContent = DB.attendance.length;
   if(document.getElementById('att-active-count')) document.getElementById('att-active-count').textContent = DB.attendance.filter(r=>!r.signOut).length;
+  if(document.getElementById('att-forgot-count')) document.getElementById('att-forgot-count').textContent = DB.attendance.filter(r=>r.autoSignOut).length;
   if(!tb) return;
   if(!rows.length){ tb.innerHTML='<tr><td colspan="6"><div class="empty"><i class="ti ti-calendar"></i><p>No attendance records yet</p></div></td></tr>'; return; }
   tb.innerHTML = rows.map(r=>`<tr>
@@ -1855,14 +1939,15 @@ function renderAttAdmin(q){
     <td style="font-family:'DM Mono',monospace">${fmtTime(r.signIn)}</td>
     <td style="font-family:'DM Mono',monospace">${r.signOut?fmtTime(r.signOut):'<span class="att-signout-pending">Active</span>'}</td>
     <td style="font-family:'DM Mono',monospace">${r.signOut?calcDuration(r.signIn,r.signOut):'—'}</td>
-    <td><span class="badge ${r.signOut?'bg':'ba'}">${r.signOut?'Complete':'Active'}</span></td>
+    <td><span class="badge ${r.signOut?(r.autoSignOut?'ba':'bg'):'ba'}" title="${r.autoSignOut?'Staff did not sign out manually — system closed the shift at store closing time':''}">${r.signOut?(r.autoSignOut?'⚠ Auto (forgot)':'Complete'):'Active'}</span></td>
   </tr>`).join('');
 }
 
 function exportAttCSV(){
   if(!DB.attendance.length){toast('No attendance data yet','e');return;}
   const keys=['date','name','role','signIn','signOut'];
-  const csv=[keys.join(','),...DB.attendance.map(r=>keys.map(k=>`"${String(r[k]||'').replace(/"/g,'""')}"`).join(','))].join('\n');
+  const header=[...keys,'signOutType'];
+  const csv=[header.join(','),...DB.attendance.map(r=>[...keys.map(k=>`"${String(r[k]||'').replace(/"/g,'""')}"`),`"${r.signOut?(r.autoSignOut?'Auto (forgot)':'Manual'):'Still active'}"`].join(','))].join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
   a.download=`attendance_${new Date().toISOString().split('T')[0]}.csv`;
