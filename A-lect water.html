@@ -464,7 +464,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
       <div class="sb-sec">My work</div>
       <button class="nav-item active" onclick="goPage('sale',this)" id="nav-sale"><i class="ti ti-shopping-cart"></i> Record sale</button>
       <button class="nav-item" onclick="goPage('prod',this)" id="nav-prod"><i class="ti ti-packages"></i> Log production</button>
-      <button class="nav-item" onclick="goPage('rawmat',this)" id="nav-rawmat"><i class="ti ti-box-seam"></i> Log raw materials used</button>
+      <button class="nav-item" onclick="goPage('rawmat',this)" id="nav-rawmat"><i class="ti ti-box-seam"></i> Raw Material Inventory</button>
       <button class="nav-item" onclick="goPage('exp',this)" id="nav-exp"><i class="ti ti-receipt-2"></i> Log expense</button>
       <button class="nav-item" onclick="goPage('mysales',this)" id="nav-mysales"><i class="ti ti-clock-hour-4"></i> My sales</button>
       <button class="nav-item" onclick="goPage('attendance',this)" id="nav-attendance"><i class="ti ti-calendar-check"></i> Attendance</button>
@@ -709,12 +709,40 @@ table.dt tbody tr:hover td{background:var(--surf2);}
                     <button type="button" class="btn btn-outline btn-sm" onclick="regenBatch()" title="Generate a fresh code"><i class="ti ti-refresh"></i></button>
                   </div>
                 </div>
-                <div class="field"><label>Material utilized <span style="font-weight:400;text-transform:none;color:var(--txt3)">— from Log raw materials used inventory</span></label>
-                  <select id="p-mat" onchange="onMatLotChange()"></select>
+                <!-- SACHET BAGS material lot -->
+                <div class="field full" style="background:var(--grn-xl);border:1.5px solid var(--grn-m);border-radius:var(--r);padding:.85rem 1rem;margin-bottom:.2rem">
+                  <div style="font-size:10px;font-weight:700;color:var(--grn);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.6rem"><i class="ti ti-layers-subtract"></i> Sachet Bags material lot</div>
+                  <div class="fg" style="gap:.7rem">
+                    <div class="field" style="margin:0">
+                      <label>Inventory lot (ALT/…)</label>
+                      <select id="p-mat-sachet" onchange="onMatLotChange('sachet')">
+                        <option value="">— Select sachet lot —</option>
+                      </select>
+                    </div>
+                    <div class="field" style="margin:0">
+                      <label>Qty utilized (KG)</label>
+                      <input type="number" id="p-mat-sachet-qty" min="0" step="0.01" placeholder="e.g. 12.50" oninput="validateMatQty('sachet')">
+                    </div>
+                  </div>
+                  <div style="font-size:11px;color:var(--grn);margin-top:6px" id="p-mat-sachet-hint">Select a sachet lot to see availability</div>
                 </div>
-                <div class="field"><label>Qty of material utilized (KG)</label>
-                  <input type="number" id="p-mat-qty" min="0" step="0.01" placeholder="e.g. 12.50" oninput="validateMatQty()">
-                  <div style="font-size:11px;color:var(--txt3);margin-top:4px" id="p-mat-avail-hint">Select a material to see availability</div>
+
+                <!-- PACKING BAG material lot -->
+                <div class="field full" style="background:var(--amb-l);border:1.5px solid #e8c97a;border-radius:var(--r);padding:.85rem 1rem;margin-bottom:.2rem">
+                  <div style="font-size:10px;font-weight:700;color:var(--amb);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.6rem"><i class="ti ti-package"></i> Packing Bag material lot</div>
+                  <div class="fg" style="gap:.7rem">
+                    <div class="field" style="margin:0">
+                      <label>Inventory lot (ALT/…)</label>
+                      <select id="p-mat-packing" onchange="onMatLotChange('packing')">
+                        <option value="">— Select packing lot —</option>
+                      </select>
+                    </div>
+                    <div class="field" style="margin:0">
+                      <label>Bundles used</label>
+                      <input type="number" id="p-mat-packing-qty" min="0" step="1" placeholder="e.g. 2" oninput="validateMatQty('packing')">
+                    </div>
+                  </div>
+                  <div style="font-size:11px;color:var(--amb-m);margin-top:6px" id="p-mat-packing-hint">Select a packing lot to see availability</div>
                 </div>
                 <div class="field"><label>Product type</label>
                   <select id="p-type"><option>Pure water 50L</option><option>Dispenser water</option><option>Bottle water 50CL</option></select>
@@ -740,14 +768,14 @@ table.dt tbody tr:hover td{background:var(--surf2);}
               <div class="srow"><span class="sl">Total material cost</span><span class="sv" id="p-batchcost">₦0</span></div>
               <div class="srow"><span class="sl">Production per KG</span><span class="sv" id="p-batchperkg">—</span></div>
             </div>
-            <div class="r-lock" style="margin:0 1.2rem 1.2rem"><i class="ti ti-info-circle" style="font-size:11px"></i> Material cost updates once rolls are logged for this batch on the <b>Log raw materials used</b> tab</div>
+            <div class="r-lock" style="margin:0 1.2rem 1.2rem"><i class="ti ti-info-circle" style="font-size:11px"></i> Material cost updates once rolls are logged on the <b>Raw Material Inventory</b> tab</div>
           </div>
         </div>
       </div>
 
-      <!-- LOG RAW MATERIALS USED -->
+      <!-- RAW MATERIAL INVENTORY -->
       <div class="page" id="page-rawmat">
-        <div class="ph"><div><div class="ph-title">Log raw materials used</div><div class="ph-sub">Record roll weights consumed per category, date and production batch</div></div></div>
+        <div class="ph"><div><div class="ph-title">Raw Material Inventory</div><div class="ph-sub">Log and track all raw material lots — each entry gets a unique ALT ID for labelling</div></div></div>
         <div class="pos">
           <div class="pos-card">
             <div class="pos-head"><div class="pos-head-ico"><i class="ti ti-box-seam"></i></div><div><h2>New material entry</h2><p>Weigh each roll used and log it against a batch</p></div></div>
@@ -757,27 +785,73 @@ table.dt tbody tr:hover td{background:var(--surf2);}
               <div class="fg">
                 <div class="field">
                   <label>Date</label>
-                  <input type="date" id="rm-date" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" onchange="dateChangeG('rm-date','rm-date-label')">
+                  <input type="date" id="rm-date" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" onchange="dateChangeG('rm-date','rm-date-label');updateRmAltIdPreview()">
                   <button class="date-btn" id="rm-date-btn" type="button" onclick="openDatePickerG('rm-date')">
                     <i class="ti ti-calendar"></i>
                     <span class="db-label" id="rm-date-label">Today</span>
                     <span class="db-change">tap to change</span>
                   </button>
                 </div>
-                <div class="field"><label>Production batch</label><select id="rm-batch"></select></div>
-                <div class="field"><label>Category</label><select id="rm-cat" onchange="prefillUnitCost()"></select></div>
-                <div class="field"><label>Unit cost (₦ / KG)</label><input type="number" id="rm-cost" placeholder="e.g. 1850" min="0" oninput="recalcRollSummary()"></div>
+                <div class="field full">
+                  <label>Material Inventory ID <span style="font-weight:400;text-transform:none;color:var(--txt3)">— auto-generated on save · label the physical material with this ID</span></label>
+                  <div style="position:relative">
+                    <input type="text" id="rm-altid-preview" readonly value="Will be generated on save…"
+                      style="font-family:'DM Mono',monospace;font-weight:700;color:#1a5fcb;background:var(--grn-xl);border-color:var(--grn-m);cursor:default;letter-spacing:.04em;padding-right:38px">
+                    <i class="ti ti-lock" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--txt3);font-size:14px;pointer-events:none"></i>
+                  </div>
+                  <div style="font-size:11px;color:var(--txt3);margin-top:4px"><i class="ti ti-info-circle"></i> This ID will appear in a popup after clicking <strong>Log material</strong>. Write it on the physical roll/bag.</div>
+                </div>
+                <div class="field">
+                  <label>Category</label>
+                  <select id="rm-cat-parent" onchange="onRmCatParentChange()">
+                    <option value="">— Select category —</option>
+                  </select>
+                </div>
+                <div class="field" id="rm-subcat-field" style="display:none">
+                  <label>Sub-category</label>
+                  <select id="rm-cat" onchange="prefillUnitCost()">
+                    <option value="">— Select sub-category —</option>
+                  </select>
+                </div>
+                <div class="field" id="rm-cost-field"><label>Unit cost (₦ / KG)</label><input type="number" id="rm-cost" placeholder="e.g. 1850" min="0" oninput="recalcRollSummary()"></div>
               </div>
-              <div class="field full" style="margin-top:.3rem">
-                <label>Fig of roll (KG) <span style="font-weight:400;text-transform:none;color:var(--txt3)">— weight of each roll used, up to 20 entries</span></label>
-                <div class="roll-rows" id="roll-rows"></div>
-                <button type="button" class="btn btn-outline btn-sm" onclick="addRollRow()"><i class="ti ti-plus"></i> Add roll</button>
-                <div class="roll-cap" id="roll-cap">0 of 20 rolls added</div>
+
+              <!-- SACHET BAGS fields (rolls / KG) -->
+              <div id="rm-sachet-fields">
+                <div class="field full" style="margin-top:.3rem">
+                  <label>Fig of roll (KG) <span style="font-weight:400;text-transform:none;color:var(--txt3)">— weight of each roll used, up to 20 entries</span></label>
+                  <div class="roll-rows" id="roll-rows"></div>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="addRollRow()"><i class="ti ti-plus"></i> Add roll</button>
+                  <div class="roll-cap" id="roll-cap">0 of 20 rolls added</div>
+                </div>
+                <div class="mat-calc">
+                  <div class="mc-row"><span>No. of roll</span><span id="rm-noroll">0</span></div>
+                  <div class="mc-row"><span>PK qty of KG</span><span id="rm-qtykg">0.00 kg</span></div>
+                  <div class="mc-row hl"><span>Amount</span><span id="rm-amount">₦0</span></div>
+                </div>
               </div>
-              <div class="mat-calc">
-                <div class="mc-row"><span>No. of roll</span><span id="rm-noroll">0</span></div>
-                <div class="mc-row"><span>PK qty of KG</span><span id="rm-qtykg">0.00 kg</span></div>
-                <div class="mc-row hl"><span>Amount</span><span id="rm-amount">₦0</span></div>
+
+              <!-- PACKING BAG fields (bundles) -->
+              <div id="rm-bundle-fields" style="display:none;margin-top:.5rem">
+                <div class="fg">
+                  <div class="field">
+                    <label>Unit cost per bundle (₦)</label>
+                    <input type="number" id="rm-bundle-cost" placeholder="e.g. 5000" min="0" oninput="recalcBundleSummary()">
+                  </div>
+                  <div class="field">
+                    <label>Quantity (bundles)</label>
+                    <input type="number" id="rm-bundle-qty" placeholder="e.g. 3" min="1" step="1" oninput="recalcBundleSummary()">
+                  </div>
+                </div>
+                <div class="mat-calc">
+                  <div class="mc-row"><span>Bundles</span><span id="rm-bundle-count">0</span></div>
+                  <div class="mc-row"><span>Total packs <span style="font-size:10.5px;font-weight:400;color:var(--txt3)">(× 10 packs / bundle)</span></span><span id="rm-bundle-packs">0 packs</span></div>
+                  <div class="mc-row hl"><span>Total amount</span><span id="rm-bundle-amount">₦0</span></div>
+                </div>
+                <div style="font-size:11.5px;color:var(--txt3);margin-top:4px;padding:.5rem .75rem;background:var(--amb-l);border-radius:var(--r);border:1px solid #e8c97a">
+                  <i class="ti ti-info-circle" style="color:var(--amb-m)"></i>
+                  Each bundle contains <strong style="color:var(--amb)">10 packs</strong>. Total packs = bundles × 10.
+                </div>
               </div>
               <div class="fg">
                 <div class="field full"><label>Note</label><input type="text" id="rm-note" placeholder="Supplier, roll batch no…"></div>
@@ -805,10 +879,37 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <button class="btn btn-outline btn-sm" onclick="exportCSV('rawmats')"><i class="ti ti-download"></i> Export CSV</button>
           </div>
           <div class="tw"><table class="dt">
-            <thead><tr><th>Date</th><th>Batch</th><th>Category</th><th>No. Roll</th><th>PK Qty (KG)</th><th>Unit Cost</th><th>Amount</th><th>Fig of Roll</th><th>Staff</th><th>Note</th><th></th></tr></thead>
+            <thead><tr><th>Inventory ID</th><th>Date</th><th>Category</th><th>Qty</th><th>KG / Packs</th><th>Unit Cost</th><th>Amount</th><th>Fig of Roll</th><th>Staff</th><th>Note</th><th></th></tr></thead>
             <tbody id="rm-tbody"><tr><td colspan="11"><div class="empty"><i class="ti ti-box-seam"></i><p>No raw materials logged yet</p></div></td></tr></tbody>
           </table></div>
         </div>
+
+        <!-- INVENTORY OVERVIEW -->
+        <div style="margin-top:1.75rem">
+          <div class="ph" style="margin-bottom:1rem">
+            <div>
+              <div class="ph-title" style="font-size:17px">Inventory Overview</div>
+              <div class="ph-sub">Stock levels and utilization across all material lots</div>
+            </div>
+          </div>
+          <div class="mrow" id="inv-mrow">
+            <div class="mc b"><div class="mc-ico"><i class="ti ti-stack-2"></i></div><div class="mc-lbl">Total lots</div><div class="mc-val" id="inv-lots">0</div><div class="mc-sub">entries logged</div></div>
+            <div class="mc g"><div class="mc-ico"><i class="ti ti-weight"></i></div><div class="mc-lbl">Total KG received</div><div class="mc-val" id="inv-kg-in">0.00</div><div class="mc-sub">kg</div></div>
+            <div class="mc a"><div class="mc-ico"><i class="ti ti-flame"></i></div><div class="mc-lbl">KG consumed</div><div class="mc-val" id="inv-kg-used">0.00</div><div class="mc-sub">in production</div></div>
+            <div class="mc t"><div class="mc-ico"><i class="ti ti-archive"></i></div><div class="mc-lbl">KG remaining</div><div class="mc-val" id="inv-kg-left">0.00</div><div class="mc-sub">available stock</div></div>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="padding:.9rem 1.2rem;background:var(--surf2);border-bottom:1.5px solid var(--brd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px">
+              <div class="card-title" style="margin:0"><i class="ti ti-list-check" style="color:var(--grn-m)"></i> Material Lot Status</div>
+              <div class="sbar" style="max-width:260px"><i class="ti ti-search"></i><input type="text" placeholder="Search ID, category…" oninput="renderInvSummary(this.value)"></div>
+            </div>
+            <div class="tw"><table class="dt">
+              <thead><tr><th>Inventory ID</th><th>Date</th><th>Category</th><th>Qty Received</th><th>Qty Consumed</th><th>Qty Available</th><th>Utilisation</th><th>Status</th></tr></thead>
+              <tbody id="inv-tbody"><tr><td colspan="8"><div class="empty"><i class="ti ti-archive"></i><p>No inventory entries yet</p></div></td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+
       </div>
 
       <!-- LOG EXPENSE -->
@@ -893,6 +994,31 @@ table.dt tbody tr:hover td{background:var(--surf2);}
           <div class="mc b"><div class="mc-ico"><i class="ti ti-box-seam"></i></div><div class="mc-lbl">Material cost</div><div class="mc-val" id="d-matcost">₦0</div><div class="mc-sub">raw materials used</div></div>
           <div class="mc g"><div class="mc-ico"><i class="ti ti-trending-up"></i></div><div class="mc-lbl">Net profit</div><div class="mc-val" id="d-profit">₦0</div><div class="mc-sub">rev − costs</div></div>
         </div>
+
+        <!-- RAW MATERIAL ANALYSIS -->
+        <div class="mrow" style="margin-top:0">
+          <div class="mc t"><div class="mc-ico"><i class="ti ti-weight"></i></div><div class="mc-lbl">Total KG received</div><div class="mc-val" id="d-rm-in">0.00</div><div class="mc-sub">all time</div></div>
+          <div class="mc a"><div class="mc-ico"><i class="ti ti-flame"></i></div><div class="mc-lbl">KG utilized</div><div class="mc-val" id="d-rm-used">0.00</div><div class="mc-sub">in production</div></div>
+          <div class="mc g"><div class="mc-ico"><i class="ti ti-archive"></i></div><div class="mc-lbl">KG remaining</div><div class="mc-val" id="d-rm-left">0.00</div><div class="mc-sub">available</div></div>
+          <div class="mc b"><div class="mc-ico"><i class="ti ti-stack-2"></i></div><div class="mc-lbl">Active lots</div><div class="mc-val" id="d-rm-lots">0</div><div class="mc-sub">with stock left</div></div>
+        </div>
+
+        <!-- RAW MATERIAL CHARTS -->
+        <div class="cgrid" style="margin-top:1.1rem">
+          <div class="card card-sm">
+            <div class="card-title"><i class="ti ti-chart-donut"></i> Material by category (KG)</div>
+            <div class="cbox"><canvas id="ch-mat-cat" aria-label="Material by category"></canvas></div>
+          </div>
+          <div class="card card-sm">
+            <div class="card-title"><i class="ti ti-chart-bar"></i> Top lots — received vs consumed</div>
+            <div class="cbox"><canvas id="ch-mat-lots" aria-label="Lots bar chart"></canvas></div>
+          </div>
+        </div>
+        <div class="card card-sm" style="margin-top:1.1rem">
+          <div class="card-title"><i class="ti ti-box-seam"></i> Raw material utilisation breakdown</div>
+          <div id="mat-bars"></div>
+        </div>
+
         <div class="cgrid">
           <div class="card card-sm"><div class="card-title"><i class="ti ti-chart-donut"></i> Sales by payment</div><div class="cbox"><canvas id="ch-pay" aria-label="Payment method chart"></canvas></div></div>
           <div class="card card-sm"><div class="card-title"><i class="ti ti-chart-donut"></i> Expenses by category</div><div class="cbox"><canvas id="ch-exp" aria-label="Expense category chart"></canvas></div></div>
@@ -928,7 +1054,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <button class="btn btn-outline btn-sm" onclick="exportCSV('production')"><i class="ti ti-download"></i> Export CSV</button>
           </div>
           <div class="tw"><table class="dt">
-            <thead><tr><th>Date</th><th>Batch</th><th>Material lot used</th><th>Qty utilized</th><th>Type</th><th>Qty</th><th>Material cost</th><th>KG used</th><th>Production/KG</th><th>Logged by</th><th>Note</th><th></th></tr></thead>
+            <thead><tr><th>Date</th><th>Batch</th><th>Sachet Lot</th><th>Sachet KG</th><th>Packing Lot</th><th>Bundles</th><th>Type</th><th>Qty</th><th>Material cost</th><th>Logged by</th><th>Note</th><th></th></tr></thead>
             <tbody id="ap-tbody"></tbody>
           </table></div>
         </div>
@@ -1273,13 +1399,52 @@ const DB={
   _id:100,nid(){return++this._id;}
 };
 const MAT_CATS=[
-  {code:'A0001',name:'Printed roll'},
-  {code:'A0002',name:'Packing bag'},
+  {code:'A0001',name:'Sachet Bags', subs:[
+    {code:'A0001a',name:'Printed Rolls'},
+    {code:'A0001b',name:'Plain Rolls'},
+  ]},
+  {code:'A0002',name:'Packing Bag'},
 ];
 let CU=null,delT={t:null,id:null},sM='CASH',chPay=null,chExp=null;
 function populateMatSelects(){
-  const opts=MAT_CATS.map(m=>`<option value="${m.code}">${m.code} — ${m.name}</option>`).join('');
-  const catSel=document.getElementById('rm-cat');if(catSel)catSel.innerHTML=opts;
+  const parent=document.getElementById('rm-cat-parent');
+  if(parent){
+    parent.innerHTML='<option value="">— Select category —</option>'+
+      MAT_CATS.map(m=>`<option value="${m.code}">${m.name}</option>`).join('');
+  }
+  // Reset sub
+  const sub=document.getElementById('rm-cat');
+  const subField=document.getElementById('rm-subcat-field');
+  if(sub) sub.innerHTML='<option value="">— Select sub-category —</option>';
+  if(subField) subField.style.display='none';
+}
+function onRmCatParentChange(){
+  const parent=document.getElementById('rm-cat-parent');
+  const sub=document.getElementById('rm-cat');
+  const subField=document.getElementById('rm-subcat-field');
+  if(!parent||!sub||!subField) return;
+  const code=parent.value;
+  const mat=MAT_CATS.find(m=>m.code===code);
+  const isPackingBag = code==='A0002';
+  // Show/hide sachet vs bundle fields
+  const sachetFields=document.getElementById('rm-sachet-fields');
+  const bundleFields=document.getElementById('rm-bundle-fields');
+  const costField=document.getElementById('rm-cost-field');
+  if(sachetFields) sachetFields.style.display=isPackingBag?'none':'';
+  if(bundleFields) bundleFields.style.display=isPackingBag?'':'none';
+  if(costField) costField.style.display=isPackingBag?'none':'';
+  if(mat&&mat.subs&&mat.subs.length){
+    sub.innerHTML='<option value="">— Select sub-category —</option>'+
+      mat.subs.map(s=>`<option value="${s.code}">${s.name}</option>`).join('');
+    subField.style.display='';
+    sub.value='';
+  } else {
+    sub.innerHTML=`<option value="${code}">${mat?mat.name:code}</option>`;
+    sub.value=code;
+    subField.style.display='none';
+  }
+  if(!isPackingBag) prefillUnitCost();
+  else recalcBundleSummary();
 }
 populateMatSelects();
 populateMatLotSelect();
@@ -1442,7 +1607,7 @@ function finaliseLogin(user){
   if(user.role!=='staff') document.querySelectorAll('.admin-nav').forEach(el=>el.style.display='');
   goPage('sale',document.getElementById('nav-sale'));
   updateExpPanel();updateProdPanel();renderRecentSales();
-  populateBatchSelect();updateRMPanel();renderRawMat('');
+  updateRMPanel();renderRawMat('');renderInvSummary('');updateRmAltIdPreview();
 
   // ---- ATTENDANCE: log sign-in ----
   attSignIn(user);
@@ -1630,7 +1795,7 @@ function goPage(name,btn){
   document.getElementById('page-'+name).classList.add('active');
   if(btn)btn.classList.add('active');
   const map={mysales:renderMySales,dash:renderDash,asales:()=>renderAS(''),aprod:renderAP,aexp:renderAE,users:renderUsers,
-    prod:updateProdPanel,rawmat:()=>{populateBatchSelect();renderRawMat('');updateRMPanel();},
+    prod:updateProdPanel,rawmat:()=>{renderRawMat('');updateRMPanel();renderInvSummary('');updateRmAltIdPreview();},
     attendance:()=>{updateAttStatusBar();renderAttMy();},
     'att-admin':()=>renderAttAdmin(''),
     'geo-settings':()=>renderGeoSettings()};
@@ -2187,91 +2352,165 @@ function clearSale(){
 }
 
 /* PRODUCTION */
-function matLabel(code){ const m=MAT_CATS.find(x=>x.code===code); return m?m.name:code; }
+function matLabel(code){
+  for(const m of MAT_CATS){
+    if(m.code===code) return m.name;
+    if(m.subs) for(const s of m.subs){ if(s.code===code) return m.name+' › '+s.name; }
+  }
+  return code;
+}
 
 /* MATERIAL INVENTORY — each "Log raw materials used" entry is a lot; available qty
    is derived live from how much production has already drawn against it */
 function rawmatConsumed(lotId){
-  return DB.production.filter(p=>p.matLotId===lotId).reduce((a,p)=>a+(p.matQtyUsed||0),0);
+  return DB.production.filter(p=>(p.matSachetLotId===lotId||p.matLotId===lotId)).reduce((a,p)=>a+(p.matSachetQtyUsed||p.matQtyUsed||0),0);
 }
 function rawmatAvailable(r){
   return Math.max(0, +(r.qtyKg - rawmatConsumed(r.id)).toFixed(2));
 }
+/* ── rawmat availability helpers ── */
+function rawmatAvailBundles(r){
+  // for packing bags: track by bundles consumed
+  const used=DB.production.filter(p=>p.matPackingLotId===r.id).reduce((a,p)=>a+(p.matPackingBundles||0),0);
+  return Math.max(0, (r.bundles||0)-used);
+}
+
 function populateMatLotSelect(){
-  const sel=document.getElementById('p-mat'); if(!sel) return;
-  const cur=sel.value;
-  const lots=DB.rawmats.filter(r=>rawmatAvailable(r)>0);
-  if(!lots.length){
-    sel.innerHTML='<option value="">No material inventory available</option>';
-    onMatLotChange();
-    return;
-  }
-  sel.innerHTML='<option value="">— Select material lot —</option>'+lots.slice().reverse().map(r=>{
-    const avail=rawmatAvailable(r);
-    return `<option value="${r.id}">RM-${String(r.id).padStart(4,'0')} — ${matLabel(r.category)} · ${avail.toFixed(2)} kg available</option>`;
-  }).join('');
-  if(lots.some(r=>String(r.id)===cur)) sel.value=cur;
-  onMatLotChange();
-}
-function onMatLotChange(){
-  const sel=document.getElementById('p-mat');
-  const hint=document.getElementById('p-mat-avail-hint');
-  const qtyInput=document.getElementById('p-mat-qty');
-  if(!sel || !hint || !qtyInput) return;
-  if(!sel.value){
-    hint.textContent = sel.options.length && sel.options[0].value===''&&sel.options.length===1
-      ? 'Log raw materials first to make inventory available here.'
-      : 'Select a material to see availability';
-    qtyInput.removeAttribute('max');
-    return;
-  }
-  const r=DB.rawmats.find(x=>String(x.id)===sel.value);
-  const avail=r?rawmatAvailable(r):0;
-  hint.textContent=avail.toFixed(2)+' kg available in this lot';
-  qtyInput.max=avail;
-}
-function validateMatQty(){
-  const sel=document.getElementById('p-mat');
-  const qtyInput=document.getElementById('p-mat-qty');
-  const hint=document.getElementById('p-mat-avail-hint');
-  if(!sel || !sel.value) return;
-  const r=DB.rawmats.find(x=>String(x.id)===sel.value);
-  const avail=r?rawmatAvailable(r):0;
-  const val=parseFloat(qtyInput.value)||0;
-  if(val>avail){
-    hint.innerHTML='<span style="color:var(--red-m)">Only '+avail.toFixed(2)+' kg available — reduce quantity</span>';
+  // SACHET BAGS lots (A0001a, A0001b)
+  const sachetSel=document.getElementById('p-mat-sachet'); if(!sachetSel) return;
+  const curSachet=sachetSel.value;
+  const sachetLots=DB.rawmats.filter(r=>!r.isPackingBag && rawmatAvailable(r)>0);
+  if(!sachetLots.length){
+    sachetSel.innerHTML='<option value="">No sachet lots in inventory</option>';
   } else {
+    sachetSel.innerHTML='<option value="">— Select sachet lot —</option>'+sachetLots.slice().reverse().map(r=>{
+      const avail=rawmatAvailable(r);
+      return `<option value="${r.id}">${r.altId||('RM-'+String(r.id).padStart(4,'0'))} — ${matLabel(r.category)} · ${avail.toFixed(2)} kg avail</option>`;
+    }).join('');
+    if(sachetLots.some(r=>String(r.id)===curSachet)) sachetSel.value=curSachet;
+  }
+  // PACKING BAG lots (A0002)
+  const packingSel=document.getElementById('p-mat-packing'); if(!packingSel) return;
+  const curPacking=packingSel.value;
+  const packingLots=DB.rawmats.filter(r=>r.isPackingBag && rawmatAvailBundles(r)>0);
+  if(!packingLots.length){
+    packingSel.innerHTML='<option value="">No packing lots in inventory</option>';
+  } else {
+    packingSel.innerHTML='<option value="">— Select packing lot —</option>'+packingLots.slice().reverse().map(r=>{
+      const avail=rawmatAvailBundles(r);
+      return `<option value="${r.id}">${r.altId||('RM-'+String(r.id).padStart(4,'0'))} — ${matLabel(r.category)} · ${avail} bundle${avail!==1?'s':''} avail (${avail*10} packs)</option>`;
+    }).join('');
+    if(packingLots.some(r=>String(r.id)===curPacking)) packingSel.value=curPacking;
+  }
+  onMatLotChange('sachet');
+  onMatLotChange('packing');
+}
+
+function onMatLotChange(type){
+  if(type==='sachet'){
+    const sel=document.getElementById('p-mat-sachet');
+    const hint=document.getElementById('p-mat-sachet-hint');
+    const qtyInput=document.getElementById('p-mat-sachet-qty');
+    if(!sel||!hint||!qtyInput) return;
+    if(!sel.value){ hint.textContent='Select a sachet lot to see availability'; qtyInput.removeAttribute('max'); return; }
+    const r=DB.rawmats.find(x=>String(x.id)===sel.value);
+    const avail=r?rawmatAvailable(r):0;
     hint.textContent=avail.toFixed(2)+' kg available in this lot';
+    qtyInput.max=avail;
+  } else {
+    const sel=document.getElementById('p-mat-packing');
+    const hint=document.getElementById('p-mat-packing-hint');
+    const qtyInput=document.getElementById('p-mat-packing-qty');
+    if(!sel||!hint||!qtyInput) return;
+    if(!sel.value){ hint.textContent='Select a packing lot to see availability'; qtyInput.removeAttribute('max'); return; }
+    const r=DB.rawmats.find(x=>String(x.id)===sel.value);
+    const avail=r?rawmatAvailBundles(r):0;
+    hint.textContent=avail+' bundle'+(avail!==1?'s':'')+' available ('+avail*10+' packs)';
+    qtyInput.max=avail;
+  }
+}
+
+function validateMatQty(type){
+  if(type==='sachet'){
+    const sel=document.getElementById('p-mat-sachet');
+    const qtyInput=document.getElementById('p-mat-sachet-qty');
+    const hint=document.getElementById('p-mat-sachet-hint');
+    if(!sel||!sel.value) return;
+    const r=DB.rawmats.find(x=>String(x.id)===sel.value);
+    const avail=r?rawmatAvailable(r):0;
+    const val=parseFloat(qtyInput.value)||0;
+    hint.innerHTML=val>avail
+      ?'<span style="color:var(--red-m)">Only '+avail.toFixed(2)+' kg available — reduce quantity</span>'
+      :avail.toFixed(2)+' kg available in this lot';
+  } else {
+    const sel=document.getElementById('p-mat-packing');
+    const qtyInput=document.getElementById('p-mat-packing-qty');
+    const hint=document.getElementById('p-mat-packing-hint');
+    if(!sel||!sel.value) return;
+    const r=DB.rawmats.find(x=>String(x.id)===sel.value);
+    const avail=r?rawmatAvailBundles(r):0;
+    const val=parseInt(qtyInput.value)||0;
+    hint.innerHTML=val>avail
+      ?'<span style="color:var(--red-m)">Only '+avail+' bundle'+(avail!==1?'s':'')+' available</span>'
+      :avail+' bundle'+(avail!==1?'s':'')+' available ('+avail*10+' packs)';
   }
 }
 
 function submitProd(){
   const date=document.getElementById('p-date').value || TODAY;
   const batch=document.getElementById('p-batch').value.trim();
-  const matLotIdRaw=document.getElementById('p-mat').value;
-  const matQty=parseFloat(document.getElementById('p-mat-qty').value)||0;
   const type=document.getElementById('p-type').value;
   const qty=parseFloat(document.getElementById('p-qty').value);
   const note=document.getElementById('p-note').value;
   if(!date||!batch||!qty){toast('Fill in date and quantity','e');return;}
-  let matLotId=null, matLotLabel='—', matQtyUsed=0;
-  if(matLotIdRaw){
-    const lot=DB.rawmats.find(r=>String(r.id)===matLotIdRaw);
+
+  // Sachet Bags lot
+  const sachetLotRaw=document.getElementById('p-mat-sachet').value;
+  const sachetQty=parseFloat(document.getElementById('p-mat-sachet-qty').value)||0;
+  let matSachetLotId=null, matSachetLabel='—', matSachetQtyUsed=0;
+  if(sachetLotRaw){
+    const lot=DB.rawmats.find(r=>String(r.id)===sachetLotRaw);
     if(lot){
       const avail=rawmatAvailable(lot);
-      if(matQty<=0){toast('Enter the quantity of material utilized','e');return;}
-      if(matQty>avail){toast('Only '+avail.toFixed(2)+' kg available in that material lot','e');return;}
-      matLotId=lot.id;
-      matLotLabel='RM-'+String(lot.id).padStart(4,'0')+' — '+matLabel(lot.category);
-      matQtyUsed=matQty;
+      if(sachetQty<=0){toast('Enter KG utilized for the sachet lot','e');return;}
+      if(sachetQty>avail){toast('Only '+avail.toFixed(2)+' kg available in that sachet lot','e');return;}
+      matSachetLotId=lot.id;
+      matSachetLabel=(lot.altId||'RM-'+String(lot.id).padStart(4,'0'))+' — '+matLabel(lot.category);
+      matSachetQtyUsed=sachetQty;
     }
   }
-  DB.production.push({id:DB.nid(),date,batch,matLotId,matLotLabel,matQtyUsed,type,qty,note,staff:CU.name,staffId:CU.id});
+
+  // Packing Bag lot
+  const packingLotRaw=document.getElementById('p-mat-packing').value;
+  const packingBundles=parseInt(document.getElementById('p-mat-packing-qty').value)||0;
+  let matPackingLotId=null, matPackingLabel='—', matPackingBundles=0;
+  if(packingLotRaw){
+    const lot=DB.rawmats.find(r=>String(r.id)===packingLotRaw);
+    if(lot){
+      const avail=rawmatAvailBundles(lot);
+      if(packingBundles<=0){toast('Enter bundles used for the packing lot','e');return;}
+      if(packingBundles>avail){toast('Only '+avail+' bundle'+(avail!==1?'s':'')+' available in that packing lot','e');return;}
+      matPackingLotId=lot.id;
+      matPackingLabel=(lot.altId||'RM-'+String(lot.id).padStart(4,'0'))+' — '+matLabel(lot.category);
+      matPackingBundles=packingBundles;
+    }
+  }
+
+  // Keep legacy matLotId/matLotLabel/matQtyUsed for backward compat with All Production table
+  const matLotId=matSachetLotId;
+  const matLotLabel=matSachetLabel!=='—'?matSachetLabel:matPackingLabel;
+  const matQtyUsed=matSachetQtyUsed;
+
+  DB.production.push({id:DB.nid(),date,batch,
+    matSachetLotId,matSachetLabel,matSachetQtyUsed,
+    matPackingLotId,matPackingLabel,matPackingBundles,
+    matLotId,matLotLabel,matQtyUsed,
+    type,qty,note,staff:CU.name,staffId:CU.id});
   showOk('prod-ok');clearProd();toast('Batch logged! Code: '+batch,'s');
   updateProdPanel();populateBatchSelect();populateMatLotSelect();updateRMPanel();renderRawMat('');
 }
 function clearProd(){
-  ['p-qty','p-note','p-mat-qty'].forEach(id=>document.getElementById(id).value='');
+  ['p-qty','p-note','p-mat-sachet-qty','p-mat-packing-qty'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   setDates();
   document.getElementById('p-batch').value=genBatchCode(document.getElementById('p-date').value);
   populateMatLotSelect();
@@ -2356,35 +2595,88 @@ function recalcRollSummary(){
   document.getElementById('rm-amount').textContent='₦'+amount.toLocaleString(undefined,{maximumFractionDigits:2});
   document.getElementById('roll-cap').textContent=`${document.querySelectorAll('#roll-rows .roll-row').length} of 20 rolls added`;
 }
+function recalcBundleSummary(){
+  const qty=parseInt(document.getElementById('rm-bundle-qty')?.value)||0;
+  const cost=parseFloat(document.getElementById('rm-bundle-cost')?.value)||0;
+  const packs=qty*10;
+  const amount=qty*cost;
+  const el=id=>document.getElementById(id);
+  if(el('rm-bundle-count')) el('rm-bundle-count').textContent=qty;
+  if(el('rm-bundle-packs')) el('rm-bundle-packs').textContent=packs.toLocaleString()+' packs';
+  if(el('rm-bundle-amount')) el('rm-bundle-amount').textContent='₦'+amount.toLocaleString(undefined,{maximumFractionDigits:2});
+}
 function prefillUnitCost(){
   const cat=document.getElementById('rm-cat').value;
   const last=DB.rawmats.slice().reverse().find(r=>r.category===cat);
   if(last)document.getElementById('rm-cost').value=last.unitCost;
   recalcRollSummary();
 }
+/* ── ALT ID helpers ─────────────────────────────────────────────── */
+function genAltId(dateStr){
+  const d=dateStr||TODAY;
+  const [,mm,dd]=d.split('-');
+  const prefix='ALT/'+mm+dd+'/';
+  const existing=DB.rawmats.filter(r=>r.altId&&r.altId.startsWith(prefix));
+  const next=existing.length+1;
+  return prefix+String(next).padStart(3,'0');
+}
+function updateRmAltIdPreview(){
+  const el=document.getElementById('rm-altid-preview');
+  if(!el)return;
+  const dateVal=document.getElementById('rm-date')?.value||TODAY;
+  el.value=genAltId(dateVal)+' ← to be confirmed on save';
+}
+
 function submitRawMat(){
   ['rm-ok','rm-err'].forEach(id=>document.getElementById(id).classList.remove('show'));
   const date=document.getElementById('rm-date').value || TODAY;
-  const batch=document.getElementById('rm-batch').value;
+  const catParentEl=document.getElementById('rm-cat-parent');
+  const catParentCode=catParentEl?catParentEl.value:'';
   const category=document.getElementById('rm-cat').value;
-  const unitCost=parseFloat(document.getElementById('rm-cost').value)||0;
+  if(!catParentCode){toast('Select a category','e');return;}
+  const catParentMat=MAT_CATS.find(m=>m.code===catParentCode);
+  if(catParentMat&&catParentMat.subs&&catParentMat.subs.length&&!category){toast('Select a sub-category','e');return;}
+  const isPackingBag = catParentCode==='A0002';
   const note=document.getElementById('rm-note').value;
-  const rolls=[...document.querySelectorAll('#roll-rows input')].map(i=>parseFloat(i.value)||0).filter(v=>v>0);
-  if(!batch){toast('Log a production batch first','e');return;}
-  if(!rolls.length){document.getElementById('rm-err').classList.add('show');return;}
-  if(rolls.length>20){toast('Maximum 20 rolls per entry','e');return;}
-  const noRoll=rolls.length;
-  const qtyKg=rolls.reduce((a,b)=>a+b,0);
-  const amount=qtyKg*unitCost;
-  DB.rawmats.push({id:DB.nid(),date,batch,category,noRoll,qtyKg,unitCost,amount,rolls,note,staff:CU.name,staffId:CU.id});
-  showOk('rm-ok');clearRawMat();toast('Material usage logged!','s');
-  updateRMPanel();renderRawMat('');updateBatchMetricsPreview();populateMatLotSelect();
+  const altId=genAltId(date);
+  const matName=c=>{const m=MAT_CATS.find(x=>x.code===c);return m?m.name:c;};
+  let noRoll=0,qtyKg=0,unitCost=0,amount=0,rolls=[],bundles=0,totalPacks=0;
+  if(isPackingBag){
+    bundles=parseInt(document.getElementById('rm-bundle-qty').value)||0;
+    unitCost=parseFloat(document.getElementById('rm-bundle-cost').value)||0;
+    if(!bundles){toast('Enter quantity in bundles','e');return;}
+    if(!unitCost){toast('Enter unit cost per bundle','e');return;}
+    totalPacks=bundles*10;
+    amount=bundles*unitCost;
+    qtyKg=0;
+  } else {
+    unitCost=parseFloat(document.getElementById('rm-cost').value)||0;
+    rolls=[...document.querySelectorAll('#roll-rows input')].map(i=>parseFloat(i.value)||0).filter(v=>v>0);
+    if(!rolls.length){document.getElementById('rm-err').classList.add('show');return;}
+    if(rolls.length>20){toast('Maximum 20 rolls per entry','e');return;}
+    noRoll=rolls.length;
+    qtyKg=rolls.reduce((a,b)=>a+b,0);
+    amount=qtyKg*unitCost;
+  }
+  DB.rawmats.push({id:DB.nid(),altId,date,category,isPackingBag,noRoll,qtyKg,unitCost,amount,rolls,bundles,totalPacks,note,staff:CU.name,staffId:CU.id});
+  showOk('rm-ok'); clearRawMat();
+  updateRMPanel(); renderRawMat(''); updateBatchMetricsPreview(); populateMatLotSelect(); renderInvSummary(''); updateRmAltIdPreview();
+  // Show ID popup
+  document.getElementById('matid-code').textContent=altId;
+  const subLine=isPackingBag?bundles+' bundles ('+totalPacks+' packs)':qtyKg.toFixed(2)+' kg';
+  document.getElementById('matid-sub').textContent=matName(category)+' · '+subLine+' · '+fmtDate(date);
+  document.getElementById('matid-mo').classList.add('open');
 }
 function clearRawMat(){
   document.getElementById('rm-note').value='';
   resetRollRows();
   const el=document.getElementById('rm-date');if(el)el.value='';
   const lbl=document.getElementById('rm-date-label');if(lbl)lbl.textContent='Today';
+  const bq=document.getElementById('rm-bundle-qty');if(bq)bq.value='';
+  const bc=document.getElementById('rm-bundle-cost');if(bc)bc.value='';
+  recalcBundleSummary();
+  populateMatSelects();
+  updateRmAltIdPreview();
 }
 function updateRMPanel(){
   document.getElementById('rm-count').textContent=DB.rawmats.length;
@@ -2393,22 +2685,65 @@ function updateRMPanel(){
 }
 function renderRawMat(q){
   const tb=document.getElementById('rm-tbody');if(!tb)return;
-  const d=DB.rawmats.filter(r=>!q||[r.category,r.batch,r.date,r.note,r.staff].join(' ').toLowerCase().includes((q||'').toLowerCase()));
-  if(!d.length){tb.innerHTML='<tr><td colspan="11"><div class="empty"><i class="ti ti-box-seam"></i><p>No raw materials logged yet</p></div></td></tr>';return;}
+  const d=DB.rawmats.filter(r=>!q||[r.altId||'',r.category,r.date,r.note,r.staff].join(' ').toLowerCase().includes((q||'').toLowerCase()));
+  if(!d.length){tb.innerHTML='<tr><td colspan="12"><div class="empty"><i class="ti ti-box-seam"></i><p>No raw materials logged yet</p></div></td></tr>';return;}
   const matName=c=>{const m=MAT_CATS.find(x=>x.code===c);return m?m.name:c;};
   tb.innerHTML=d.slice().reverse().map(r=>`<tr>
+    <td><span style="font-family:'DM Mono',monospace;font-size:11.5px;font-weight:700;color:#1a5fcb;background:var(--grn-l);padding:3px 7px;border-radius:5px">${r.altId||'—'}</span></td>
     <td>${fmtDate(r.date)}</td>
-    <td style="font-family:'DM Mono',monospace;font-size:12px">${r.batch}</td>
     <td><span class="badge bt">${matName(r.category)}</span></td>
-    <td>${r.noRoll}</td>
-    <td style="font-weight:600">${r.qtyKg.toFixed(2)} kg</td>
-    <td>₦${r.unitCost.toLocaleString()}</td>
+    <td>${r.isPackingBag?r.bundles+' bundles':r.noRoll+' rolls'}</td>
+    <td style="font-weight:600">${r.isPackingBag?(r.totalPacks+' packs'):r.qtyKg.toFixed(2)+' kg'}</td>
+    <td>${r.isPackingBag?'₦'+r.unitCost.toLocaleString()+'/bundle':'₦'+r.unitCost.toLocaleString()+'/kg'}</td>
     <td style="font-weight:600">₦${r.amount.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
-    <td class="fig-cell" title="${r.rolls.join(', ')}">${r.rolls.join(', ')}</td>
+    <td class="fig-cell" title="${r.isPackingBag?'':r.rolls.join(', ')}">${r.isPackingBag?'—':r.rolls.join(', ')}</td>
     <td>${r.staff}</td>
     <td style="color:var(--txt3);font-size:12px">${r.note||'—'}</td>
     <td><button class="btn btn-danger btn-sm" onclick="promptDel('rawmats',${r.id})"><i class="ti ti-trash"></i></button></td>
   </tr>`).join('');
+}
+
+/* INVENTORY SUMMARY (overview table + metrics) */
+function renderInvSummary(q){
+  // metrics
+  const totKgIn=DB.rawmats.reduce((a,r)=>a+r.qtyKg,0);
+  const totKgUsed=DB.rawmats.reduce((a,r)=>a+rawmatConsumed(r.id),0);
+  const totKgLeft=Math.max(0,totKgIn-totKgUsed);
+  const activeLots=DB.rawmats.filter(r=>rawmatAvailable(r)>0).length;
+  const s=id=>document.getElementById(id);
+  if(s('inv-lots'))s('inv-lots').textContent=DB.rawmats.length;
+  if(s('inv-kg-in'))s('inv-kg-in').textContent=totKgIn.toFixed(2);
+  if(s('inv-kg-used'))s('inv-kg-used').textContent=totKgUsed.toFixed(2);
+  if(s('inv-kg-left'))s('inv-kg-left').textContent=totKgLeft.toFixed(2);
+  // table
+  const tb=document.getElementById('inv-tbody');if(!tb)return;
+  const matName=c=>{const m=MAT_CATS.find(x=>x.code===c);return m?m.name:c;};
+  const filtered=DB.rawmats.filter(r=>!q||[r.altId||'',r.category,matName(r.category)].join(' ').toLowerCase().includes((q||'').toLowerCase()));
+  if(!filtered.length){tb.innerHTML='<tr><td colspan="9"><div class="empty"><i class="ti ti-archive"></i><p>No inventory entries yet</p></div></td></tr>';return;}
+  tb.innerHTML=filtered.slice().reverse().map(r=>{
+    const consumed=rawmatConsumed(r.id);
+    const avail=rawmatAvailable(r);
+    const pct=r.qtyKg>0?Math.min(100,Math.round(consumed/r.qtyKg*100)):0;
+    const barCol=pct>=90?'#c03838':pct>=60?'#c08a18':'#1a5fcb';
+    const badge=avail<=0?'<span class="badge br">Depleted</span>':avail<r.qtyKg*.25?'<span class="badge ba">Low</span>':'<span class="badge bg">In stock</span>';
+    return `<tr>
+      <td><span style="font-family:'DM Mono',monospace;font-size:11.5px;font-weight:700;color:#1a5fcb;background:var(--grn-l);padding:3px 7px;border-radius:5px">${r.altId||'—'}</span></td>
+      <td>${fmtDate(r.date)}</td>
+      <td><span class="badge bt">${matName(r.category)}</span></td>
+      <td style="font-weight:600">${r.isPackingBag?(r.totalPacks||0)+' packs ('+r.bundles+' bdl)':r.qtyKg.toFixed(2)+' kg'}</td>
+      <td>${r.isPackingBag?'—':consumed.toFixed(2)+' kg'}</td>
+      <td style="font-weight:600;color:${avail<=0?'var(--red-m)':avail<r.qtyKg*.25?'var(--amb-m)':'var(--grn)'}">${r.isPackingBag?'—':avail.toFixed(2)+' kg'}</td>
+      <td style="min-width:100px">
+        <div style="display:flex;align-items:center;gap:7px">
+          <div style="flex:1;height:6px;background:var(--surf2);border-radius:3px;overflow:hidden;border:1px solid var(--brd)">
+            <div style="width:${pct}%;height:100%;background:${barCol};border-radius:3px"></div>
+          </div>
+          <span style="font-size:10.5px;font-family:'DM Mono',monospace;color:var(--txt3);flex-shrink:0">${pct}%</span>
+        </div>
+      </td>
+      <td>${badge}</td>
+    </tr>`;
+  }).join('');
 }
 
 
@@ -2681,6 +3016,7 @@ function renderAE(){
 }
 
 /* DASHBOARD */
+let chMatCat=null, chMatLots=null;
 function renderDash(){
   const activeSales=DB.sales.filter(s=>!s.voided && inDR('dash',s.date));
   const dashProd=DB.production.filter(p=>inDR('dash',p.date));
@@ -2702,6 +3038,74 @@ function renderDash(){
   document.getElementById('d-profit').textContent=(profit>=0?'₦':'-₦')+Math.abs(profit).toLocaleString();
   document.querySelector('#page-dash .mc:last-child').className='mc '+(profit>=0?'g':'r');
 
+  /* ── Raw material analysis ── */
+  const allRM=DB.rawmats; // all time for inventory context
+  const totRmIn=allRM.reduce((a,r)=>a+r.qtyKg,0);
+  const totRmUsed=allRM.reduce((a,r)=>a+rawmatConsumed(r.id),0);
+  const totRmLeft=Math.max(0,totRmIn-totRmUsed);
+  const activeLotsN=allRM.filter(r=>rawmatAvailable(r)>0).length;
+  document.getElementById('d-rm-in').textContent=totRmIn.toFixed(2);
+  document.getElementById('d-rm-used').textContent=totRmUsed.toFixed(2);
+  document.getElementById('d-rm-left').textContent=totRmLeft.toFixed(2);
+  document.getElementById('d-rm-lots').textContent=activeLotsN;
+
+  /* ── Chart: material by category ── */
+  const catKg={};
+  const matNameFn=c=>{const m=MAT_CATS.find(x=>x.code===c);return m?m.name:c;};
+  dashRM.forEach(r=>{const n=matNameFn(r.category);catKg[n]=(catKg[n]||0)+r.qtyKg;});
+  const catLabels=Object.keys(catKg);
+  const catVals=Object.values(catKg);
+  const catColors=['#1a5fcb','#0a8a6a','#c08a18','#7F77DD','#c03838','#2d58c2'];
+  if(chMatCat)chMatCat.destroy();
+  chMatCat=new Chart(document.getElementById('ch-mat-cat'),{
+    type:'doughnut',
+    data:{labels:catLabels.length?catLabels:['No data'],datasets:[{data:catLabels.length?catVals:[1],backgroundColor:catLabels.length?catLabels.map((_,i)=>catColors[i%catColors.length]):['#dce5f0'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'DM Sans'},boxWidth:10,padding:12,color:'#546050'}}}}
+  });
+
+  /* ── Chart: top 6 lots bar (received vs consumed) ── */
+  const topLots=dashRM.slice().reverse().slice(0,6);
+  if(chMatLots)chMatLots.destroy();
+  chMatLots=new Chart(document.getElementById('ch-mat-lots'),{
+    type:'bar',
+    data:{
+      labels:topLots.map(r=>r.altId||('RM-'+String(r.id).padStart(4,'0'))),
+      datasets:[
+        {label:'Received (kg)',data:topLots.map(r=>r.qtyKg),backgroundColor:'rgba(26,95,203,0.25)',borderColor:'#1a5fcb',borderWidth:2,borderRadius:4},
+        {label:'Consumed (kg)',data:topLots.map(r=>rawmatConsumed(r.id)),backgroundColor:'rgba(192,138,24,0.25)',borderColor:'#c08a18',borderWidth:2,borderRadius:4}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'DM Sans'},boxWidth:10,padding:8,color:'#546050'}}},scales:{x:{ticks:{font:{size:10,family:'DM Mono'},color:'#7a94b0'},grid:{display:false}},y:{ticks:{font:{size:11},color:'#7a94b0'},grid:{color:'rgba(220,229,240,.6)'},beginAtZero:true}}}
+  });
+
+  /* ── Raw material utilisation bars ── */
+  const matName2=c=>{const m=MAT_CATS.find(x=>x.code===c);return m?m.name:c;};
+  const matTotal=exp||1;
+  const matGroups={};
+  dashRM.forEach(r=>{
+    const n=matName2(r.category);
+    if(!matGroups[n])matGroups[n]={in:0,used:0,cost:0};
+    matGroups[n].in+=r.qtyKg; matGroups[n].used+=rawmatConsumed(r.id); matGroups[n].cost+=r.amount;
+  });
+  const matBarColors={'Sachet Bags':'#1a5fcb','Sachet Bags › Printed Rolls':'#1a5fcb','Sachet Bags › Plain Rolls':'#2d7dd2','Packing Bag':'#0a8a6a'};
+  const matEntries=Object.entries(matGroups).sort((a,b)=>b[1].in-a[1].in);
+  document.getElementById('mat-bars').innerHTML=matEntries.length?matEntries.map(([k,v])=>{
+    const pct=v.in>0?Math.min(100,Math.round(v.used/v.in*100)):0;
+    const col=matBarColors[k]||'#888';
+    return `<div class="prog-wrap" style="margin-bottom:10px">
+      <span class="prog-lbl" style="color:${col};min-width:110px">${k}</span>
+      <div style="flex:1">
+        <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--txt3);margin-top:2px">
+          <span>${v.used.toFixed(2)} kg used of ${v.in.toFixed(2)} kg</span>
+          <span style="font-family:'DM Mono',monospace">₦${v.cost.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
+        </div>
+      </div>
+      <span class="prog-val">${pct}%</span>
+    </div>`;
+  }).join(''):'<p style="font-size:13px;color:var(--txt3)">No raw material data for this period.</p>';
+
+  /* ── Sales by payment ── */
   const cash=activeSales.filter(s=>s.method==='CASH').reduce((a,s)=>a+s.amount,0);
   const xfer=activeSales.filter(s=>s.method==='TRANSFER').reduce((a,s)=>a+s.amount,0);
   const pos=activeSales.filter(s=>s.method==='POS').reduce((a,s)=>a+s.amount,0);
@@ -2780,7 +3184,7 @@ function confirmDel(){
   if(delType==='sales')renderAS('');
   if(delType==='production'){renderAP();populateBatchSelect();updateBatchMetricsPreview();populateMatLotSelect();}
   if(delType==='expenses')renderAE();
-  if(delType==='rawmats'){renderRawMat('');updateRMPanel();updateBatchMetricsPreview();renderAP();populateMatLotSelect();}
+  if(delType==='rawmats'){renderRawMat('');updateRMPanel();updateBatchMetricsPreview();renderAP();populateMatLotSelect();renderInvSummary('');}
 }
 
 /* EXPORT */
@@ -2981,5 +3385,23 @@ function geoTestMyPos(){
 
 initDRBars();
 </script>
+
+<!-- MATERIAL ID POPUP MODAL -->
+<div class="mo" id="matid-mo">
+  <div class="modal" style="max-width:430px;text-align:center">
+    <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#1a5fcb,#0a4a8a);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;box-shadow:0 8px 24px rgba(26,95,203,.3)">
+      <i class="ti ti-tag" style="font-size:24px;color:#fff"></i>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Material Inventory ID</div>
+    <div id="matid-code" style="font-size:32px;font-weight:700;color:#1a5fcb;font-family:'DM Mono',monospace;letter-spacing:.06em;margin-bottom:4px">—</div>
+    <div id="matid-sub" style="font-size:12px;color:var(--txt3);margin-bottom:1.5rem">—</div>
+    <div style="background:var(--amb-l);border:1.5px solid #e8c97a;border-radius:var(--r);padding:.85rem 1rem;margin-bottom:1.4rem;text-align:left">
+      <div style="font-size:12px;font-weight:600;color:var(--amb);margin-bottom:4px"><i class="ti ti-alert-triangle"></i> Action required</div>
+      <div style="font-size:12.5px;color:var(--amb);line-height:1.65">Write or attach this ID on the physical material. This links the rolls to production records.</div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="document.getElementById('matid-mo').classList.remove('open')"><i class="ti ti-circle-check"></i> Got it — I'll label it now</button>
+  </div>
+</div>
+
 </body>
 </html>
