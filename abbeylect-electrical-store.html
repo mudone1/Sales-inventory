@@ -409,10 +409,58 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
 
         <!-- INVENTORY -->
         <div class="page" id="pg-inventory">
+          <div class="dash-grid" id="inv-dash-stats"></div>
+          <div class="chart-card" style="margin-bottom:14px">
+            <p class="sec-label" style="margin-bottom:14px">Stock value by category</p>
+            <div id="inv-cat-bars"></div>
+          </div>
+          <div class="chart-card" style="margin-bottom:14px">
+            <p class="sec-label" style="margin-bottom:14px">Add category</p>
+            <div class="exp-form-grid">
+              <div><div class="flabel">Category name</div><input class="finput" type="text" id="nc-name" placeholder="e.g. Tools"></div>
+              <div><div class="flabel">Colour</div><input class="finput" type="color" id="nc-color" value="#6C63FF" style="padding:4px;height:38px"></div>
+            </div>
+            <button class="btn-submit" onclick="addCategory()"><i class="ti ti-plus"></i> Add category</button>
+            <div id="cat-chip-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px"></div>
+          </div>
+          <div class="chart-card" style="margin-bottom:14px">
+            <p class="sec-label" style="margin-bottom:14px">Add new product</p>
+            <div class="exp-form-grid">
+              <div><div class="flabel">Product name</div><input class="finput" type="text" id="np-name" placeholder="e.g. LED Bulb 12W"></div>
+              <div><div class="flabel">Category</div><select class="finput" id="np-cat"></select></div>
+              <div><div class="flabel">Cost price (₦)</div><input class="finput" type="number" id="np-cost" placeholder="0.00"></div>
+              <div><div class="flabel">Selling price (₦)</div><input class="finput" type="number" id="np-price" placeholder="0.00"></div>
+              <div><div class="flabel">Opening stock</div><input class="finput" type="number" id="np-stock" placeholder="0"></div>
+              <div><div class="flabel">Icon</div>
+                <select class="finput" id="np-icon">
+                  <option value="ti-box">Box (default)</option>
+                  <option value="ti-bulb">Bulb</option>
+                  <option value="ti-plug">Plug</option>
+                  <option value="ti-plug-connected">Extension cable</option>
+                  <option value="ti-cable">Cable</option>
+                  <option value="ti-toggle-right">Switch</option>
+                  <option value="ti-bolt">Socket / bolt</option>
+                  <option value="ti-wind">Fan</option>
+                  <option value="ti-line">Conduit</option>
+                  <option value="ti-circle">Tape / round item</option>
+                  <option value="ti-battery">Battery / inverter</option>
+                  <option value="ti-sun">Solar</option>
+                  <option value="ti-adjustments">Stabilizer</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-submit" onclick="addProduct()"><i class="ti ti-plus"></i> Add product</button>
+          </div>
           <div class="chart-card" style="padding:0;overflow:hidden">
             <div style="padding:14px 18px 10px"><p class="sec-label" style="margin:0">Product inventory</p></div>
             <div style="overflow-x:auto">
-              <table class="tbl"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead><tbody id="inv-tbody"></tbody></table>
+              <table class="tbl"><thead><tr><th>Product</th><th>Category</th><th>Cost price</th><th>Selling price</th><th>Margin</th><th>Stock</th><th>Status</th><th></th></tr></thead><tbody id="inv-tbody"></tbody></table>
+            </div>
+          </div>
+          <div class="chart-card" style="padding:0;overflow:hidden;margin-top:14px">
+            <div style="padding:14px 18px 10px"><p class="sec-label" style="margin:0">Restock log</p></div>
+            <div style="overflow-x:auto">
+              <table class="tbl"><thead><tr><th>Date</th><th>Product</th><th>Qty added</th><th>Cost price</th><th>By</th></tr></thead><tbody id="restock-tbody"></tbody></table>
             </div>
           </div>
         </div>
@@ -470,6 +518,40 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
   </div>
 </div>
 
+<!-- RESTOCK MODAL -->
+<div class="modal-bg" id="restock-modal">
+  <div class="modal-box" style="text-align:left">
+    <div class="modal-icon" style="margin:0 auto 1rem"><i class="ti ti-package-import"></i></div>
+    <div class="modal-title" style="text-align:center" id="rs-title">Restock product</div>
+    <div class="modal-sub" style="text-align:center;margin-bottom:14px" id="rs-sub"></div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div><div class="flabel">Quantity to add</div><input class="finput" type="number" id="rs-qty" placeholder="0" min="1"></div>
+      <div><div class="flabel">Cost price per unit (₦)</div><input class="finput" type="number" id="rs-cost" placeholder="0.00"></div>
+      <div><div class="flabel">Date received</div><input class="finput" type="date" id="rs-date"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeRestockModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmRestock()">Save restock</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PRICE MODAL -->
+<div class="modal-bg" id="editprice-modal">
+  <div class="modal-box" style="text-align:left">
+    <div class="modal-icon" style="margin:0 auto 1rem"><i class="ti ti-tag"></i></div>
+    <div class="modal-title" style="text-align:center" id="ep-title">Edit pricing</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div><div class="flabel">Cost price (₦)</div><input class="finput" type="number" id="ep-cost" placeholder="0.00"></div>
+      <div><div class="flabel">Selling price (₦)</div><input class="finput" type="number" id="ep-price" placeholder="0.00"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeEditPriceModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmEditPrice()">Save changes</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -480,28 +562,41 @@ const USERS={
   admin:{pw:'admin123',role:'Admin',name:'Abbey Emmanuel'},
 };
 
-const CAT_COLORS={Lighting:'#F5A623',Cables:'#06B6D4',Accessories:'#22C55E',Switches:'#6C63FF',Appliances:'#EC4899',Fittings:'#F97316',Power:'#EF4444'};
+const CATEGORIES=[
+  {name:'Lighting',color:'#F5A623'},
+  {name:'Cables',color:'#06B6D4'},
+  {name:'Accessories',color:'#22C55E'},
+  {name:'Switches',color:'#6C63FF'},
+  {name:'Appliances',color:'#EC4899'},
+  {name:'Fittings',color:'#F97316'},
+  {name:'Power',color:'#EF4444'},
+];
+let CAT_COLORS={};
+function rebuildCatColors(){CAT_COLORS={};CATEGORIES.forEach(c=>CAT_COLORS[c.name]=c.color);}
+rebuildCatColors();
 
 const PRODUCTS=[
-  {id:1,name:'LED Bulb 9W',cat:'Lighting',price:850,stock:45,icon:'ti-bulb'},
-  {id:2,name:'LED Bulb 15W',cat:'Lighting',price:1200,stock:32,icon:'ti-bulb'},
-  {id:3,name:'Fluorescent Tube',cat:'Lighting',price:650,stock:28,icon:'ti-bulb'},
-  {id:4,name:'Power Strip 4-Way',cat:'Accessories',price:3500,stock:18,icon:'ti-plug'},
-  {id:5,name:'Extension 5m',cat:'Cables',price:2800,stock:22,icon:'ti-plug-connected'},
-  {id:6,name:'Extension 10m',cat:'Cables',price:4500,stock:12,icon:'ti-plug-connected'},
-  {id:7,name:'MCB Switch 32A',cat:'Switches',price:2200,stock:15,icon:'ti-toggle-right'},
-  {id:8,name:'Socket Outlet',cat:'Accessories',price:1800,stock:35,icon:'ti-bolt'},
-  {id:9,name:'Light Switch',cat:'Switches',price:450,stock:60,icon:'ti-toggle-left'},
-  {id:10,name:'Ceiling Fan',cat:'Appliances',price:22000,stock:8,icon:'ti-wind'},
-  {id:11,name:'Standing Fan',cat:'Appliances',price:18500,stock:6,icon:'ti-wind'},
-  {id:12,name:'PVC Cable 1.5mm',cat:'Cables',price:18000,stock:10,icon:'ti-cable'},
-  {id:13,name:'PVC Cable 2.5mm',cat:'Cables',price:26000,stock:8,icon:'ti-cable'},
-  {id:14,name:'Conduit Pipe',cat:'Fittings',price:1500,stock:50,icon:'ti-line'},
-  {id:15,name:'Electrical Tape',cat:'Accessories',price:350,stock:80,icon:'ti-circle'},
-  {id:16,name:'Inverter 1.5KVA',cat:'Power',price:95000,stock:4,icon:'ti-battery'},
-  {id:17,name:'Solar Panel 200W',cat:'Power',price:85000,stock:3,icon:'ti-sun'},
-  {id:18,name:'Voltage Stabilizer',cat:'Power',price:35000,stock:7,icon:'ti-adjustments'},
+  {id:1,name:'LED Bulb 9W',cat:'Lighting',cost:550,price:850,stock:45,icon:'ti-bulb'},
+  {id:2,name:'LED Bulb 15W',cat:'Lighting',cost:780,price:1200,stock:32,icon:'ti-bulb'},
+  {id:3,name:'Fluorescent Tube',cat:'Lighting',cost:420,price:650,stock:28,icon:'ti-bulb'},
+  {id:4,name:'Power Strip 4-Way',cat:'Accessories',cost:2300,price:3500,stock:18,icon:'ti-plug'},
+  {id:5,name:'Extension 5m',cat:'Cables',cost:1850,price:2800,stock:22,icon:'ti-plug-connected'},
+  {id:6,name:'Extension 10m',cat:'Cables',cost:3000,price:4500,stock:12,icon:'ti-plug-connected'},
+  {id:7,name:'MCB Switch 32A',cat:'Switches',cost:1450,price:2200,stock:15,icon:'ti-toggle-right'},
+  {id:8,name:'Socket Outlet',cat:'Accessories',cost:1150,price:1800,stock:35,icon:'ti-bolt'},
+  {id:9,name:'Light Switch',cat:'Switches',cost:280,price:450,stock:60,icon:'ti-toggle-left'},
+  {id:10,name:'Ceiling Fan',cat:'Appliances',cost:15000,price:22000,stock:8,icon:'ti-wind'},
+  {id:11,name:'Standing Fan',cat:'Appliances',cost:12500,price:18500,stock:6,icon:'ti-wind'},
+  {id:12,name:'PVC Cable 1.5mm',cat:'Cables',cost:12000,price:18000,stock:10,icon:'ti-cable'},
+  {id:13,name:'PVC Cable 2.5mm',cat:'Cables',cost:17500,price:26000,stock:8,icon:'ti-cable'},
+  {id:14,name:'Conduit Pipe',cat:'Fittings',cost:950,price:1500,stock:50,icon:'ti-line'},
+  {id:15,name:'Electrical Tape',cat:'Accessories',cost:200,price:350,stock:80,icon:'ti-circle'},
+  {id:16,name:'Inverter 1.5KVA',cat:'Power',cost:68000,price:95000,stock:4,icon:'ti-battery'},
+  {id:17,name:'Solar Panel 200W',cat:'Power',cost:60000,price:85000,stock:3,icon:'ti-sun'},
+  {id:18,name:'Voltage Stabilizer',cat:'Power',cost:24000,price:35000,stock:7,icon:'ti-adjustments'},
 ];
+let RESTOCKS=[];
+let editingProductId=null;
 
 const STAFF_LIST=[
   {name:'Adaeze Okonkwo',un:'staff1',role:'Staff'},
@@ -755,12 +850,143 @@ function renderExp(){
 }
 
 function renderInv(){
-  document.getElementById('inv-tbody').innerHTML=PRODUCTS.map(p=>`
-    <tr><td style="font-weight:600">${p.name}</td><td><span class="tbadge" style="background:#EEF0FF;color:var(--accent)">${p.cat}</span></td><td style="color:var(--accent);font-weight:700">₦${p.price.toLocaleString()}</td><td style="font-weight:600">${p.stock}</td><td><span class="sbadge ${p.stock>10?'sb-ok':p.stock>0?'sb-low':'sb-out'}">${p.stock>10?'In stock':p.stock>0?'Low stock':'Out of stock'}</span></td><td><button class="restock-btn" onclick="restock(${p.id})">Restock</button></td></tr>`).join('');
+  document.getElementById('inv-tbody').innerHTML=PRODUCTS.map(p=>{
+    const margin=p.price-(p.cost||0);
+    const marginPct=p.price?Math.round(margin/p.price*100):0;
+    return `<tr><td style="font-weight:600">${p.name}</td><td><span class="tbadge" style="background:${(CAT_COLORS[p.cat]||'#6C63FF')+'1A'};color:${CAT_COLORS[p.cat]||'#6C63FF'}">${p.cat}</span></td><td style="color:var(--muted);font-weight:600">₦${(p.cost||0).toLocaleString()}</td><td style="color:var(--accent);font-weight:700">₦${p.price.toLocaleString()}</td><td style="color:${margin>=0?'var(--green)':'var(--red)'};font-weight:700">₦${margin.toLocaleString()} (${marginPct}%)</td><td style="font-weight:600">${p.stock}</td><td><span class="sbadge ${p.stock>10?'sb-ok':p.stock>0?'sb-low':'sb-out'}">${p.stock>10?'In stock':p.stock>0?'Low stock':'Out of stock'}</span></td><td style="display:flex;gap:6px"><button class="restock-btn" onclick="openRestock(${p.id})">Restock</button><button class="restock-btn" onclick="openEditPrice(${p.id})">Edit price</button></td></tr>`;
+  }).join('')||`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">No products yet</td></tr>`;
+  document.getElementById('np-cat').innerHTML=CATEGORIES.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  renderCatChips();
+  renderRestockLog();
+  renderInvDash();
 }
-function restock(id){
-  const q=parseInt(prompt('Units to add:')||'0');
-  if(q>0){const p=PRODUCTS.find(x=>x.id===id);if(p){p.stock+=q;renderInv();filterProds();toast(p.name+' restocked +'+q,'success');}}
+
+function renderCatChips(){
+  document.getElementById('cat-chip-list').innerHTML=CATEGORIES.map(c=>{
+    const count=PRODUCTS.filter(p=>p.cat===c.name).length;
+    return `<span style="display:flex;align-items:center;gap:6px;background:${c.color}18;color:${c.color};border-radius:20px;padding:6px 12px;font-size:11px;font-weight:700">
+      <span style="width:8px;height:8px;border-radius:50%;background:${c.color}"></span>${c.name} · ${count}
+    </span>`;
+  }).join('');
+}
+
+function addCategory(){
+  const name=document.getElementById('nc-name').value.trim();
+  const color=document.getElementById('nc-color').value||'#6C63FF';
+  if(!name){toast('Enter a category name','error');return;}
+  if(CATEGORIES.some(c=>c.name.toLowerCase()===name.toLowerCase())){toast('Category already exists','error');return;}
+  CATEGORIES.push({name,color});
+  rebuildCatColors();
+  document.getElementById('nc-name').value='';
+  document.getElementById('nc-color').value='#6C63FF';
+  renderInv();
+  toast('Category "'+name+'" added','success');
+}
+
+function renderInvDash(){
+  const totalProducts=PRODUCTS.length;
+  const totalUnits=PRODUCTS.reduce((s,p)=>s+p.stock,0);
+  const costValue=PRODUCTS.reduce((s,p)=>s+(p.cost||0)*p.stock,0);
+  const retailValue=PRODUCTS.reduce((s,p)=>s+p.price*p.stock,0);
+  const potentialProfit=retailValue-costValue;
+  const lowCount=PRODUCTS.filter(p=>p.stock>0&&p.stock<=10).length;
+  const outCount=PRODUCTS.filter(p=>p.stock<=0).length;
+  document.getElementById('inv-dash-stats').innerHTML=`
+    <div class="dcard accent"><div class="dcard-label"><i class="ti ti-boxes"></i>Total products</div><div class="dcard-val">${totalProducts}</div><div class="dcard-sub">${totalUnits} units in stock</div></div>
+    <div class="dcard"><div class="dcard-label"><i class="ti ti-cash"></i>Stock cost value</div><div class="dcard-val">₦${costValue.toLocaleString()}</div><div class="dcard-sub">At cost price</div></div>
+    <div class="dcard green"><div class="dcard-label"><i class="ti ti-tag"></i>Stock retail value</div><div class="dcard-val">₦${retailValue.toLocaleString()}</div><div class="dcard-sub">₦${potentialProfit.toLocaleString()} potential profit</div></div>
+    <div class="dcard red"><div class="dcard-label"><i class="ti ti-alert-triangle"></i>Stock alerts</div><div class="dcard-val">${lowCount+outCount}</div><div class="dcard-sub">${lowCount} low · ${outCount} out of stock</div></div>`;
+  const catV={};
+  PRODUCTS.forEach(p=>{catV[p.cat]=(catV[p.cat]||0)+(p.cost||0)*p.stock;});
+  const mx=Math.max(...Object.values(catV),1);
+  document.getElementById('inv-cat-bars').innerHTML=Object.entries(catV).sort((a,b)=>b[1]-a[1]).map(([c,v],i)=>`
+    <div class="bar-item"><span class="bar-label">${c}</span><div class="bar-track"><div class="bar-fill${i===0?'':' alt'}" style="width:${Math.round(v/mx*100)}%;background:${CAT_COLORS[c]||'#6C63FF'}"></div></div><span class="bar-val">₦${v.toLocaleString()}</span></div>`).join('')||'<p style="font-size:12px;color:var(--muted)">No stock value yet</p>';
+}
+
+function renderRestockLog(){
+  document.getElementById('restock-tbody').innerHTML=RESTOCKS.map(r=>`
+    <tr><td>${r.date}</td><td style="font-weight:600">${r.name}</td><td>+${r.qty}</td><td style="color:var(--accent);font-weight:700">₦${r.cost.toLocaleString()}</td><td style="color:var(--muted)">${r.by}</td></tr>`).join('')||`<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">No restocks logged yet</td></tr>`;
+}
+
+function addProduct(){
+  const name=document.getElementById('np-name').value.trim();
+  const cat=document.getElementById('np-cat').value;
+  const cost=parseFloat(document.getElementById('np-cost').value);
+  const price=parseFloat(document.getElementById('np-price').value);
+  const stock=parseInt(document.getElementById('np-stock').value)||0;
+  const icon=document.getElementById('np-icon').value||'ti-box';
+  if(!name){toast('Enter a product name','error');return;}
+  if(!cat){toast('Add a category first','error');return;}
+  if(isNaN(cost)||cost<0){toast('Enter a valid cost price','error');return;}
+  if(isNaN(price)||price<=0){toast('Enter a valid selling price','error');return;}
+  if(PRODUCTS.some(p=>p.name.toLowerCase()===name.toLowerCase())){toast('A product with this name already exists','error');return;}
+  const id=PRODUCTS.length?Math.max(...PRODUCTS.map(p=>p.id))+1:1;
+  PRODUCTS.push({id,name,cat,cost,price,stock,icon});
+  if(stock>0) RESTOCKS.unshift({id:'R'+Date.now().toString().slice(-5),date:today(),productId:id,name,qty:stock,cost,by:CU});
+  document.getElementById('np-name').value='';
+  document.getElementById('np-cost').value='';
+  document.getElementById('np-price').value='';
+  document.getElementById('np-stock').value='';
+  renderInv();renderProds();renderDash();
+  toast(name+' added to inventory','success');
+}
+
+function openRestock(id){
+  const p=PRODUCTS.find(x=>x.id===id);
+  if(!p) return;
+  editingProductId=id;
+  document.getElementById('rs-title').textContent='Restock — '+p.name;
+  document.getElementById('rs-sub').textContent='Current stock: '+p.stock+' · Last cost price: ₦'+(p.cost||0).toLocaleString();
+  document.getElementById('rs-qty').value='';
+  document.getElementById('rs-cost').value=p.cost||'';
+  document.getElementById('rs-date').value=today();
+  document.getElementById('restock-modal').classList.add('open');
+}
+function closeRestockModal(){
+  document.getElementById('restock-modal').classList.remove('open');
+  editingProductId=null;
+}
+function confirmRestock(){
+  const p=PRODUCTS.find(x=>x.id===editingProductId);
+  if(!p) return;
+  const qty=parseInt(document.getElementById('rs-qty').value);
+  const cost=parseFloat(document.getElementById('rs-cost').value);
+  const date=document.getElementById('rs-date').value;
+  if(!qty||qty<=0){toast('Enter a valid quantity','error');return;}
+  if(isNaN(cost)||cost<0){toast('Enter a valid cost price','error');return;}
+  if(!date){toast('Select a date','error');return;}
+  p.stock+=qty;
+  p.cost=cost;
+  RESTOCKS.unshift({id:'R'+Date.now().toString().slice(-5),date,productId:p.id,name:p.name,qty,cost,by:CU});
+  closeRestockModal();
+  renderInv();renderProds();renderDash();
+  toast(p.name+' restocked +'+qty+' units','success');
+}
+
+function openEditPrice(id){
+  const p=PRODUCTS.find(x=>x.id===id);
+  if(!p) return;
+  editingProductId=id;
+  document.getElementById('ep-title').textContent='Edit pricing — '+p.name;
+  document.getElementById('ep-cost').value=p.cost||0;
+  document.getElementById('ep-price').value=p.price;
+  document.getElementById('editprice-modal').classList.add('open');
+}
+function closeEditPriceModal(){
+  document.getElementById('editprice-modal').classList.remove('open');
+  editingProductId=null;
+}
+function confirmEditPrice(){
+  const p=PRODUCTS.find(x=>x.id===editingProductId);
+  if(!p) return;
+  const cost=parseFloat(document.getElementById('ep-cost').value);
+  const price=parseFloat(document.getElementById('ep-price').value);
+  if(isNaN(cost)||cost<0){toast('Enter a valid cost price','error');return;}
+  if(isNaN(price)||price<=0){toast('Enter a valid selling price','error');return;}
+  p.cost=cost;p.price=price;
+  closeEditPriceModal();
+  renderInv();renderProds();renderDash();
+  toast(p.name+' pricing updated','success');
 }
 
 function renderStaff(){
