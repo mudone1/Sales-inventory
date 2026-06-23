@@ -107,6 +107,15 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
 .cart-title{font-size:15px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
 .cart-badge{background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;min-width:22px;text-align:center}
 .cart-customer{padding:12px 20px;border-bottom:1px solid #232C4A}
+.order-tabs{display:flex;gap:6px;padding:10px 14px 0;overflow-x:auto;flex-wrap:wrap}
+.order-tab{display:flex;align-items:center;gap:6px;background:#1A2240;color:#8A93B2;border:1.5px solid #232C4A;border-radius:10px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap}
+.order-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.order-tab .ot-badge{background:rgba(255,255,255,.18);border-radius:8px;padding:0 6px;font-size:10px}
+.order-tab:not(.active) .ot-badge{background:#2B3560}
+.order-tab .ot-close{opacity:.6;font-size:13px;line-height:1}
+.order-tab .ot-close:hover{opacity:1}
+.order-tab-add{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:10px;background:#1A2240;border:1.5px dashed #2B3560;color:#8A93B2;cursor:pointer;flex-shrink:0}
+.order-tab-add:hover{color:#fff;border-color:var(--accent)}
 .cust-input{width:100%;background:#232C4A;border:1.5px solid #2E3A5A;border-radius:12px;padding:9px 13px;color:#B0BAD0;font-size:12px;font-family:var(--font);outline:none;transition:border .15s}
 .cust-input:focus{border-color:var(--accent);color:#fff}
 .cust-input::placeholder{color:#4E5A73}
@@ -141,6 +150,34 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
 .pay-btn:active{transform:translateY(0)}
 .pay-cash{background:var(--green);color:#fff}
 .pay-transfer{background:var(--accent);color:#fff}
+.pay-split{background:var(--gold);color:#fff}
+.pay-changetransfer{background:#8B5CF6;color:#fff}
+.split-wrap{text-align:left;margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.split-wrap .flabel{margin-bottom:2px}
+.split-row{display:flex;gap:8px}
+.split-row>div{flex:1}
+.modal-btns{flex-wrap:wrap}
+.modal-action{background:#F1F2F8;color:var(--text);border:none;padding:.7rem 1rem;border-radius:12px;font-weight:700;cursor:pointer;font-size:13px;font-family:var(--font);display:flex;align-items:center;gap:6px}
+.modal-action:hover{background:#E4E6F2}
+
+/* ── PRINTABLE RECEIPT ── */
+#print-receipt{display:none}
+@media print{
+  body *{visibility:hidden}
+  #print-receipt,#print-receipt *{visibility:visible}
+  #print-receipt{display:block;position:absolute;top:0;left:0;width:280px}
+}
+.pr-wrap{width:280px;padding:14px 16px;font-family:'Courier New',monospace;color:#000;background:#fff;font-size:12px;line-height:1.5}
+.pr-center{text-align:center}
+.pr-bold{font-weight:700}
+.pr-caps{text-transform:uppercase}
+.pr-line{border-top:1px dashed #000;margin:6px 0}
+.pr-row{display:flex;justify-content:space-between;gap:8px}
+.pr-row span:last-child{white-space:nowrap}
+.pr-amt-box{margin:10px 0;text-align:left}
+.pr-amt-box .pr-amt{font-size:20px;font-weight:700}
+.pr-barcode{display:flex;align-items:flex-end;justify-content:center;gap:1px;height:34px;margin-top:12px}
+.pr-barcode span{display:block;width:2px;background:#000}
 .clear-btn{width:100%;margin-top:10px;padding:9px;border:1.5px solid #2E3A5A;border-radius:12px;background:transparent;color:#4E5A73;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s}
 .clear-btn:hover{border-color:var(--red);color:var(--red)}
 
@@ -194,6 +231,8 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
 
 /* ── STAFF ── */
 .staff-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.staff-remove{margin-left:auto;background:none;border:1.5px solid var(--border);color:var(--red);border-radius:10px;width:32px;height:32px;cursor:pointer;flex-shrink:0}
+.staff-remove:hover{background:var(--red);color:#fff;border-color:var(--red)}
 .staff-av{width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
 .staff-name{font-size:13px;font-weight:700;color:var(--text)}
 .staff-un{font-size:11px;color:var(--muted)}
@@ -307,12 +346,13 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
       <img src="/mnt/user-data/uploads/abbeylect_logo-removebg-preview.png" alt="AL" onerror="this.style.display='none';this.parentNode.innerHTML='<span class=slogo-fb>AL</span>'">
     </div>
     <div class="nav-icon active" id="ni-pos" onclick="nav('pos',this)"><i class="ti ti-device-desktop"></i><span class="tip">Point of sale</span></div>
-    <div class="nav-icon" id="ni-dashboard" onclick="nav('dashboard',this)"><i class="ti ti-chart-bar"></i><span class="tip">Dashboard</span></div>
+    <div class="nav-icon" id="ni-dashboard" onclick="nav('dashboard',this)" style="display:none"><i class="ti ti-chart-bar"></i><span class="tip">Dashboard</span></div>
     <div class="nav-icon" id="ni-transactions" onclick="nav('transactions',this)"><i class="ti ti-list"></i><span class="tip">Transactions</span></div>
     <div class="nav-icon" id="ni-expenses" onclick="nav('expenses',this)"><i class="ti ti-wallet"></i><span class="tip">Expenses</span></div>
     <div class="nav-sep"></div>
     <div class="nav-icon" id="ni-inventory" onclick="nav('inventory',this)" style="display:none"><i class="ti ti-package"></i><span class="tip">Inventory</span></div>
     <div class="nav-icon" id="ni-staff" onclick="nav('staff',this)" style="display:none"><i class="ti ti-user-circle"></i><span class="tip">Staff</span></div>
+    <div class="nav-icon" id="ni-admin" onclick="nav('admin',this)" style="display:none"><i class="ti ti-settings"></i><span class="tip">Admin panel</span></div>
     <div class="nav-bot">
       <div class="nav-sep"></div>
       <div class="nav-icon" onclick="logout()"><i class="ti ti-power"></i><span class="tip">Logout</span></div>
@@ -388,10 +428,18 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
 
         <!-- EXPENSES -->
         <div class="page" id="pg-expenses">
+          <div class="chart-card" style="margin-bottom:14px" id="exp-cat-admin">
+            <p class="sec-label" style="margin-bottom:14px">Add expense category</p>
+            <div class="exp-form-grid">
+              <div><div class="flabel">Category name</div><input class="finput" type="text" id="nec-name" placeholder="e.g. Marketing"></div>
+            </div>
+            <button class="btn-submit" onclick="addExpCat()"><i class="ti ti-plus"></i> Add category</button>
+            <div id="exp-cat-chip-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px"></div>
+          </div>
           <div class="chart-card" style="margin-bottom:14px">
             <p class="sec-label" style="margin-bottom:14px">Log new expense</p>
             <div class="exp-form-grid">
-              <div><div class="flabel">Category</div><select class="finput" id="ec"><option>Electricity</option><option>Rent</option><option>Transport</option><option>Supplies</option><option>Staff salary</option><option>Equipment</option><option>Maintenance</option><option>Other</option></select></div>
+              <div><div class="flabel">Category</div><select class="finput" id="ec"></select></div>
               <div><div class="flabel">Amount (₦)</div><input class="finput" type="number" id="ea" placeholder="0.00"></div>
               <div><div class="flabel">Date</div><input class="finput" type="date" id="ed"></div>
               <div><div class="flabel">Paid to</div><input class="finput" type="text" id="ep" placeholder="Vendor or person"></div>
@@ -471,6 +519,38 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
           <div id="staff-list"></div>
         </div>
 
+        <!-- ADMIN CONTROL PANEL -->
+        <div class="page" id="pg-admin">
+          <div class="chart-card" style="margin-bottom:14px">
+            <p class="sec-label" style="margin-bottom:14px">Store settings</p>
+            <div class="exp-form-grid">
+              <div><div class="flabel">Store name</div><input class="finput" type="text" id="set-name" placeholder="Abbeylect Solutions Enterprise"></div>
+              <div><div class="flabel">Tagline / footer note</div><input class="finput" type="text" id="set-tag" placeholder="...light is life!"></div>
+              <div><div class="flabel">Currency symbol</div><input class="finput" type="text" id="set-currency" placeholder="₦" maxlength="3"></div>
+              <div><div class="flabel">Low stock threshold</div><input class="finput" type="number" id="set-lowstock" placeholder="10" min="1"></div>
+            </div>
+            <button class="btn-submit" onclick="saveSettings()"><i class="ti ti-device-floppy"></i> Save settings</button>
+          </div>
+          <div class="chart-card">
+            <p class="sec-label" style="margin-bottom:14px">Add staff account</p>
+            <div class="exp-form-grid">
+              <div><div class="flabel">Full name</div><input class="finput" type="text" id="as-name" placeholder="e.g. Bola Hassan"></div>
+              <div><div class="flabel">Username</div><input class="finput" type="text" id="as-un" placeholder="e.g. bola1"></div>
+              <div><div class="flabel">Password</div><input class="finput" type="text" id="as-pw" placeholder="Temporary password"></div>
+              <div><div class="flabel">Role</div>
+                <select class="finput" id="as-role">
+                  <option value="Staff">Staff</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-submit" onclick="addStaff()"><i class="ti ti-user-plus"></i> Add account</button>
+            <p class="sec-label" style="margin:18px 0 10px">All accounts</p>
+            <div id="admin-staff-list"></div>
+          </div>
+        </div>
+
       </div>
 
       <!-- CART PANEL -->
@@ -478,8 +558,9 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
         <div class="cart-header">
           <div class="cart-title"><i class="ti ti-shopping-cart"></i> Order <span class="cart-badge" id="cart-badge">0</span></div>
         </div>
+        <div class="order-tabs" id="order-tabs"></div>
         <div class="cart-customer">
-          <input class="cust-input" id="cust-name" type="text" placeholder="Customer name (optional)">
+          <input class="cust-input" id="cust-name" type="text" placeholder="Customer name (optional)" oninput="curOrder().cust=this.value">
         </div>
         <div class="cart-items" id="cart-items">
           <div class="cart-empty"><i class="ti ti-shopping-cart-off"></i><p>Cart is empty<br><span style="font-size:10px">Tap a product to add</span></p></div>
@@ -495,6 +576,8 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
           <div class="pay-section">
             <button class="pay-btn pay-cash" onclick="pay('Cash')"><i class="ti ti-cash"></i> Cash</button>
             <button class="pay-btn pay-transfer" onclick="pay('Transfer')"><i class="ti ti-building-bank"></i> Transfer</button>
+            <button class="pay-btn pay-split" onclick="pay('Cash+Transfer')"><i class="ti ti-arrows-split"></i> Cash+Transfer</button>
+            <button class="pay-btn pay-changetransfer" onclick="pay('Transfer+Change')"><i class="ti ti-replace"></i> Transfer+Change</button>
           </div>
           <button class="clear-btn" onclick="clearCart()"><i class="ti ti-trash"></i> Clear cart</button>
         </div>
@@ -510,13 +593,19 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
     <div class="modal-title" id="m-title">Confirm payment</div>
     <div class="modal-sub" id="m-sub"></div>
     <div class="modal-total" id="m-total"></div>
+    <div class="split-wrap" id="split-wrap" style="display:none"></div>
     <div class="receipt-lines" id="m-receipt"></div>
     <div class="modal-btns">
       <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-action" onclick="printReceipt()"><i class="ti ti-printer"></i> Print</button>
+      <button class="modal-action" onclick="saveReceipt()"><i class="ti ti-download"></i> Save</button>
       <button class="modal-confirm" onclick="confirmPay()">Confirm & record</button>
     </div>
   </div>
 </div>
+
+<!-- Hidden printable receipt -->
+<div id="print-receipt"></div>
 
 <!-- RESTOCK MODAL -->
 <div class="modal-bg" id="restock-modal">
@@ -606,7 +695,12 @@ const STAFF_LIST=[
 ];
 
 let CU='',CR='',CN='';
-let cart=[],txns=[],exps=[],pendingPay='';
+let orders=[{name:'Order 1',cust:'',disc:0,items:[]}];
+let activeOrderIdx=0;
+let txns=[],exps=[],pendingPay='';
+let EXP_CATS=['Electricity','Rent','Transport','Supplies','Staff salary','Equipment','Maintenance','Other'];
+let STORE={name:'ABBEYLECT SOLUTIONS ENTERPRISE',tag:'BN2938643 · ...light is life!',currency:'₦',lowStock:10};
+function curOrder(){return orders[activeOrderIdx];}
 let activeCat='All';
 
 function login(){
@@ -623,11 +717,13 @@ function login(){
     ['ni-inventory','ni-staff'].forEach(id=>{
       document.getElementById(id).style.display=(CR==='Admin'||CR==='Manager')?'':'none';
     });
+    document.getElementById('ni-dashboard').style.display=(CR==='Admin'||CR==='Manager')?'':'none';
+    document.getElementById('ni-admin').style.display=(CR==='Admin')?'':'none';
     document.getElementById('login-screen').classList.remove('active');
     document.getElementById('app').style.display='flex';
     document.getElementById('ed').value=today();
     seedData();
-    renderProds();renderDash();renderTxns();renderExp();renderInv();renderStaff();
+    renderProds();renderDash();renderTxns();renderExp();renderInv();renderStaff();renderOrderTabs();renderCart();
   } else {
     err.style.display='block';
     document.getElementById('lp').value='';
@@ -638,7 +734,7 @@ function logout(){
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').classList.add('active');
   document.getElementById('lu').value='';document.getElementById('lp').value='';
-  cart=[];
+  orders=[{name:'Order 1',cust:'',disc:0,items:[]}];activeOrderIdx=0;
 }
 
 function today(){return new Date().toISOString().split('T')[0];}
@@ -664,9 +760,12 @@ const PAGE_META={
   expenses:{title:'Expenses',sub:'Log and track business expenses'},
   inventory:{title:'Inventory',sub:'Manage product stock levels'},
   staff:{title:'Staff',sub:'View team performance'},
+  admin:{title:'Admin control panel',sub:'Store settings and staff accounts'},
 };
 
 function nav(pg,el){
+  const restricted={dashboard:['Admin','Manager'],inventory:['Admin','Manager'],staff:['Admin','Manager'],admin:['Admin']};
+  if(restricted[pg]&&!restricted[pg].includes(CR)){toast('You do not have access to this section','error');return;}
   document.querySelectorAll('.nav-icon').forEach(n=>n.classList.remove('active'));
   el.classList.add('active');
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -679,6 +778,7 @@ function nav(pg,el){
   if(pg==='dashboard') renderDash();
   if(pg==='transactions') renderTxns();
   if(pg==='expenses') renderExp();
+  if(pg==='admin') renderAdmin();
 }
 
 function renderProds(){
@@ -702,10 +802,11 @@ function setCat(c,el){
 function filterProds(){
   const q=(document.getElementById('psearch').value||'').toLowerCase();
   const list=PRODUCTS.filter(p=>(activeCat==='All'||p.cat===activeCat)&&p.name.toLowerCase().includes(q));
-  const inCartIds=new Set(cart.map(c=>c.id));
+  const items=curOrder().items;
+  const inCartIds=new Set(items.map(c=>c.id));
   document.getElementById('prod-grid').innerHTML=list.map(p=>{
     const inCart=inCartIds.has(p.id);
-    const cartItem=cart.find(c=>c.id===p.id);
+    const cartItem=items.find(c=>c.id===p.id);
     const qtyBadge=inCart?cartItem.qty:'+';
     return `<div class="prod-card cc-${p.cat}${p.stock<=0?' out':''}${inCart?' in-cart':''}" onclick="addCart(${p.id})">
       <div class="prod-qty-badge">${qtyBadge}</div>
@@ -720,29 +821,70 @@ function filterProds(){
 function addCart(id){
   const p=PRODUCTS.find(x=>x.id===id);
   if(!p||p.stock<=0){toast('Out of stock','error');return;}
-  const ex=cart.find(c=>c.id===id);
+  const items=curOrder().items;
+  const ex=items.find(c=>c.id===id);
   if(ex){if(ex.qty>=p.stock){toast('Max stock reached','error');return;}ex.qty++;}
-  else cart.push({...p,qty:1});
-  renderCart();filterProds();
+  else items.push({...p,qty:1});
+  renderCart();filterProds();renderOrderTabs();
 }
 function chQty(id,d){
-  const i=cart.findIndex(c=>c.id===id);
+  const items=curOrder().items;
+  const i=items.findIndex(c=>c.id===id);
   if(i<0) return;
-  cart[i].qty+=d;
-  if(cart[i].qty<=0) cart.splice(i,1);
-  renderCart();filterProds();
+  items[i].qty+=d;
+  if(items[i].qty<=0) items.splice(i,1);
+  renderCart();filterProds();renderOrderTabs();
 }
-function clearCart(){cart=[];renderCart();filterProds();}
+function clearCart(){curOrder().items=[];renderCart();filterProds();renderOrderTabs();}
+
+function newOrder(){
+  if(orders.length>=8){toast('Maximum of 8 open orders at once','error');return;}
+  const n=(orders.length?Math.max(...orders.map(o=>parseInt((o.name.match(/\d+/)||[0])[0])||0)):0)+1;
+  orders.push({name:'Order '+n,cust:'',disc:0,items:[]});
+  activeOrderIdx=orders.length-1;
+  syncOrderInputs();renderOrderTabs();renderCart();filterProds();
+  toast('New order tab opened — '+orders.length+' orders in progress','success');
+}
+function switchOrder(idx){
+  if(idx===activeOrderIdx) return;
+  activeOrderIdx=idx;
+  syncOrderInputs();renderOrderTabs();renderCart();filterProds();
+}
+function closeOrder(idx,ev){
+  ev.stopPropagation();
+  if(orders.length<=1){toast('At least one order tab must stay open','error');return;}
+  const o=orders[idx];
+  if(o.items.length&&!confirm('"'+o.name+'" still has '+o.items.length+' item(s) in it. Close anyway?')) return;
+  orders.splice(idx,1);
+  if(activeOrderIdx>=orders.length) activeOrderIdx=orders.length-1;
+  else if(idx<activeOrderIdx) activeOrderIdx--;
+  syncOrderInputs();renderOrderTabs();renderCart();filterProds();
+}
+function syncOrderInputs(){
+  document.getElementById('cust-name').value=curOrder().cust||'';
+  document.getElementById('disc').value=curOrder().disc||0;
+}
+function renderOrderTabs(){
+  document.getElementById('order-tabs').innerHTML=orders.map((o,i)=>{
+    const qty=o.items.reduce((s,c)=>s+c.qty,0);
+    return `<div class="order-tab${i===activeOrderIdx?' active':''}" onclick="switchOrder(${i})">
+      <span>${o.name}${o.cust?' · '+o.cust:''}</span>
+      <span class="ot-badge">${qty}</span>
+      ${orders.length>1?`<span class="ot-close" onclick="closeOrder(${i},event)"><i class="ti ti-x"></i></span>`:''}
+    </div>`;
+  }).join('')+`<div class="order-tab-add" onclick="newOrder()" title="Open new order"><i class="ti ti-plus"></i></div>`;
+}
 
 function renderCart(){
   const el=document.getElementById('cart-items');
-  const total=cart.reduce((s,c)=>s+c.qty,0);
+  const items=curOrder().items;
+  const total=items.reduce((s,c)=>s+c.qty,0);
   document.getElementById('cart-badge').textContent=total;
-  if(!cart.length){
+  if(!items.length){
     el.innerHTML='<div class="cart-empty"><i class="ti ti-shopping-cart-off"></i><p>Cart is empty<br><span style="font-size:10px">Tap a product to add</span></p></div>';
     calcTotals(0,0);return;
   }
-  el.innerHTML=cart.map(c=>`
+  el.innerHTML=items.map(c=>`
     <div class="cart-item">
       <div class="ci-icon ci-${c.cat}"><i class="ti ${c.icon}"></i></div>
       <div class="ci-info">
@@ -756,12 +898,11 @@ function renderCart(){
       </div>
       <div class="ci-price">₦${(c.price*c.qty).toLocaleString()}</div>
     </div>`).join('');
-  const sub=cart.reduce((s,c)=>s+c.price*c.qty,0);
-  
+  const sub=items.reduce((s,c)=>s+c.price*c.qty,0);
   const disc=parseFloat(document.getElementById('disc').value)||0;
   calcTotals(sub,Math.max(0,sub-disc));
 }
-document.addEventListener('input',e=>{if(e.target.id==='disc') renderCart();});
+document.addEventListener('input',e=>{if(e.target.id==='disc'){curOrder().disc=parseFloat(e.target.value)||0;renderCart();}});
 
 function calcTotals(sub,total){
   const fmt=n=>n.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -770,37 +911,196 @@ function calcTotals(sub,total){
 }
 
 function pay(method){
-  if(!cart.length){toast('Cart is empty','error');return;}
-  const sub=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const items=curOrder().items;
+  if(!items.length){toast('Cart is empty','error');return;}
+  const sub=items.reduce((s,c)=>s+c.price*c.qty,0);
   const disc=Math.max(0,parseFloat(document.getElementById('disc').value)||0);
   const total=Math.max(0,sub-disc);
   pendingPay=method;
   const cust=document.getElementById('cust-name').value||'Walk-in';
   document.getElementById('m-title').textContent='Confirm '+method.toLowerCase()+' payment';
-  document.getElementById('m-sub').textContent='Customer: '+cust;
+  document.getElementById('m-sub').textContent='Customer: '+cust+' · '+curOrder().name;
   document.getElementById('m-total').textContent='₦'+total.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById('m-receipt').innerHTML=`
-    <div class="receipt-brand">ABBEYLECT SOLUTIONS ENTERPRISE</div>
-    <div style="text-align:center;font-size:10px;color:var(--muted);margin-bottom:6px">BN2938643 · ... light is life!</div>
-    ${cart.map(c=>`<div class="r-row"><span>${c.name} ×${c.qty}</span><span>₦${(c.price*c.qty).toLocaleString()}</span></div>`).join('')}
-    <div class="r-row" style="border-top:1.5px dashed var(--border);margin-top:5px;padding-top:5px"><span>VAT (0%)</span><span>₦0.00</span></div>
-    ${disc>0?`<div class="r-row"><span>Discount</span><span>−₦${disc.toLocaleString('en-NG',{minimumFractionDigits:2})}</span></div>`:''}
-    <div class="r-row bold" style="border-top:1.5px dashed var(--border);margin-top:5px;padding-top:5px"><span>Total</span><span>₦${total.toFixed(2)}</span></div>
-    <div class="r-row"><span>Method</span><span>${method}</span></div>`;
+
+  const splitWrap=document.getElementById('split-wrap');
+  if(method==='Cash+Transfer'){
+    splitWrap.style.display='flex';
+    splitWrap.innerHTML=`
+      <div class="split-row">
+        <div><div class="flabel">Cash amount (₦)</div><input class="finput" type="number" id="sp-cash" value="${total.toFixed(2)}" oninput="updateSplit()"></div>
+        <div><div class="flabel">Transfer amount (₦)</div><input class="finput" type="number" id="sp-transfer" value="0.00" readonly></div>
+      </div>
+      <div id="sp-msg" style="font-size:11px;color:var(--muted)"></div>`;
+    updateSplit();
+  } else if(method==='Transfer+Change'){
+    splitWrap.style.display='flex';
+    splitWrap.innerHTML=`
+      <div class="split-row">
+        <div><div class="flabel">Amount transferred (₦)</div><input class="finput" type="number" id="sp-transferred" value="${total.toFixed(2)}" oninput="updateSplit()"></div>
+        <div><div class="flabel">Change given in cash (₦)</div><input class="finput" type="number" id="sp-change" value="0.00" readonly></div>
+      </div>
+      <div id="sp-msg" style="font-size:11px;color:var(--muted)"></div>`;
+    updateSplit();
+  } else {
+    splitWrap.style.display='none';
+    splitWrap.innerHTML='';
+  }
+
+  renderModalReceipt();
   document.getElementById('modal').classList.add('open');
 }
 
+function updateSplit(){
+  const total=parseFloat((document.getElementById('m-total').textContent||'₦0').replace(/[₦,]/g,''))||0;
+  if(pendingPay==='Cash+Transfer'){
+    const cash=Math.max(0,parseFloat(document.getElementById('sp-cash').value)||0);
+    const transfer=Math.max(0,total-cash);
+    document.getElementById('sp-transfer').value=transfer.toFixed(2);
+    document.getElementById('sp-msg').textContent=cash>total?'Cash amount exceeds total — adjust it.':'Transfer amount auto-fills the remaining balance.';
+  } else if(pendingPay==='Transfer+Change'){
+    const transferred=Math.max(0,parseFloat(document.getElementById('sp-transferred').value)||0);
+    const change=Math.max(0,transferred-total);
+    document.getElementById('sp-change').value=change.toFixed(2);
+    document.getElementById('sp-msg').textContent=transferred<total?'Amount transferred is less than the total — adjust it.':'Customer transferred extra; balance is returned as cash change.';
+  }
+  renderModalReceipt();
+}
+
+function getSplitBreakdown(total){
+  if(pendingPay==='Cash'){return{cash:total,transfer:0,change:0};}
+  if(pendingPay==='Transfer'){return{cash:0,transfer:total,change:0};}
+  if(pendingPay==='Cash+Transfer'){
+    const cash=Math.max(0,parseFloat(document.getElementById('sp-cash')?.value)||0);
+    const transfer=Math.max(0,total-cash);
+    return{cash,transfer,change:0};
+  }
+  if(pendingPay==='Transfer+Change'){
+    const transferred=Math.max(0,parseFloat(document.getElementById('sp-transferred')?.value)||0);
+    const change=Math.max(0,transferred-total);
+    return{cash:-change,transfer:transferred,change};
+  }
+  return{cash:0,transfer:0,change:0};
+}
+
+function renderModalReceipt(){
+  const items=curOrder().items;
+  const sub=items.reduce((s,c)=>s+c.price*c.qty,0);
+  const disc=Math.max(0,parseFloat(document.getElementById('disc').value)||0);
+  const total=Math.max(0,sub-disc);
+  const bd=getSplitBreakdown(total);
+  let methodLine=pendingPay;
+  if(pendingPay==='Cash+Transfer') methodLine=`Cash ₦${bd.cash.toLocaleString('en-NG',{minimumFractionDigits:2})} + Transfer ₦${bd.transfer.toLocaleString('en-NG',{minimumFractionDigits:2})}`;
+  if(pendingPay==='Transfer+Change') methodLine=`Transfer ₦${bd.transfer.toLocaleString('en-NG',{minimumFractionDigits:2})} − Change ₦${bd.change.toLocaleString('en-NG',{minimumFractionDigits:2})}`;
+  document.getElementById('m-receipt').innerHTML=`
+    <div class="receipt-brand">${STORE.name}</div>
+    <div style="text-align:center;font-size:10px;color:var(--muted);margin-bottom:6px">${STORE.tag}</div>
+    ${items.map(c=>`<div class="r-row"><span>${c.name} ×${c.qty}</span><span>₦${(c.price*c.qty).toLocaleString()}</span></div>`).join('')}
+    <div class="r-row" style="border-top:1.5px dashed var(--border);margin-top:5px;padding-top:5px"><span>VAT (0%)</span><span>₦0.00</span></div>
+    ${disc>0?`<div class="r-row"><span>Discount</span><span>−₦${disc.toLocaleString('en-NG',{minimumFractionDigits:2})}</span></div>`:''}
+    <div class="r-row bold" style="border-top:1.5px dashed var(--border);margin-top:5px;padding-top:5px"><span>Total</span><span>₦${total.toFixed(2)}</span></div>
+    <div class="r-row"><span>Method</span><span>${methodLine}</span></div>`;
+}
+
+function validateSplit(total){
+  if(pendingPay==='Cash+Transfer'){
+    const cash=Math.max(0,parseFloat(document.getElementById('sp-cash').value)||0);
+    if(cash>total){toast('Cash amount cannot exceed the total','error');return false;}
+  } else if(pendingPay==='Transfer+Change'){
+    const transferred=Math.max(0,parseFloat(document.getElementById('sp-transferred').value)||0);
+    if(transferred<total){toast('Amount transferred is less than the total','error');return false;}
+  }
+  return true;
+}
+
 function confirmPay(){
-  const sub=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const o=curOrder();
+  const items=o.items;
+  const sub=items.reduce((s,c)=>s+c.price*c.qty,0);
   const disc=Math.max(0,parseFloat(document.getElementById('disc').value)||0);
   const total=parseFloat(Math.max(0,sub-disc).toFixed(2));
-  txns.unshift({id:'TXN'+Date.now().toString().slice(-5),date:new Date().toISOString(),cust:document.getElementById('cust-name').value||'Walk-in',items:cart.map(c=>({n:c.name,q:c.qty,p:c.price})),total,pay:pendingPay,staff:CU});
-  cart.forEach(c=>{const p=PRODUCTS.find(x=>x.id===c.id);if(p)p.stock-=c.qty;});
-  cart=[];document.getElementById('cust-name').value='';document.getElementById('disc').value='0';
-  closeModal();renderCart();filterProds();
-  toast('Sale recorded — ₦'+total.toLocaleString(),'success');
+  if(!validateSplit(total)) return;
+  const bd=getSplitBreakdown(total);
+  txns.unshift({id:'TXN'+Date.now().toString().slice(-5),date:new Date().toISOString(),cust:document.getElementById('cust-name').value||'Walk-in',items:items.map(c=>({n:c.name,q:c.qty,p:c.price})),total,pay:pendingPay,split:bd,staff:CU});
+  items.forEach(c=>{const p=PRODUCTS.find(x=>x.id===c.id);if(p)p.stock-=c.qty;});
+  o.items=[];o.cust='';o.disc=0;
+  document.getElementById('cust-name').value='';document.getElementById('disc').value='0';
+  closeModal();renderCart();filterProds();renderOrderTabs();
+  toast('Sale recorded — ₦'+total.toLocaleString()+' ('+o.name+')','success');
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');}
+
+/* ── PRINTABLE / SAVED RECEIPT ── */
+function buildReceiptHTML(){
+  const o=curOrder();
+  const items=o.items;
+  const sub=items.reduce((s,c)=>s+c.price*c.qty,0);
+  const disc=Math.max(0,parseFloat(document.getElementById('disc').value)||0);
+  const total=Math.max(0,sub-disc);
+  const bd=getSplitBreakdown(total);
+  const cust=document.getElementById('cust-name').value||'Walk-in';
+  const dt=new Date();
+  const dateStr=dt.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
+  const timeStr=dt.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  let methodLine=pendingPay||'Cash';
+  if(pendingPay==='Cash+Transfer') methodLine=`CASH ${STORE.currency}${bd.cash.toFixed(2)} + TRANSFER ${STORE.currency}${bd.transfer.toFixed(2)}`;
+  else if(pendingPay==='Transfer+Change') methodLine=`TRANSFER ${STORE.currency}${bd.transfer.toFixed(2)} (CHANGE ${STORE.currency}${bd.change.toFixed(2)})`;
+  else methodLine=(pendingPay||'CASH').toUpperCase();
+  const bars=Array.from({length:46},()=>Math.round(Math.random()*2)+1);
+  return `<div class="pr-wrap">
+    <div class="pr-center pr-bold pr-caps">${STORE.name}</div>
+    <div class="pr-center">123 Workshop Road</div>
+    <div class="pr-center">Abuja, FCT</div>
+    <div class="pr-center">${dateStr}&nbsp;&nbsp;${timeStr}</div>
+    <div class="pr-line"></div>
+    <div class="pr-row"><span>${o.name.toUpperCase()}</span><span>HOST ${(CN||'STAFF').toUpperCase()}</span></div>
+    <div class="pr-row"><span>${methodLine}</span><span></span></div>
+    <div class="pr-line"></div>
+    <div class="pr-row pr-bold"><span>QTY&nbsp;&nbsp;DESC</span><span>AMT</span></div>
+    <div class="pr-line"></div>
+    ${items.map(c=>`<div class="pr-row"><span>${c.qty}&nbsp;&nbsp;${c.name}</span><span>${STORE.currency}${(c.price*c.qty).toFixed(2)}</span></div>`).join('')}
+    <div class="pr-line"></div>
+    <div class="pr-amt-box">
+      <div>AMT&nbsp;&nbsp;<span class="pr-amt">${STORE.currency}${total.toFixed(2)}</span></div>
+      <div class="pr-row"><span>SUBTOTAL</span><span>${STORE.currency}${sub.toFixed(2)}</span></div>
+      ${disc>0?`<div class="pr-row"><span>DISCOUNT</span><span>-${STORE.currency}${disc.toFixed(2)}</span></div>`:''}
+      <div class="pr-row"><span>TAX</span><span>${STORE.currency}0.00</span></div>
+      <div class="pr-row pr-bold"><span>BALANCE</span><span>${STORE.currency}${total.toFixed(2)}</span></div>
+      <div class="pr-row"><span>CUSTOMER</span><span>${cust}</span></div>
+    </div>
+    <div class="pr-barcode">${bars.map(h=>`<span style="height:${h*10+4}px"></span>`).join('')}</div>
+  </div>`;
+}
+
+function printReceipt(){
+  if(!curOrder().items.length){toast('Cart is empty','error');return;}
+  document.getElementById('print-receipt').innerHTML=buildReceiptHTML();
+  window.print();
+}
+
+function saveReceipt(){
+  if(!curOrder().items.length){toast('Cart is empty','error');return;}
+  const css=`
+    body{margin:0;padding:24px;background:#f4f4f4;font-family:'Courier New',monospace;display:flex;justify-content:center}
+    .pr-wrap{width:280px;padding:14px 16px;color:#000;background:#fff;font-size:12px;line-height:1.5;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+    .pr-center{text-align:center}
+    .pr-bold{font-weight:700}
+    .pr-caps{text-transform:uppercase}
+    .pr-line{border-top:1px dashed #000;margin:6px 0}
+    .pr-row{display:flex;justify-content:space-between;gap:8px}
+    .pr-row span:last-child{white-space:nowrap}
+    .pr-amt-box{margin:10px 0;text-align:left}
+    .pr-amt-box .pr-amt{font-size:20px;font-weight:700}
+    .pr-barcode{display:flex;align-items:flex-end;justify-content:center;gap:1px;height:34px;margin-top:12px}
+    .pr-barcode span{display:block;width:2px;background:#000}`;
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Receipt</title><style>${css}</style></head><body>${buildReceiptHTML()}</body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='receipt-'+curOrder().name.replace(/\s+/g,'')+'-'+Date.now()+'.html';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Receipt saved','success');
+}
 
 function renderDash(){
   const td=new Date().toDateString();
@@ -820,7 +1120,7 @@ function renderDash(){
     <div class="bar-item"><span class="bar-label">${c}</span><div class="bar-track"><div class="bar-fill${i===0?'':' alt'}" style="width:${Math.round(v/mx*100)}%;background:${CAT_COLORS[c]||'#6C63FF'}"></div></div><span class="bar-val">₦${v.toLocaleString()}</span></div>`).join('')||'<p style="font-size:12px;color:var(--muted)">No data yet</p>';
   document.getElementById('recent-txns').innerHTML=txns.slice(0,4).map(t=>`
     <div class="txn-item"><div><div class="txn-name">${t.cust}</div><div class="txn-sub">${new Date(t.date).toLocaleString()}</div></div><div style="text-align:right"><div class="txn-amt">₦${t.total.toLocaleString()}</div><span class="tbadge ${t.pay==='Cash'?'tb-cash':'tb-transfer'}">${t.pay}</span></div></div>`).join('')||'<p style="font-size:12px;color:var(--muted)">No transactions yet</p>';
-  const low=PRODUCTS.filter(p=>p.stock<=10);
+  const low=PRODUCTS.filter(p=>p.stock<=STORE.lowStock);
   document.getElementById('low-stock').innerHTML=low.length?low.map(p=>`<span style="background:#FDECEC;color:var(--red);padding:5px 12px;border-radius:8px;font-size:11px;font-weight:600">${p.name} — ${p.stock} left</span>`).join(''):'<span style="color:var(--green);font-size:12px;font-weight:600">✓ All products well stocked</span>';
 }
 
@@ -847,13 +1147,32 @@ function delExp(id){
 function renderExp(){
   document.getElementById('exp-tbody').innerHTML=exps.map(e=>`
     <tr><td>${e.date}</td><td><span class="tbadge" style="background:#EEF0FF;color:var(--accent)">${e.cat}</span></td><td>${e.desc}</td><td>${e.payee}</td><td style="color:var(--accent);font-weight:700">₦${e.amt.toLocaleString()}</td><td style="color:var(--muted)">${e.by}</td><td><button onclick="delExp('${e.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px"><i class="ti ti-trash"></i></button></td></tr>`).join('')||`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">No expenses yet</td></tr>`;
+  const sel=document.getElementById('ec');
+  const keep=sel.value;
+  sel.innerHTML=EXP_CATS.map(c=>`<option value="${c}">${c}</option>`).join('');
+  if(EXP_CATS.includes(keep)) sel.value=keep;
+  document.getElementById('exp-cat-admin').style.display=(CR==='Admin')?'':'none';
+  document.getElementById('exp-cat-chip-list').innerHTML=EXP_CATS.map(c=>{
+    const count=exps.filter(e=>e.cat===c).length;
+    return `<span style="display:flex;align-items:center;gap:6px;background:#EEF0FF;color:var(--accent);border-radius:20px;padding:6px 12px;font-size:11px;font-weight:700">${c} · ${count}</span>`;
+  }).join('');
+}
+
+function addExpCat(){
+  const name=document.getElementById('nec-name').value.trim();
+  if(!name){toast('Enter a category name','error');return;}
+  if(EXP_CATS.some(c=>c.toLowerCase()===name.toLowerCase())){toast('Category already exists','error');return;}
+  EXP_CATS.push(name);
+  document.getElementById('nec-name').value='';
+  renderExp();
+  toast('Expense category "'+name+'" added','success');
 }
 
 function renderInv(){
   document.getElementById('inv-tbody').innerHTML=PRODUCTS.map(p=>{
     const margin=p.price-(p.cost||0);
     const marginPct=p.price?Math.round(margin/p.price*100):0;
-    return `<tr><td style="font-weight:600">${p.name}</td><td><span class="tbadge" style="background:${(CAT_COLORS[p.cat]||'#6C63FF')+'1A'};color:${CAT_COLORS[p.cat]||'#6C63FF'}">${p.cat}</span></td><td style="color:var(--muted);font-weight:600">₦${(p.cost||0).toLocaleString()}</td><td style="color:var(--accent);font-weight:700">₦${p.price.toLocaleString()}</td><td style="color:${margin>=0?'var(--green)':'var(--red)'};font-weight:700">₦${margin.toLocaleString()} (${marginPct}%)</td><td style="font-weight:600">${p.stock}</td><td><span class="sbadge ${p.stock>10?'sb-ok':p.stock>0?'sb-low':'sb-out'}">${p.stock>10?'In stock':p.stock>0?'Low stock':'Out of stock'}</span></td><td style="display:flex;gap:6px"><button class="restock-btn" onclick="openRestock(${p.id})">Restock</button><button class="restock-btn" onclick="openEditPrice(${p.id})">Edit price</button></td></tr>`;
+    return `<tr><td style="font-weight:600">${p.name}</td><td><span class="tbadge" style="background:${(CAT_COLORS[p.cat]||'#6C63FF')+'1A'};color:${CAT_COLORS[p.cat]||'#6C63FF'}">${p.cat}</span></td><td style="color:var(--muted);font-weight:600">₦${(p.cost||0).toLocaleString()}</td><td style="color:var(--accent);font-weight:700">₦${p.price.toLocaleString()}</td><td style="color:${margin>=0?'var(--green)':'var(--red)'};font-weight:700">₦${margin.toLocaleString()} (${marginPct}%)</td><td style="font-weight:600">${p.stock}</td><td><span class="sbadge ${p.stock>STORE.lowStock?'sb-ok':p.stock>0?'sb-low':'sb-out'}">${p.stock>STORE.lowStock?'In stock':p.stock>0?'Low stock':'Out of stock'}</span></td><td style="display:flex;gap:6px"><button class="restock-btn" onclick="openRestock(${p.id})">Restock</button><button class="restock-btn" onclick="openEditPrice(${p.id})">Edit price</button></td></tr>`;
   }).join('')||`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">No products yet</td></tr>`;
   document.getElementById('np-cat').innerHTML=CATEGORIES.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
   renderCatChips();
@@ -889,7 +1208,7 @@ function renderInvDash(){
   const costValue=PRODUCTS.reduce((s,p)=>s+(p.cost||0)*p.stock,0);
   const retailValue=PRODUCTS.reduce((s,p)=>s+p.price*p.stock,0);
   const potentialProfit=retailValue-costValue;
-  const lowCount=PRODUCTS.filter(p=>p.stock>0&&p.stock<=10).length;
+  const lowCount=PRODUCTS.filter(p=>p.stock>0&&p.stock<=STORE.lowStock).length;
   const outCount=PRODUCTS.filter(p=>p.stock<=0).length;
   document.getElementById('inv-dash-stats').innerHTML=`
     <div class="dcard accent"><div class="dcard-label"><i class="ti ti-boxes"></i>Total products</div><div class="dcard-val">${totalProducts}</div><div class="dcard-sub">${totalUnits} units in stock</div></div>
@@ -996,6 +1315,56 @@ function renderStaff(){
     const col=s.role==='Admin'?'#EF4444':s.role==='Manager'?'#F5A623':'#6C63FF';
     return `<div class="staff-card"><div class="staff-av" style="background:${col}">${ini}</div><div><div class="staff-name">${s.name}</div><div class="staff-un">${s.un}</div></div><span class="role-chip ${s.role==='Admin'?'rc-admin':s.role==='Manager'?'rc-manager':'rc-staff'}">${s.role}</span><div class="staff-sales"><div class="sv">₦${sales.toLocaleString()}</div><div class="sl">Today's sales</div></div></div>`;
   }).join('');
+}
+
+function renderAdmin(){
+  document.getElementById('set-name').value=STORE.name;
+  document.getElementById('set-tag').value=STORE.tag;
+  document.getElementById('set-currency').value=STORE.currency;
+  document.getElementById('set-lowstock').value=STORE.lowStock;
+  document.getElementById('admin-staff-list').innerHTML=STAFF_LIST.map((s,i)=>{
+    const ini=s.name.split(' ').map(w=>w[0]).join('').slice(0,2);
+    const col=s.role==='Admin'?'#EF4444':s.role==='Manager'?'#F5A623':'#6C63FF';
+    return `<div class="staff-card"><div class="staff-av" style="background:${col}">${ini}</div><div><div class="staff-name">${s.name}</div><div class="staff-un">${s.un}</div></div><span class="role-chip ${s.role==='Admin'?'rc-admin':s.role==='Manager'?'rc-manager':'rc-staff'}">${s.role}</span><button class="staff-remove" onclick="removeStaff(${i})" title="Remove account"><i class="ti ti-trash"></i></button></div>`;
+  }).join('')||`<p style="font-size:12px;color:var(--muted)">No accounts yet</p>`;
+}
+
+function addStaff(){
+  const name=document.getElementById('as-name').value.trim();
+  const un=document.getElementById('as-un').value.trim().toLowerCase();
+  const pw=document.getElementById('as-pw').value;
+  const role=document.getElementById('as-role').value;
+  if(!name){toast('Enter full name','error');return;}
+  if(!un){toast('Enter a username','error');return;}
+  if(USERS[un]){toast('Username already exists','error');return;}
+  if(!pw||pw.length<4){toast('Password must be at least 4 characters','error');return;}
+  USERS[un]={pw,role,name};
+  STAFF_LIST.push({name,un,role});
+  document.getElementById('as-name').value='';
+  document.getElementById('as-un').value='';
+  document.getElementById('as-pw').value='';
+  renderAdmin();renderStaff();
+  toast(name+' added as '+role,'success');
+}
+
+function removeStaff(i){
+  const s=STAFF_LIST[i];
+  if(!s) return;
+  if(s.un===CU){toast("You can't remove your own active account",'error');return;}
+  if(!confirm('Remove account "'+s.name+'" ('+s.un+')? This cannot be undone.')) return;
+  delete USERS[s.un];
+  STAFF_LIST.splice(i,1);
+  renderAdmin();renderStaff();
+  toast('Account removed','success');
+}
+
+function saveSettings(){
+  STORE.name=document.getElementById('set-name').value.trim()||STORE.name;
+  STORE.tag=document.getElementById('set-tag').value.trim()||STORE.tag;
+  STORE.currency=document.getElementById('set-currency').value.trim()||STORE.currency;
+  STORE.lowStock=parseInt(document.getElementById('set-lowstock').value)||STORE.lowStock;
+  renderInv();
+  toast('Store settings saved','success');
 }
 
 // Position sidebar tooltips dynamically
