@@ -643,6 +643,38 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;font-size:13p
 
 <div class="toast" id="toast"></div>
 
+<!-- FIREBASE INIT -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
+    deleteDoc, onSnapshot, increment
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBnQuKCm24Lvu8i1DTZw0IEZplZrahicLg",
+    authDomain: "abbeylect-electrical-store.firebaseapp.com",
+    projectId: "abbeylect-electrical-store",
+    storageBucket: "abbeylect-electrical-store.firebasestorage.app",
+    messagingSenderId: "97957906897",
+    appId: "1:97957906897:web:29354f4a458de641ccb8f0"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.db = db;
+  window.fb = { collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, increment };
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
+
+<script>
+window.__fbReady = new Promise(resolve=>{
+  if(window.db){resolve();return;}
+  window.addEventListener('firebase-ready',()=>resolve(),{once:true});
+});
+</script>
+
 <script>
 const USERS={
   staff1:{pw:'pass123',role:'Staff',name:'Adaeze Okonkwo'},
@@ -703,11 +735,30 @@ let STORE={name:'ABBEYLECT SOLUTIONS ENTERPRISE',tag:'BN2938643 · ...light is l
 function curOrder(){return orders[activeOrderIdx];}
 let activeCat='All';
 
-function login(){
+async function login(){
   const u=document.getElementById('lu').value.trim();
   const p=document.getElementById('lp').value;
-  const rec=USERS[u];
   const err=document.getElementById('login-err');
+  let rec=USERS[u];
+
+  // Local cache might be stale (e.g. password changed on another device before
+  // this device's Firestore listener had a chance to sync). Double-check directly
+  // against Firestore before rejecting a login.
+  if((!rec||rec.pw!==p) && window.db && window.fb){
+    try{
+      const{doc,getDoc}=window.fb;
+      const snap=await getDoc(doc(window.db,'staff',u));
+      if(snap.exists()){
+        const v=snap.data();
+        rec={pw:v.pw,role:v.role,name:v.name};
+        USERS[u]=rec; // refresh local cache immediately
+        if(!STAFF_LIST.some(s=>s.un===u)) STAFF_LIST.push({name:v.name,un:u,role:v.role});
+      }
+    }catch(e){
+      console.error('Direct staff lookup failed:',e);
+    }
+  }
+
   if(rec&&rec.pw===p){
     CU=u;CR=rec.role;CN=rec.name;
     err.style.display='none';
@@ -724,6 +775,7 @@ function login(){
     document.getElementById('ed').value=today();
     seedData();
     renderProds();renderDash();renderTxns();renderExp();renderInv();renderStaff();renderOrderTabs();renderCart();
+    fbInit();
   } else {
     err.style.display='block';
     document.getElementById('lp').value='';
@@ -751,6 +803,128 @@ function seedData(){
     {id:'E001',date:today(),cat:'Electricity',desc:'EEDC bill',payee:'EEDC',amt:45000,by:'admin'},
     {id:'E002',date:today(),cat:'Transport',desc:'Delivery run',payee:'Dispatch',amt:3500,by:'manager1'},
   ];
+}
+
+/* ══════════════ FIREBASE / FIRESTORE SYNC LAYER ══════════════ */
+let fbInitialized=false;
+async function fbInit(){
+  if(fbInitialized) return;
+  try{
+    await window.__fbReady;
+    if(!window.db){console.warn('Firestore not available — running in local-only mode');return;}
+    fbInitialized=true;
+    await fbSeedIfEmpty();
+    fbAttachListeners();
+  }catch(err){
+    console.error('Firebase init failed, continuing in local-only mode:',err);
+  }
+}
+
+async function fbSeedIfEmpty(){
+  const {collection,getDocs,setDoc,doc}=window.fb;
+  const db=window.db;
+  try{
+    const prodSnap=await getDocs(collection(db,'products'));
+    if(prodSnap.empty) for(const p of PRODUCTS) await setDoc(doc(db,'products',String(p.id)),p);
+
+    const catSnap=await getDocs(collection(db,'categories'));
+    if(catSnap.empty) for(const c of CATEGORIES) await setDoc(doc(db,'categories',c.name),c);
+
+    const ecSnap=await getDocs(collection(db,'exp_categories'));
+    if(ecSnap.empty) for(const c of EXP_CATS) await setDoc(doc(db,'exp_categories',c),{name:c});
+
+    const staffSnap=await getDocs(collection(db,'staff'));
+    if(staffSnap.empty) for(const s of STAFF_LIST) await setDoc(doc(db,'staff',s.un),{name:s.name,role:s.role,pw:(USERS[s.un]||{}).pw||'changeme'});
+
+    const setSnap=await getDocs(collection(db,'settings'));
+    if(setSnap.empty) await setDoc(doc(db,'settings','store'),STORE);
+
+    const txnSnap=await getDocs(collection(db,'transactions'));
+    if(txnSnap.empty) for(const t of txns) await setDoc(doc(db,'transactions',t.id),t);
+
+    const expSnap=await getDocs(collection(db,'expenses'));
+    if(expSnap.empty) for(const e of exps) await setDoc(doc(db,'expenses',e.id),e);
+
+    const rsSnap=await getDocs(collection(db,'restocks'));
+    if(rsSnap.empty && RESTOCKS.length) for(const r of RESTOCKS) await setDoc(doc(db,'restocks',r.id),r);
+  }catch(err){
+    console.error('Firestore seeding failed:',err);
+  }
+}
+
+function fbAttachListeners(){
+  const {collection,onSnapshot}=window.fb;
+  const db=window.db;
+
+  onSnapshot(collection(db,'products'),snap=>{
+    PRODUCTS.length=0;
+    snap.forEach(d=>{const v=d.data();PRODUCTS.push({...v,id:isNaN(d.id)?d.id:parseInt(d.id)});});
+    renderProds();renderInv();renderDash();
+  },err=>console.error('products listener error:',err));
+
+  onSnapshot(collection(db,'categories'),snap=>{
+    CATEGORIES.length=0;
+    snap.forEach(d=>CATEGORIES.push(d.data()));
+    rebuildCatColors();
+    renderInv();renderProds();
+  },err=>console.error('categories listener error:',err));
+
+  onSnapshot(collection(db,'exp_categories'),snap=>{
+    EXP_CATS.length=0;
+    snap.forEach(d=>EXP_CATS.push(d.data().name));
+    renderExp();
+  },err=>console.error('exp_categories listener error:',err));
+
+  onSnapshot(collection(db,'staff'),snap=>{
+    STAFF_LIST.length=0;
+    Object.keys(USERS).forEach(k=>delete USERS[k]);
+    snap.forEach(d=>{
+      const v=d.data();
+      STAFF_LIST.push({name:v.name,un:d.id,role:v.role});
+      USERS[d.id]={pw:v.pw,role:v.role,name:v.name};
+    });
+    renderStaff();
+    if(document.getElementById('pg-admin').classList.contains('active')) renderAdmin();
+  },err=>console.error('staff listener error:',err));
+
+  onSnapshot(collection(db,'settings'),snap=>{
+    snap.forEach(d=>{if(d.id==='store') Object.assign(STORE,d.data());});
+    renderInv();
+    if(document.getElementById('pg-admin').classList.contains('active')) renderAdmin();
+  },err=>console.error('settings listener error:',err));
+
+  onSnapshot(collection(db,'transactions'),snap=>{
+    txns.length=0;
+    snap.forEach(d=>txns.push({...d.data(),id:d.id}));
+    txns.sort((a,b)=>new Date(b.date)-new Date(a.date));
+    renderDash();renderTxns();renderStaff();
+  },err=>console.error('transactions listener error:',err));
+
+  onSnapshot(collection(db,'expenses'),snap=>{
+    exps.length=0;
+    snap.forEach(d=>exps.push({...d.data(),id:d.id}));
+    exps.sort((a,b)=>new Date(b.date)-new Date(a.date));
+    renderExp();renderDash();
+  },err=>console.error('expenses listener error:',err));
+
+  onSnapshot(collection(db,'restocks'),snap=>{
+    RESTOCKS.length=0;
+    snap.forEach(d=>RESTOCKS.push({...d.data(),id:d.id}));
+    RESTOCKS.sort((a,b)=>new Date(b.date)-new Date(a.date));
+    renderInv();
+  },err=>console.error('restocks listener error:',err));
+}
+
+/* Safe wrapper: fire-and-forget Firestore write that never breaks the UI if offline */
+async function fbWrite(fn){
+  try{
+    await window.__fbReady;
+    if(!window.db) return;
+    await fn();
+  }catch(err){
+    console.error('Firestore write failed:',err);
+    toast('Saved locally — sync to cloud failed (check connection)','error');
+  }
 }
 
 const PAGE_META={
@@ -1020,8 +1194,16 @@ function confirmPay(){
   const total=parseFloat(Math.max(0,sub-disc).toFixed(2));
   if(!validateSplit(total)) return;
   const bd=getSplitBreakdown(total);
-  txns.unshift({id:'TXN'+Date.now().toString().slice(-5),date:new Date().toISOString(),cust:document.getElementById('cust-name').value||'Walk-in',items:items.map(c=>({n:c.name,q:c.qty,p:c.price})),total,pay:pendingPay,split:bd,staff:CU});
+  const txn={id:'TXN'+Date.now().toString().slice(-5),date:new Date().toISOString(),cust:document.getElementById('cust-name').value||'Walk-in',items:items.map(c=>({n:c.name,q:c.qty,p:c.price})),total,pay:pendingPay,split:bd,staff:CU};
+  txns.unshift(txn);
   items.forEach(c=>{const p=PRODUCTS.find(x=>x.id===c.id);if(p)p.stock-=c.qty;});
+  fbWrite(async()=>{
+    const {doc,setDoc,updateDoc,increment}=window.fb;
+    await setDoc(doc(window.db,'transactions',txn.id),txn);
+    for(const c of items){
+      await updateDoc(doc(window.db,'products',String(c.id)),{stock:increment(-c.qty)});
+    }
+  });
   o.items=[];o.cust='';o.disc=0;
   document.getElementById('cust-name').value='';document.getElementById('disc').value='0';
   closeModal();renderCart();filterProds();renderOrderTabs();
@@ -1136,13 +1318,16 @@ function addExp(){
   const date=document.getElementById('ed').value;
   if(!amt||amt<=0){toast('Enter a valid amount','error');return;}
   if(!date){toast('Select a date','error');return;}
-  exps.unshift({id:'E'+Date.now().toString().slice(-4),date,cat:document.getElementById('ec').value,desc:document.getElementById('edesc').value||document.getElementById('ec').value,payee:document.getElementById('ep').value||'—',amt,by:CU});
+  const exp={id:'E'+Date.now().toString().slice(-6),date,cat:document.getElementById('ec').value,desc:document.getElementById('edesc').value||document.getElementById('ec').value,payee:document.getElementById('ep').value||'—',amt,by:CU};
+  exps.unshift(exp);
+  fbWrite(async()=>{const{doc,setDoc}=window.fb;await setDoc(doc(window.db,'expenses',exp.id),exp);});
   document.getElementById('ea').value='';document.getElementById('ep').value='';document.getElementById('edesc').value='';
   renderExp();toast('Expense logged: ₦'+amt.toLocaleString(),'success');
 }
 function delExp(id){
   if(!confirm('Delete this expense?')) return;
   exps=exps.filter(e=>e.id!==id);renderExp();
+  fbWrite(async()=>{const{doc,deleteDoc}=window.fb;await deleteDoc(doc(window.db,'expenses',id));});
 }
 function renderExp(){
   document.getElementById('exp-tbody').innerHTML=exps.map(e=>`
@@ -1163,6 +1348,7 @@ function addExpCat(){
   if(!name){toast('Enter a category name','error');return;}
   if(EXP_CATS.some(c=>c.toLowerCase()===name.toLowerCase())){toast('Category already exists','error');return;}
   EXP_CATS.push(name);
+  fbWrite(async()=>{const{doc,setDoc}=window.fb;await setDoc(doc(window.db,'exp_categories',name),{name});});
   document.getElementById('nec-name').value='';
   renderExp();
   toast('Expense category "'+name+'" added','success');
@@ -1196,6 +1382,7 @@ function addCategory(){
   if(CATEGORIES.some(c=>c.name.toLowerCase()===name.toLowerCase())){toast('Category already exists','error');return;}
   CATEGORIES.push({name,color});
   rebuildCatColors();
+  fbWrite(async()=>{const{doc,setDoc}=window.fb;await setDoc(doc(window.db,'categories',name),{name,color});});
   document.getElementById('nc-name').value='';
   document.getElementById('nc-color').value='#6C63FF';
   renderInv();
@@ -1239,9 +1426,16 @@ function addProduct(){
   if(isNaN(cost)||cost<0){toast('Enter a valid cost price','error');return;}
   if(isNaN(price)||price<=0){toast('Enter a valid selling price','error');return;}
   if(PRODUCTS.some(p=>p.name.toLowerCase()===name.toLowerCase())){toast('A product with this name already exists','error');return;}
-  const id=PRODUCTS.length?Math.max(...PRODUCTS.map(p=>p.id))+1:1;
-  PRODUCTS.push({id,name,cat,cost,price,stock,icon});
-  if(stock>0) RESTOCKS.unshift({id:'R'+Date.now().toString().slice(-5),date:today(),productId:id,name,qty:stock,cost,by:CU});
+  const id=Date.now();
+  const product={id,name,cat,cost,price,stock,icon};
+  PRODUCTS.push(product);
+  let restock=null;
+  if(stock>0){restock={id:'R'+Date.now().toString().slice(-5),date:today(),productId:id,name,qty:stock,cost,by:CU};RESTOCKS.unshift(restock);}
+  fbWrite(async()=>{
+    const{doc,setDoc}=window.fb;
+    await setDoc(doc(window.db,'products',String(id)),product);
+    if(restock) await setDoc(doc(window.db,'restocks',restock.id),restock);
+  });
   document.getElementById('np-name').value='';
   document.getElementById('np-cost').value='';
   document.getElementById('np-price').value='';
@@ -1276,7 +1470,13 @@ function confirmRestock(){
   if(!date){toast('Select a date','error');return;}
   p.stock+=qty;
   p.cost=cost;
-  RESTOCKS.unshift({id:'R'+Date.now().toString().slice(-5),date,productId:p.id,name:p.name,qty,cost,by:CU});
+  const restock={id:'R'+Date.now().toString().slice(-5),date,productId:p.id,name:p.name,qty,cost,by:CU};
+  RESTOCKS.unshift(restock);
+  fbWrite(async()=>{
+    const{doc,setDoc,updateDoc}=window.fb;
+    await updateDoc(doc(window.db,'products',String(p.id)),{stock:p.stock,cost:p.cost});
+    await setDoc(doc(window.db,'restocks',restock.id),restock);
+  });
   closeRestockModal();
   renderInv();renderProds();renderDash();
   toast(p.name+' restocked +'+qty+' units','success');
@@ -1303,6 +1503,7 @@ function confirmEditPrice(){
   if(isNaN(cost)||cost<0){toast('Enter a valid cost price','error');return;}
   if(isNaN(price)||price<=0){toast('Enter a valid selling price','error');return;}
   p.cost=cost;p.price=price;
+  fbWrite(async()=>{const{doc,updateDoc}=window.fb;await updateDoc(doc(window.db,'products',String(p.id)),{cost,price});});
   closeEditPriceModal();
   renderInv();renderProds();renderDash();
   toast(p.name+' pricing updated','success');
@@ -1340,6 +1541,7 @@ function addStaff(){
   if(!pw||pw.length<4){toast('Password must be at least 4 characters','error');return;}
   USERS[un]={pw,role,name};
   STAFF_LIST.push({name,un,role});
+  fbWrite(async()=>{const{doc,setDoc}=window.fb;await setDoc(doc(window.db,'staff',un),{name,role,pw});});
   document.getElementById('as-name').value='';
   document.getElementById('as-un').value='';
   document.getElementById('as-pw').value='';
@@ -1354,6 +1556,7 @@ function removeStaff(i){
   if(!confirm('Remove account "'+s.name+'" ('+s.un+')? This cannot be undone.')) return;
   delete USERS[s.un];
   STAFF_LIST.splice(i,1);
+  fbWrite(async()=>{const{doc,deleteDoc}=window.fb;await deleteDoc(doc(window.db,'staff',s.un));});
   renderAdmin();renderStaff();
   toast('Account removed','success');
 }
@@ -1363,6 +1566,7 @@ function saveSettings(){
   STORE.tag=document.getElementById('set-tag').value.trim()||STORE.tag;
   STORE.currency=document.getElementById('set-currency').value.trim()||STORE.currency;
   STORE.lowStock=parseInt(document.getElementById('set-lowstock').value)||STORE.lowStock;
+  fbWrite(async()=>{const{doc,setDoc}=window.fb;await setDoc(doc(window.db,'settings','store'),STORE);});
   renderInv();
   toast('Store settings saved','success');
 }
@@ -1382,6 +1586,11 @@ function toast(msg,type){
   t.textContent=msg;t.className='toast '+(type||'');t.style.display='block';
   setTimeout(()=>t.style.display='none',3000);
 }
+
+// Start syncing with Firestore as soon as the page loads — not just after a
+// successful login — so staff/product/price changes made on other devices
+// are already reflected locally by the time someone tries to log in here.
+fbInit();
 </script>
 </body>
 </html>
