@@ -85,6 +85,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid transparent;transition:all .14s;font-family:'DM Sans',sans-serif;white-space:nowrap;}
 .btn-primary{background:#1040a0;color:#fff;border-color:#1040a0;}
 .btn-primary:hover{background:#0a2d80;}
+/* RESET PAGE */
+.reset-check-row{display:flex;align-items:center;gap:12px;padding:.75rem .2rem;border-bottom:1px solid var(--brd);cursor:pointer;user-select:none;transition:background .1s;border-radius:6px;}
+.reset-check-row:last-child{border-bottom:none;}
+.reset-check-row:hover{background:var(--surf2);}
+.reset-check-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.reset-chk{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--brd2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;color:transparent;background:var(--surf2);transition:all .12s;}
+.reset-chk.on{background:#c03838;border-color:#c03838;color:#fff;}
+/* USER CARDS */
+.ucard{display:flex;align-items:center;justify-content:space-between;padding:.75rem .3rem;border-bottom:1px solid var(--brd);gap:10px;flex-wrap:wrap;}
+.ucard:last-child{border-bottom:none;}
+.ucard-av{width:34px;height:34px;border-radius:50%;background:var(--grn-l);color:var(--grn);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ucard-perms{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+/* PERMISSION TOGGLE */
+.perm-toggle{display:flex;align-items:center;gap:8px;padding:.5rem .7rem;border:1.5px solid var(--brd);border-radius:var(--r);cursor:pointer;user-select:none;font-size:12px;color:var(--txt2);background:var(--surf2);transition:all .12s;}
+.perm-toggle:hover{border-color:var(--grn-m);background:var(--grn-xl);}
+.perm-toggle.on{border-color:var(--grn-m);background:var(--grn-xl);color:var(--grn);font-weight:500;}
+.perm-toggle .pt-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--brd2);flex-shrink:0;transition:all .12s;}
+.perm-toggle.on .pt-dot{background:var(--grn-m);border-color:var(--grn-m);}
+/* JOB ROLE BADGES */
+.jrole-pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.04em;text-transform:uppercase;}
+.jrole-supervisor{background:rgba(127,119,221,.18);color:#7F77DD;}
+.jrole-manager{background:rgba(26,95,203,.18);color:#1a5fcb;}
+.jrole-driver{background:rgba(192,138,24,.18);color:#c08a18;}
+.jrole-operator{background:rgba(10,74,138,.18);color:#0a4a8a;}
+.jrole-sales{background:rgba(29,158,117,.18);color:#1D9E75;}
 .btn-ghost{background:transparent;color:var(--sb-text);border-color:var(--sb-brd);}
 .btn-ghost:hover{background:var(--sb-act);color:#d0e8ff;}
 .btn-outline{background:var(--surf);color:var(--txt);border-color:var(--brd);}
@@ -507,6 +532,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
       <button class="nav-item admin-nav" style="display:none" onclick="goPage('users',this)" id="nav-users"><i class="ti ti-users"></i> Manage staff</button>
       <button class="nav-item admin-nav" style="display:none" onclick="goPage('att-admin',this)" id="nav-att-admin"><i class="ti ti-calendar-stats"></i> Attendance log</button>
       <button class="nav-item admin-nav" style="display:none" onclick="goPage('geo-settings',this)" id="nav-geo-settings"><i class="ti ti-map-pin-cog"></i> Store location</button>
+      <button class="nav-item admin-nav" style="display:none" onclick="goPage('reset',this)" id="nav-reset"><i class="ti ti-database-x"></i> Reset system data</button>
 
       <div class="sb-foot">
         <div class="sb-foot-text"><strong>A-lect Water</strong><br>Data stays in browser<br><span style="font-family:'DM Mono',monospace;">v1.0 · 2026</span></div>
@@ -739,14 +765,14 @@ table.dt tbody tr:hover td{background:var(--surf2);}
                     <button type="button" class="btn btn-outline btn-sm" onclick="regenBatch()" title="Generate a fresh code"><i class="ti ti-refresh"></i></button>
                   </div>
                 </div>
-                <!-- SACHET BAGS material lot -->
+                <!-- PRINTED ROLLS material lot -->
                 <div class="field full" style="background:var(--grn-xl);border:1.5px solid var(--grn-m);border-radius:var(--r);padding:.85rem 1rem;margin-bottom:.2rem">
-                  <div style="font-size:10px;font-weight:700;color:var(--grn);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.6rem"><i class="ti ti-layers-subtract"></i> Sachet Bags material lot</div>
+                  <div style="font-size:10px;font-weight:700;color:var(--grn);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.6rem"><i class="ti ti-layers-subtract"></i> Printed Rolls material lot</div>
                   <div class="fg" style="gap:.7rem">
                     <div class="field" style="margin:0">
                       <label>Inventory lot (ALT/…)</label>
                       <select id="p-mat-sachet" onchange="onMatLotChange('sachet')">
-                        <option value="">— Select sachet lot —</option>
+                        <option value="">— Select printed rolls lot —</option>
                       </select>
                     </div>
                     <div class="field" style="margin:0">
@@ -754,7 +780,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
                       <input type="number" id="p-mat-sachet-qty" min="0" step="0.01" placeholder="e.g. 12.50" oninput="validateMatQty('sachet')">
                     </div>
                   </div>
-                  <div style="font-size:11px;color:var(--grn);margin-top:6px" id="p-mat-sachet-hint">Select a sachet lot to see availability</div>
+                  <div style="font-size:11px;color:var(--grn);margin-top:6px" id="p-mat-sachet-hint">Select a printed rolls lot to see availability</div>
                 </div>
 
                 <!-- PACKING BAG material lot -->
@@ -840,7 +866,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
                 <div class="field" id="rm-cost-field"><label>Unit cost (₦ / KG)</label><input type="number" id="rm-cost" placeholder="e.g. 1850" min="0" oninput="recalcRollSummary()"></div>
               </div>
 
-              <!-- SACHET BAGS fields (rolls / KG) -->
+              <!-- PRINTED ROLLS fields (rolls / KG) -->
               <div id="rm-sachet-fields">
                 <div class="field full" style="margin-top:.3rem">
                   <label>Fig of roll (KG) <span style="font-weight:400;text-transform:none;color:var(--txt3)">— weight of each roll used, up to 20 entries</span></label>
@@ -918,9 +944,9 @@ table.dt tbody tr:hover td{background:var(--surf2);}
           </div>
           <div class="mrow" id="inv-mrow">
             <div class="mc b"><div class="mc-ico"><i class="ti ti-stack-2"></i></div><div class="mc-lbl">Total lots</div><div class="mc-val" id="inv-lots">0</div><div class="mc-sub">entries logged</div></div>
-            <div class="mc g"><div class="mc-ico"><i class="ti ti-weight"></i></div><div class="mc-lbl">Sachet KG received</div><div class="mc-val" id="inv-kg-in">0.00</div><div class="mc-sub">kg</div></div>
-            <div class="mc a"><div class="mc-ico"><i class="ti ti-flame"></i></div><div class="mc-lbl">Sachet KG consumed</div><div class="mc-val" id="inv-kg-used">0.00</div><div class="mc-sub">in production</div></div>
-            <div class="mc t"><div class="mc-ico"><i class="ti ti-archive"></i></div><div class="mc-lbl">Sachet KG remaining</div><div class="mc-val" id="inv-kg-left">0.00</div><div class="mc-sub">available stock</div></div>
+            <div class="mc g"><div class="mc-ico"><i class="ti ti-weight"></i></div><div class="mc-lbl">Printed Rolls KG received</div><div class="mc-val" id="inv-kg-in">0.00</div><div class="mc-sub">kg</div></div>
+            <div class="mc a"><div class="mc-ico"><i class="ti ti-flame"></i></div><div class="mc-lbl">Printed Rolls KG consumed</div><div class="mc-val" id="inv-kg-used">0.00</div><div class="mc-sub">in production</div></div>
+            <div class="mc t"><div class="mc-ico"><i class="ti ti-archive"></i></div><div class="mc-lbl">Printed Rolls KG remaining</div><div class="mc-val" id="inv-kg-left">0.00</div><div class="mc-sub">available stock</div></div>
           </div>
           <div class="mrow" style="margin-top:0.5rem">
             <div class="mc a"><div class="mc-ico"><i class="ti ti-package"></i></div><div class="mc-lbl">Bundles received</div><div class="mc-val" id="inv-pb-in">0</div><div class="mc-sub">packing bags</div></div>
@@ -1066,12 +1092,12 @@ table.dt tbody tr:hover td{background:var(--surf2);}
         </div>
 
         <!-- RAW MATERIAL ANALYSIS -->
-        <div style="font-size:9.5px;font-weight:700;color:var(--txt3);letter-spacing:.09em;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:6px"><i class="ti ti-layers-subtract" style="font-size:13px;color:#1a5fcb"></i> Sachet Bags — KG inventory</div>
+        <div style="font-size:9.5px;font-weight:700;color:var(--txt3);letter-spacing:.09em;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:6px"><i class="ti ti-layers-subtract" style="font-size:13px;color:#1a5fcb"></i> Printed Rolls — KG inventory</div>
         <div class="mrow" style="margin-top:0">
           <div class="mc t"><div class="mc-ico"><i class="ti ti-weight"></i></div><div class="mc-lbl">Total KG received</div><div class="mc-val" id="d-rm-in">0.00</div><div class="mc-sub">all time</div></div>
           <div class="mc a"><div class="mc-ico"><i class="ti ti-flame"></i></div><div class="mc-lbl">KG utilized</div><div class="mc-val" id="d-rm-used">0.00</div><div class="mc-sub">in production</div></div>
           <div class="mc g"><div class="mc-ico"><i class="ti ti-archive"></i></div><div class="mc-lbl">KG remaining</div><div class="mc-val" id="d-rm-left">0.00</div><div class="mc-sub">available</div></div>
-          <div class="mc b"><div class="mc-ico"><i class="ti ti-stack-2"></i></div><div class="mc-lbl">Active sachet lots</div><div class="mc-val" id="d-rm-lots">0</div><div class="mc-sub">with KG remaining</div></div>
+          <div class="mc b"><div class="mc-ico"><i class="ti ti-stack-2"></i></div><div class="mc-lbl">Active printed rolls lots</div><div class="mc-val" id="d-rm-lots">0</div><div class="mc-sub">with KG remaining</div></div>
         </div>
         <div style="font-size:9.5px;font-weight:700;color:var(--txt3);letter-spacing:.09em;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:6px"><i class="ti ti-package" style="font-size:13px;color:#c08a18"></i> Packing Bags — Bundle inventory</div>
         <div class="mrow" style="margin-top:0;margin-bottom:1.1rem">
@@ -1132,7 +1158,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <button class="btn btn-outline btn-sm" onclick="exportCSV('production')"><i class="ti ti-download"></i> Export CSV</button>
           </div>
           <div class="tw"><table class="dt">
-            <thead><tr><th>Date</th><th>Batch</th><th>Sachet Lot</th><th>Sachet KG</th><th>Packing Lot</th><th>Bundles</th><th>Type</th><th>Qty</th><th>Material cost</th><th>Logged by</th><th>Note</th><th></th></tr></thead>
+            <thead><tr><th>Date</th><th>Batch</th><th>Printed Rolls Lot</th><th>Rolls KG</th><th>Packing Lot</th><th>Bundles</th><th>Type</th><th>Qty</th><th>Material cost</th><th>Logged by</th><th>Note</th><th></th></tr></thead>
             <tbody id="ap-tbody"></tbody>
           </table></div>
         </div>
@@ -1155,21 +1181,48 @@ table.dt tbody tr:hover td{background:var(--surf2);}
 
       <!-- MANAGE USERS -->
       <div class="page" id="page-users">
-        <div class="ph"><div><div class="ph-title">Manage staff <span class="atag"><i class="ti ti-lock" style="font-size:8px"></i> Admin</span></div><div class="ph-sub">Add accounts and control access</div></div></div>
-        <div style="display:grid;grid-template-columns:320px 1fr;gap:1.1rem;align-items:start;max-width:780px">
+        <div class="ph"><div><div class="ph-title">Manage staff <span class="atag"><i class="ti ti-lock" style="font-size:8px"></i> Admin</span></div><div class="ph-sub">Create accounts, assign job roles and control exactly what each person can access</div></div></div>
+
+        <div style="display:grid;grid-template-columns:320px 1fr;gap:1.1rem;align-items:start">
+          <!-- ADD USER -->
           <div class="card">
             <div class="card-title"><i class="ti ti-user-plus"></i> Add staff account</div>
             <div class="field"><label>Full name</label><input type="text" id="nu-name" placeholder="e.g. Ibrahim Hassan"></div>
             <div class="field"><label>Username</label><input type="text" id="nu-user" placeholder="e.g. ibrahim" style="font-family:'DM Mono',monospace"></div>
             <div class="field"><label>PIN</label><input type="password" id="nu-pass" placeholder="Set a PIN"></div>
-            <div class="field"><label>Role</label><select id="nu-role"><option value="staff">Staff — entry only</option><option value="manager">Manager — full admin</option></select></div>
+            <div class="field">
+              <label>Job role</label>
+              <select id="nu-jobrole" onchange="onNewUserJobRoleChange()">
+                <option value="supervisor">Supervisor</option>
+                <option value="manager">Manager</option>
+                <option value="driver">Driver</option>
+                <option value="operator">Operator</option>
+                <option value="sales">Sales Personnel</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>System access level</label>
+              <select id="nu-role">
+                <option value="staff">Standard — entry only</option>
+                <option value="manager">Admin — full access</option>
+              </select>
+            </div>
+            <!-- Permission preview -->
+            <div style="background:var(--surf2);border:1.5px solid var(--brd);border-radius:var(--r);padding:.75rem .9rem;margin-bottom:.9rem">
+              <div style="font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px"><i class="ti ti-shield-check"></i> Default permissions for this role</div>
+              <div id="nu-perm-preview" style="display:flex;flex-wrap:wrap;gap:5px;font-size:11px"></div>
+            </div>
             <button class="btn btn-primary btn-full" onclick="addUser()"><i class="ti ti-plus"></i> Create account</button>
             <div class="ok" id="user-ok" style="margin-top:9px"><i class="ti ti-circle-check"></i> Account created!</div>
-            <div class="err" id="user-err" style="margin-top:9px"><i class="ti ti-alert-circle"></i> Username already taken.</div>
+            <div class="err" id="user-err" style="margin-top:9px"><i class="ti ti-alert-circle"></i> <span id="user-err-msg">Username already taken.</span></div>
           </div>
-          <div class="card">
-            <div class="card-title"><i class="ti ti-users"></i> Current accounts</div>
-            <div id="users-list"></div>
+
+          <!-- CURRENT USERS -->
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="padding:.85rem 1.2rem;border-bottom:1.5px solid var(--brd);background:var(--surf2)">
+              <div class="card-title" style="margin:0"><i class="ti ti-users"></i> Current accounts</div>
+            </div>
+            <div id="users-list" style="padding:.5rem 1rem 1rem"></div>
           </div>
         </div>
       </div>
@@ -1309,7 +1362,200 @@ table.dt tbody tr:hover td{background:var(--surf2);}
 
       </div>
 
+      <!-- RESET SYSTEM DATA (ADMIN ONLY) -->
+      <div class="page" id="page-reset">
+        <div class="ph">
+          <div>
+            <div class="ph-title">Reset system data <span class="atag"><i class="ti ti-lock" style="font-size:8px"></i> Admin</span></div>
+            <div class="ph-sub">Permanently wipe test data before going live — this cannot be undone</div>
+          </div>
+        </div>
+
+        <!-- Warning banner -->
+        <div style="background:#3a0e0e;border:1.5px solid #7a1c1c;border-radius:var(--r-lg);padding:1.1rem 1.4rem;margin-bottom:1.5rem;display:flex;gap:14px;align-items:flex-start;max-width:720px">
+          <i class="ti ti-alert-triangle" style="font-size:24px;color:#f07070;flex-shrink:0;margin-top:2px"></i>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#f07070;margin-bottom:5px">This action is permanent and irreversible</div>
+            <div style="font-size:12.5px;color:#d08080;line-height:1.75">Selected data will be deleted from both this device and the Firebase cloud database. There is no undo. Only use this once you are done testing and are ready to start entering real production data.</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;max-width:720px;align-items:start">
+
+          <!-- Select data to clear -->
+          <div class="card">
+            <div class="card-title"><i class="ti ti-checkbox"></i> Select data to clear</div>
+            <div style="display:flex;flex-direction:column;gap:0">
+
+              <label class="reset-check-row" onclick="toggleResetCheck('reset-sales')">
+                <div style="display:flex;align-items:center;gap:10px;flex:1">
+                  <div class="reset-check-icon" style="background:var(--grn-l);color:var(--grn)"><i class="ti ti-shopping-cart"></i></div>
+                  <div>
+                    <div style="font-size:13px;font-weight:500">Sales</div>
+                    <div style="font-size:11px;color:var(--txt3)" id="reset-sales-count">— records</div>
+                  </div>
+                </div>
+                <div class="reset-chk" id="reset-sales-chk"><i class="ti ti-check"></i></div>
+                <input type="checkbox" id="reset-sales" style="display:none" checked>
+              </label>
+
+              <label class="reset-check-row" onclick="toggleResetCheck('reset-production')">
+                <div style="display:flex;align-items:center;gap:10px;flex:1">
+                  <div class="reset-check-icon" style="background:var(--blu-l);color:var(--blu)"><i class="ti ti-packages"></i></div>
+                  <div>
+                    <div style="font-size:13px;font-weight:500">Production batches</div>
+                    <div style="font-size:11px;color:var(--txt3)" id="reset-production-count">— records</div>
+                  </div>
+                </div>
+                <div class="reset-chk" id="reset-production-chk"><i class="ti ti-check"></i></div>
+                <input type="checkbox" id="reset-production" style="display:none" checked>
+              </label>
+
+              <label class="reset-check-row" onclick="toggleResetCheck('reset-rawmats')">
+                <div style="display:flex;align-items:center;gap:10px;flex:1">
+                  <div class="reset-check-icon" style="background:var(--teal-l);color:var(--teal)"><i class="ti ti-box-seam"></i></div>
+                  <div>
+                    <div style="font-size:13px;font-weight:500">Raw material inventory</div>
+                    <div style="font-size:11px;color:var(--txt3)" id="reset-rawmats-count">— records</div>
+                  </div>
+                </div>
+                <div class="reset-chk" id="reset-rawmats-chk"><i class="ti ti-check"></i></div>
+                <input type="checkbox" id="reset-rawmats" style="display:none" checked>
+              </label>
+
+              <label class="reset-check-row" onclick="toggleResetCheck('reset-expenses')">
+                <div style="display:flex;align-items:center;gap:10px;flex:1">
+                  <div class="reset-check-icon" style="background:var(--amb-l);color:var(--amb)"><i class="ti ti-receipt-2"></i></div>
+                  <div>
+                    <div style="font-size:13px;font-weight:500">Expenses</div>
+                    <div style="font-size:11px;color:var(--txt3)" id="reset-expenses-count">— records</div>
+                  </div>
+                </div>
+                <div class="reset-chk" id="reset-expenses-chk"><i class="ti ti-check"></i></div>
+                <input type="checkbox" id="reset-expenses" style="display:none" checked>
+              </label>
+
+              <label class="reset-check-row" onclick="toggleResetCheck('reset-attendance')">
+                <div style="display:flex;align-items:center;gap:10px;flex:1">
+                  <div class="reset-check-icon" style="background:var(--red-l);color:var(--red-m)"><i class="ti ti-calendar-check"></i></div>
+                  <div>
+                    <div style="font-size:13px;font-weight:500">Attendance records</div>
+                    <div style="font-size:11px;color:var(--txt3)" id="reset-attendance-count">— records</div>
+                  </div>
+                </div>
+                <div class="reset-chk" id="reset-attendance-chk"><i class="ti ti-check"></i></div>
+                <input type="checkbox" id="reset-attendance" style="display:none" checked>
+              </label>
+
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:1.2rem">
+              <button class="btn btn-outline btn-sm" onclick="resetSelectAll(true)"><i class="ti ti-checks"></i> Select all</button>
+              <button class="btn btn-outline btn-sm" onclick="resetSelectAll(false)"><i class="ti ti-square"></i> Deselect all</button>
+            </div>
+          </div>
+
+          <!-- Summary & action -->
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            <div class="card card-sm">
+              <div class="card-title"><i class="ti ti-database"></i> Current data totals</div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:13px" id="reset-summary-rows">
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">Sales</span><strong id="rs-total-sales">—</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">Production batches</span><strong id="rs-total-production">—</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">Raw material lots</span><strong id="rs-total-rawmats">—</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">Expenses</span><strong id="rs-total-expenses">—</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">Attendance records</span><strong id="rs-total-attendance">—</strong></div>
+              </div>
+            </div>
+
+            <div class="card card-sm" style="border-color:#7a1c1c;background:#1e0808">
+              <div style="font-size:11px;font-weight:700;color:#f07070;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px"><i class="ti ti-alert-triangle"></i> Confirm reset</div>
+              <p style="font-size:12px;color:#c08080;line-height:1.7;margin-bottom:1rem">Type <strong style="color:#f07070;font-family:'DM Mono',monospace">RESET</strong> below to unlock the button.</p>
+              <div class="field" style="margin-bottom:.85rem">
+                <input type="text" id="reset-confirm-input" placeholder="Type RESET here…" oninput="onResetConfirmInput()" autocomplete="off" style="font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase">
+              </div>
+              <button class="btn btn-danger btn-full" id="reset-go-btn" disabled onclick="promptResetConfirm()" style="opacity:.45;cursor:not-allowed">
+                <i class="ti ti-database-x"></i> Clear selected data
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </main>
+  </div>
+</div>
+
+<!-- PERMISSIONS EDITOR MODAL -->
+<div class="mo" id="perms-mo">
+  <div class="modal" style="max-width:540px;max-height:90vh;overflow-y:auto">
+    <div class="modal-hd">
+      <span><i class="ti ti-shield-cog" style="font-size:14px;color:var(--grn-m)"></i> Edit permissions — <span id="perms-mo-name">—</span></span>
+      <button class="modal-x" onclick="closePermsMo()"><i class="ti ti-x"></i></button>
+    </div>
+
+    <!-- Job role selector inside modal -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1.2rem">
+      <div class="field" style="margin:0">
+        <label>Job role</label>
+        <select id="perms-jobrole" onchange="onPermsJobRoleChange()">
+          <option value="supervisor">Supervisor</option>
+          <option value="manager">Manager</option>
+          <option value="driver">Driver</option>
+          <option value="operator">Operator</option>
+          <option value="sales">Sales Personnel</option>
+        </select>
+      </div>
+      <div class="field" style="margin:0">
+        <label>System access level</label>
+        <select id="perms-sysrole">
+          <option value="staff">Standard</option>
+          <option value="manager">Admin</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px"><i class="ti ti-layout-grid"></i> Page access</div>
+    <div id="perms-pages-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:1.2rem"></div>
+
+    <div style="font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px"><i class="ti ti-bolt"></i> Actions</div>
+    <div id="perms-actions-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:1.4rem"></div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+      <button class="btn btn-outline btn-sm" onclick="applyRoleDefaults()"><i class="ti ti-refresh"></i> Reset to role defaults</button>
+      <button class="btn btn-outline btn-sm" onclick="permsSelectAll(true)"><i class="ti ti-checks"></i> Grant all</button>
+      <button class="btn btn-outline btn-sm" onclick="permsSelectAll(false)"><i class="ti ti-square"></i> Revoke all</button>
+    </div>
+
+    <div style="display:flex;gap:9px">
+      <button class="btn btn-primary btn-full" onclick="savePerms()"><i class="ti ti-circle-check"></i> Save permissions</button>
+      <button class="btn btn-outline btn-full" onclick="closePermsMo()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET CONFIRMATION MODAL -->
+<div class="mo" id="reset-mo">
+  <div class="modal" style="max-width:460px">
+    <div style="text-align:center;margin-bottom:1.4rem">
+      <div style="width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,#7a1c1c,#c03838);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;box-shadow:0 8px 24px rgba(192,56,56,.35)">
+        <i class="ti ti-database-x" style="font-size:26px;color:#fff"></i>
+      </div>
+      <div style="font-size:16px;font-weight:700;color:var(--txt);margin-bottom:6px">Final confirmation</div>
+      <div style="font-size:13px;color:var(--txt2);line-height:1.7" id="reset-mo-summary">You are about to permanently delete all selected data from both this app and Firebase. This cannot be undone.</div>
+    </div>
+    <div style="background:var(--red-l);border:1.5px solid #efb0b0;border-radius:var(--r);padding:.8rem 1rem;margin-bottom:1.4rem;font-size:12.5px;color:var(--red);line-height:1.65">
+      <i class="ti ti-alert-triangle"></i> <strong>Once deleted, this data is gone forever.</strong> Make sure you have exported any records you want to keep before continuing.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <button class="btn btn-danger btn-full" id="reset-final-btn" onclick="executeReset()" style="padding:12px 18px;font-size:14px">
+        <i class="ti ti-database-x"></i> Yes, permanently delete
+      </button>
+      <button class="btn btn-outline btn-full" onclick="closeResetMo()" style="padding:12px 18px">
+        <i class="ti ti-x"></i> Cancel — keep my data
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1470,19 +1716,19 @@ table.dt tbody tr:hover td{background:var(--surf2);}
 <script>
 const DB={
   users:[
-    {id:1,name:'Mustapha',username:'staff',password:'1234',role:'staff',active:true},
-    {id:2,name:'Owner',username:'admin',password:'admin99',role:'admin',active:true},
-    {id:3,name:'Manager',username:'manager',password:'mgr456',role:'manager',active:true},
+    {id:1,name:'Mustapha',username:'staff',password:'1234',role:'staff',jobRole:'sales',active:true},
+    {id:2,name:'Owner',username:'admin',password:'admin99',role:'admin',jobRole:'manager',active:true},
+    {id:3,name:'Manager',username:'manager',password:'mgr456',role:'manager',jobRole:'manager',active:true},
   ],
   sales:[],production:[],expenses:[],rawmats:[],
   _id:100,nid(){return++this._id;}
 };
 const MAT_CATS=[
-  {code:'A0001',name:'Sachet Bags', subs:[
-    {code:'A0001a',name:'Printed Rolls'},
-    {code:'A0001b',name:'Plain Rolls'},
+  {code:'A0001',name:'Printed Rolls'},
+  {code:'A0002',name:'Packing Bag', subs:[
+    {code:'A0002a',name:'Printed Packing Bag'},
+    {code:'A0002b',name:'Plain Packing Bag'},
   ]},
-  {code:'A0002',name:'Packing Bag'},
 ];
 let CU=null,delT={t:null,id:null},sM='CASH',chPay=null,chExp=null;
 function populateMatSelects(){
@@ -1527,6 +1773,8 @@ function onRmCatParentChange(){
 }
 populateMatSelects();
 populateMatLotSelect();
+// Init new-user permission preview
+setTimeout(()=>{ if(document.getElementById('nu-perm-preview')) onNewUserJobRoleChange(); }, 0);
 
 /* =============================================
    GEOFENCE CONFIG — configurable by admin via UI
@@ -1621,8 +1869,9 @@ function geoCheck(){
       const sLat=getStoreLat(), sLng=getStoreLng(), sRad=getStoreRadius();
       const activeUser = _geoMode==='signout' ? CU : _pendingLoginUser;
       if(sLat===null||sLng===null){
-        // No store location set — only admins can proceed
-        if(activeUser && activeUser.role!=='staff'){
+        // No store location set — only users with geo_bypass can proceed
+        const hasAdminAccess = activeUser && (activeUser.role!=='staff' || (activeUser.permissions&&activeUser.permissions.actions&&activeUser.permissions.actions['geo_bypass']));
+        if(hasAdminAccess){
           showGeoOk(); return;
         }
         showGeoFail('The store location has not been configured yet. Please ask your admin to set it up.', false);
@@ -1668,9 +1917,9 @@ function showGeoFail(msg, allowBypass){
   el('geo-msg').textContent=msg;
   el('geo-retry-btn').style.display='';
   el('geo-back-btn').style.display='';
-  // Only admins/managers get bypass link
+  // Only users with geo_bypass permission get bypass link
   const activeUser = _geoMode==='signout' ? CU : _pendingLoginUser;
-  if(activeUser && activeUser.role!=='staff'){
+  if(activeUser && (activeUser.role!=='staff' || (activeUser.permissions&&activeUser.permissions.actions&&activeUser.permissions.actions['geo_bypass']))){
     el('geo-admin-bypass').style.display='';
   }
 }
@@ -1700,19 +1949,35 @@ function geoAdminBypass(){
    ============================================= */
 function finaliseLogin(user){
   CU=user;
+  // Ensure permissions object exists (back-compat for admin + seeded users)
+  if(!CU.permissions){
+    if(CU.role==='admin'||CU.role==='manager'){
+      // full access
+      const pages={}, actions={};
+      ALL_PAGES.forEach(p=>pages[p.key]=true);
+      ALL_ACTIONS.forEach(a=>actions[a.key]=true);
+      CU.permissions={pages,actions};
+    } else {
+      CU.permissions = defaultPermsForJobRole(CU.jobRole||'staff');
+    }
+  }
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').classList.add('on');
   const rc=document.getElementById('topbar-role');
-  rc.textContent=user.role==='staff'?'Staff':'Admin';
-  rc.className='role-pill '+(user.role==='staff'?'rp-staff':'rp-admin');
+  const jrLabel = (JOB_ROLE_DEFAULTS[CU.jobRole]||{label: CU.role==='manager'?'Manager':'Staff'}).label;
+  rc.textContent = CU.role==='admin' ? 'Owner' : jrLabel;
+  rc.className='role-pill '+(CU.role==='staff'?'rp-staff':'rp-admin');
   document.getElementById('user-name').textContent=user.name;
   document.getElementById('user-av').textContent=user.name[0].toUpperCase();
   setDates();
   populateExpCats();
   document.getElementById('p-batch').value=genBatchCode(document.getElementById('p-date').value);
   resetRollRows();
-  if(user.role!=='staff') document.querySelectorAll('.admin-nav').forEach(el=>el.style.display='');
-  goPage('sale',document.getElementById('nav-sale'));
+  applyUserPermissionsToNav(CU);
+  // Land on the first page they can access
+  const firstPage = ALL_PAGES.find(p=>CU.permissions.pages[p.key]);
+  const firstNav = firstPage ? document.getElementById('nav-'+firstPage.key) : document.getElementById('nav-sale');
+  goPage(firstPage?firstPage.key:'sale', firstNav);
   updateExpPanel();updateProdPanel();renderRecentSales();
   updateRMPanel();renderRawMat('');renderInvSummary('');updateRmAltIdPreview();
   updateStockHint();
@@ -1723,6 +1988,30 @@ function finaliseLogin(user){
   // ---- ATTENDANCE: log sign-in ----
   attSignIn(user);
   startAttClock();
+}
+
+function applyUserPermissionsToNav(user){
+  const perms = user.permissions || {};
+  const pages = perms.pages || {};
+  const isAdmin = user.role==='admin';
+
+  // Show/hide every nav item based on page permissions
+  ALL_PAGES.forEach(p=>{
+    const navEl = document.getElementById('nav-'+p.key);
+    if(navEl) navEl.style.display = (isAdmin||pages[p.key]) ? '' : 'none';
+  });
+
+  // Admin section header — show if any admin page is visible
+  const adminPages = ['dash','asales','aprod','aexp','users','att-admin','geo-settings','reset'];
+  const showAdminSection = isAdmin || adminPages.some(k => pages[k]);
+  document.querySelectorAll('.admin-nav').forEach(el=>{
+    // section header has no id, so show it if any admin page is permitted
+    if(!el.id) el.style.display = showAdminSection ? '' : 'none';
+  });
+
+  // Conditional UI elements
+  const addCatBtn = document.getElementById('add-cat-btn');
+  if(addCatBtn) addCatBtn.style.display = (isAdmin||canDo('add_exp_cat')) ? '' : 'none';
 }
 
 /* =============================================
@@ -1751,7 +2040,7 @@ async function loadFromFirebase(){
     updateExpPanel();updateProdPanel();renderRecentSales();
     updateRMPanel();renderRawMat('');renderInvSummary('');
     updateStockHint();populateBatchSelect();populateMatLotSelect();
-    if(CU&&CU.role!=='staff') renderDash();
+    if(CU&&(CU.role!=='staff'||canAccess('dash'))) renderDash();
     toast('Data synced ✓','s');
   } catch(e){
     console.warn('Firebase load error:',e);
@@ -1790,7 +2079,7 @@ function checkAutoSignOut(){
   if(!changed) return;
 
   if(CU){
-    if(CU.role!=='staff'){
+    if(CU.role!=='staff'||canAccess('att-admin')){
       const q=document.querySelector('#page-att-admin input[type="text"]');
       renderAttAdmin(q?q.value:'');
     }
@@ -1826,7 +2115,7 @@ function attSignIn(user){
   }
   updateAttStatusBar();
   renderAttMy();
-  if(user.role!=='staff') renderAttAdmin('');
+  if(user.role!=='staff'||canAccess('att-admin')) renderAttAdmin('');
 }
 
 function attSignOut(){
@@ -1855,7 +2144,7 @@ function confirmSignOut(){
   }
   updateAttStatusBar();
   renderAttMy();
-  if(CU.role!=='staff') renderAttAdmin('');
+  if(CU.role!=='staff'||canAccess('att-admin')) renderAttAdmin('');
   toast("Signed out successfully. You won't be able to sign in again until tomorrow.",'s');
   // After sign-out, log the user out of the app
   setTimeout(()=>doLogout(), 1800);
@@ -1898,7 +2187,7 @@ function startAttClock(){
     _attTickCount++;
     if(_attTickCount % 15 === 0){
       renderAttMy();
-      if(CU && CU.role!=='staff' && document.getElementById('page-att-admin') && document.getElementById('page-att-admin').classList.contains('active')){
+      if(CU && (CU.role!=='staff'||canAccess('att-admin')) && document.getElementById('page-att-admin') && document.getElementById('page-att-admin').classList.contains('active')){
         const q=document.querySelector('#page-att-admin input[type="text"]');
         renderAttAdmin(q?q.value:'');
       }
@@ -2000,7 +2289,8 @@ function goPage(name,btn){
     sale:()=>{ updateStockHint(); },
     attendance:()=>{updateAttStatusBar();renderAttMy();},
     'att-admin':()=>renderAttAdmin(''),
-    'geo-settings':()=>renderGeoSettings()};
+    'geo-settings':()=>renderGeoSettings(),
+    reset:()=>renderResetPage()};
   if(map[name])map[name]();
   closeSidebar();
 }
@@ -2641,14 +2931,14 @@ function rawmatAvailBundles(r){
 }
 
 function populateMatLotSelect(){
-  // SACHET BAGS lots (A0001a, A0001b)
+  // PRINTED ROLLS lots (A0001)
   const sachetSel=document.getElementById('p-mat-sachet'); if(!sachetSel) return;
   const curSachet=sachetSel.value;
   const sachetLots=DB.rawmats.filter(r=>!r.isPackingBag && rawmatAvailable(r)>0);
   if(!sachetLots.length){
-    sachetSel.innerHTML='<option value="">No sachet lots in inventory</option>';
+    sachetSel.innerHTML='<option value="">No printed rolls lots in inventory</option>';
   } else {
-    sachetSel.innerHTML='<option value="">— Select sachet lot —</option>'+sachetLots.slice().reverse().map(r=>{
+    sachetSel.innerHTML='<option value="">— Select printed rolls lot —</option>'+sachetLots.slice().reverse().map(r=>{
       const avail=rawmatAvailable(r);
       return `<option value="${r.id}">${r.altId||('RM-'+String(r.id).padStart(4,'0'))} — ${matLabel(r.category)} · ${avail.toFixed(2)} kg avail</option>`;
     }).join('');
@@ -2677,10 +2967,10 @@ function onMatLotChange(type){
     const hint=document.getElementById('p-mat-sachet-hint');
     const qtyInput=document.getElementById('p-mat-sachet-qty');
     if(!sel||!hint||!qtyInput) return;
-    if(!sel.value){ hint.textContent='Select a sachet lot to see availability'; qtyInput.removeAttribute('max'); return; }
+    if(!sel.value){ hint.textContent='Select a printed rolls lot to see availability'; qtyInput.removeAttribute('max'); return; }
     const r=DB.rawmats.find(x=>String(x.id)===sel.value);
     const avail=r?rawmatAvailable(r):0;
-    hint.textContent=avail.toFixed(2)+' kg available in this lot';
+    hint.textContent=avail.toFixed(2)+' kg available in this printed rolls lot';
     qtyInput.max=avail;
   } else {
     const sel=document.getElementById('p-mat-packing');
@@ -2707,7 +2997,7 @@ function validateMatQty(type){
     const val=parseFloat(qtyInput.value)||0;
     hint.innerHTML=val>avail
       ?'<span style="color:var(--red-m)">Only '+avail.toFixed(2)+' kg available — reduce quantity</span>'
-      :avail.toFixed(2)+' kg available in this lot';
+      :avail.toFixed(2)+' kg available in this printed rolls lot';
   } else {
     const sel=document.getElementById('p-mat-packing');
     const qtyInput=document.getElementById('p-mat-packing-qty');
@@ -2739,8 +3029,8 @@ function submitProd(){
     const lot=DB.rawmats.find(r=>String(r.id)===sachetLotRaw);
     if(lot){
       const avail=rawmatAvailable(lot);
-      if(sachetQty<=0){toast('Enter KG utilized for the sachet lot','e');return;}
-      if(sachetQty>avail){toast('Only '+avail.toFixed(2)+' kg available in that sachet lot','e');return;}
+      if(sachetQty<=0){toast('Enter KG utilized for the printed rolls lot','e');return;}
+      if(sachetQty>avail){toast('Only '+avail.toFixed(2)+' kg available in that printed rolls lot','e');return;}
       matSachetLotId=lot.id;
       matSachetLabel=(lot.altId||'RM-'+String(lot.id).padStart(4,'0'))+' — '+matLabel(lot.category);
       matSachetQtyUsed=sachetQty;
@@ -3282,7 +3572,7 @@ function renderAS(q){
     if(m==='POS') return 'bt';
     return 'ba';
   };
-  const canVoid = CU && CU.role!=='staff';
+  const canVoid = CU && (CU.role!=='staff' || canDo('void_sale'));
   tb.innerHTML=d.slice().reverse().map(s=>{
     const v=s.voided;
     const sty=v?'style="text-decoration:line-through;opacity:.55"':'';
@@ -3558,7 +3848,7 @@ function renderDash(){
       sachetGroups[n].cost+=r.amount;
     }
   });
-  const matBarColors={'Sachet Bags':'#1a5fcb','Sachet Bags › Printed Rolls':'#1a5fcb','Sachet Bags › Plain Rolls':'#2d7dd2','Packing Bag':'#c08a18'};
+  const matBarColors={'Printed Rolls':'#1a5fcb','Packing Bag':'#c08a18','Packing Bag › Printed Packing Bag':'#c08a18','Packing Bag › Plain Packing Bag':'#d4a030'};
   const sachetEntries=Object.entries(sachetGroups).sort((a,b)=>b[1].in-a[1].in);
   const packingEntries=Object.entries(packingGroups).sort((a,b)=>b[1].in-a[1].in);
   const allMatBars=[
@@ -3626,35 +3916,131 @@ function renderDash(){
 }
 
 /* USERS */
+/* =============================================
+   PERMISSIONS SYSTEM
+   ============================================= */
+
+// All pages and actions that can be individually toggled
+const ALL_PAGES = [
+  {key:'sale',   label:'Record sale',          icon:'ti-shopping-cart'},
+  {key:'prod',   label:'Log production',       icon:'ti-packages'},
+  {key:'rawmat', label:'Raw material inv.',    icon:'ti-box-seam'},
+  {key:'exp',    label:'Log expense',          icon:'ti-receipt-2'},
+  {key:'mysales',label:'My sales',             icon:'ti-clock-hour-4'},
+  {key:'dash',   label:'Dashboard',            icon:'ti-layout-dashboard'},
+  {key:'asales', label:'All sales',            icon:'ti-table'},
+  {key:'aprod',  label:'All production',       icon:'ti-building-factory-2'},
+  {key:'aexp',   label:'All expenses',         icon:'ti-report-money'},
+  {key:'users',  label:'Manage staff',         icon:'ti-users'},
+  {key:'att-admin', label:'Attendance log',    icon:'ti-calendar-stats'},
+  {key:'geo-settings', label:'Store location', icon:'ti-map-pin-cog'},
+  {key:'reset',  label:'Reset system data',    icon:'ti-database-x'},
+];
+const ALL_ACTIONS = [
+  {key:'void_sale',   label:'Void / restore sales',  icon:'ti-ban'},
+  {key:'delete_rec',  label:'Delete records',         icon:'ti-trash'},
+  {key:'geo_bypass',  label:'Bypass geofence',        icon:'ti-map-pin-off'},
+  {key:'add_exp_cat', label:'Add expense categories', icon:'ti-tag'},
+  {key:'export_csv',  label:'Export CSV',             icon:'ti-download'},
+];
+
+// Default permission sets per job role
+const JOB_ROLE_DEFAULTS = {
+  supervisor:{
+    label:'Supervisor', pages:['sale','prod','rawmat','exp','mysales','dash','asales','aprod','aexp','att-admin'],
+    actions:['void_sale','delete_rec','export_csv','add_exp_cat']
+  },
+  manager:{
+    label:'Manager', pages:['sale','prod','rawmat','exp','mysales','dash','asales','aprod','aexp','users','att-admin','geo-settings','reset'],
+    actions:['void_sale','delete_rec','geo_bypass','add_exp_cat','export_csv']
+  },
+  driver:{
+    label:'Driver', pages:['sale','mysales'],
+    actions:[]
+  },
+  operator:{
+    label:'Operator', pages:['prod','rawmat','mysales'],
+    actions:[]
+  },
+  sales:{
+    label:'Sales Personnel', pages:['sale','exp','mysales'],
+    actions:['export_csv']
+  },
+};
+
+function defaultPermsForJobRole(jobRole){
+  const def = JOB_ROLE_DEFAULTS[jobRole] || JOB_ROLE_DEFAULTS.sales;
+  const pages = {};
+  ALL_PAGES.forEach(p => pages[p.key] = def.pages.includes(p.key));
+  const actions = {};
+  ALL_ACTIONS.forEach(a => actions[a.key] = def.actions.includes(a.key));
+  return {pages, actions};
+}
+
+// Helper: check if CU has a given permission
+function canAccess(pageKey){ return CU && CU.permissions && CU.permissions.pages && CU.permissions.pages[pageKey]; }
+function canDo(actionKey){ return CU && CU.permissions && CU.permissions.actions && CU.permissions.actions[actionKey]; }
+
 function renderUsers(){
   const el=document.getElementById('users-list');
   const list=DB.users.filter(u=>u.role!=='admin');
-  if(!list.length){el.innerHTML='<p style="font-size:13px;color:var(--txt3)">No staff accounts yet.</p>';return;}
-  el.innerHTML=list.map(u=>`
+  if(!list.length){el.innerHTML='<p style="font-size:13px;color:var(--txt3);padding:.5rem 0">No staff accounts yet.</p>';return;}
+  const jrLabel = jr => (JOB_ROLE_DEFAULTS[jr]||{label:jr}).label;
+  el.innerHTML=list.map(u=>{
+    const perms = u.permissions || defaultPermsForJobRole(u.jobRole||'sales');
+    const pageCount = Object.values(perms.pages||{}).filter(Boolean).length;
+    const actCount  = Object.values(perms.actions||{}).filter(Boolean).length;
+    return `
     <div class="ucard">
-      <div style="display:flex;align-items:center;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
         <div class="ucard-av">${u.name[0]}</div>
-        <div>
-          <div style="font-size:13px;font-weight:500">${u.name}</div>
-          <div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">@${u.username} · ${u.role}</div>
+        <div style="min-width:0">
+          <div style="font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            ${u.name}
+            <span class="jrole-pill jrole-${u.jobRole||'sales'}">${jrLabel(u.jobRole||'sales')}</span>
+          </div>
+          <div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;margin-top:2px">@${u.username} · ${u.role==='manager'?'Admin access':'Standard access'}</div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:3px">${pageCount} page${pageCount!==1?'s':''} · ${actCount} action${actCount!==1?'s':''} permitted</div>
         </div>
       </div>
-      <div style="display:flex;gap:7px;align-items:center">
+      <div style="display:flex;gap:7px;align-items:center;flex-shrink:0;flex-wrap:wrap">
         <span class="badge ${u.active?'bg':'br'}">${u.active?'Active':'Suspended'}</span>
+        <button class="btn btn-outline btn-sm" onclick="openPermsMo(${u.id})" title="Edit permissions"><i class="ti ti-shield-cog"></i> Permissions</button>
         <button class="btn btn-outline btn-sm" onclick="toggleUser(${u.id})">${u.active?'Suspend':'Activate'}</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+function onNewUserJobRoleChange(){
+  const jr = document.getElementById('nu-jobrole').value;
+  const def = JOB_ROLE_DEFAULTS[jr]||JOB_ROLE_DEFAULTS.sales;
+  // Auto-set system role
+  document.getElementById('nu-role').value = (jr==='manager') ? 'manager' : 'staff';
+  // Show permission preview chips
+  const preview = document.getElementById('nu-perm-preview');
+  const pageLabels = def.pages.map(k=>{ const p=ALL_PAGES.find(x=>x.key===k); return p?p.label:k; });
+  const actionLabels = def.actions.map(k=>{ const a=ALL_ACTIONS.find(x=>x.key===k); return a?a.label:k; });
+  const all = [...pageLabels, ...actionLabels];
+  preview.innerHTML = all.length
+    ? all.map(l=>`<span style="background:var(--grn-l);color:var(--grn);font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid #a0d4b8">${l}</span>`).join('')
+    : '<span style="color:var(--txt3);font-size:11px">No permissions assigned</span>';
 }
 
 function addUser(){
   const name=document.getElementById('nu-name').value.trim();
   const username=document.getElementById('nu-user').value.trim().toLowerCase();
   const password=document.getElementById('nu-pass').value;
+  const jobRole=document.getElementById('nu-jobrole').value;
   const role=document.getElementById('nu-role').value;
-  ['user-ok','user-err'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  const errEl=document.getElementById('user-err');
+  const errMsg=document.getElementById('user-err-msg');
+  ['user-ok'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  errEl.classList.remove('show');
   if(!name||!username||!password){toast('Fill in all fields','e');return;}
-  if(DB.users.find(u=>u.username===username)){document.getElementById('user-err').classList.add('show');return;}
-  DB.users.push({id:DB.nid(),name,username,password,role,active:true});
+  if(DB.users.find(u=>u.username===username)){errMsg.textContent='Username already taken.';errEl.classList.add('show');return;}
+  const permissions = defaultPermsForJobRole(jobRole);
+  DB.users.push({id:DB.nid(),name,username,password,role,jobRole,permissions,active:true});
   ['nu-name','nu-user','nu-pass'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('user-ok').classList.add('show');
   setTimeout(()=>document.getElementById('user-ok').classList.remove('show'),3000);
@@ -3662,6 +4048,95 @@ function addUser(){
 }
 
 function toggleUser(id){const u=DB.users.find(x=>x.id===id);if(u){u.active=!u.active;renderUsers();}}
+
+/* ── Permissions editor modal ── */
+let _permsUserId = null;
+
+function openPermsMo(userId){
+  const u = DB.users.find(x=>x.id===userId);
+  if(!u) return;
+  _permsUserId = userId;
+  // Ensure permissions exist
+  if(!u.permissions) u.permissions = defaultPermsForJobRole(u.jobRole||'sales');
+  document.getElementById('perms-mo-name').textContent = u.name;
+  document.getElementById('perms-jobrole').value = u.jobRole||'sales';
+  document.getElementById('perms-sysrole').value = u.role==='manager'?'manager':'staff';
+  renderPermsToggles(u.permissions);
+  document.getElementById('perms-mo').classList.add('open');
+}
+
+function closePermsMo(){
+  document.getElementById('perms-mo').classList.remove('open');
+  _permsUserId = null;
+}
+
+function renderPermsToggles(perms){
+  const pagesGrid = document.getElementById('perms-pages-grid');
+  const actionsGrid = document.getElementById('perms-actions-grid');
+  pagesGrid.innerHTML = ALL_PAGES.map(p=>`
+    <div class="perm-toggle ${perms.pages[p.key]?'on':''}" onclick="togglePermItem('page','${p.key}',this)">
+      <div class="pt-dot"></div>
+      <i class="ti ${p.icon}" style="font-size:13px;flex-shrink:0"></i>
+      <span>${p.label}</span>
+    </div>`).join('');
+  actionsGrid.innerHTML = ALL_ACTIONS.map(a=>`
+    <div class="perm-toggle ${perms.actions[a.key]?'on':''}" onclick="togglePermItem('action','${a.key}',this)">
+      <div class="pt-dot"></div>
+      <i class="ti ${a.icon}" style="font-size:13px;flex-shrink:0"></i>
+      <span>${a.label}</span>
+    </div>`).join('');
+}
+
+function togglePermItem(type, key, el){
+  el.classList.toggle('on');
+}
+
+function onPermsJobRoleChange(){
+  // Preview what defaults look like — user can still tweak after
+  const jr = document.getElementById('perms-jobrole').value;
+  document.getElementById('perms-sysrole').value = jr==='manager'?'manager':'staff';
+  const def = defaultPermsForJobRole(jr);
+  renderPermsToggles(def);
+}
+
+function applyRoleDefaults(){
+  const jr = document.getElementById('perms-jobrole').value;
+  const def = defaultPermsForJobRole(jr);
+  renderPermsToggles(def);
+}
+
+function permsSelectAll(val){
+  document.querySelectorAll('#perms-pages-grid .perm-toggle, #perms-actions-grid .perm-toggle').forEach(el=>{
+    if(val) el.classList.add('on'); else el.classList.remove('on');
+  });
+}
+
+function savePerms(){
+  const u = DB.users.find(x=>x.id===_permsUserId);
+  if(!u) return;
+  // Read page toggles
+  const pages = {};
+  document.querySelectorAll('#perms-pages-grid .perm-toggle').forEach((el,i)=>{
+    pages[ALL_PAGES[i].key] = el.classList.contains('on');
+  });
+  const actions = {};
+  document.querySelectorAll('#perms-actions-grid .perm-toggle').forEach((el,i)=>{
+    actions[ALL_ACTIONS[i].key] = el.classList.contains('on');
+  });
+  u.permissions = {pages, actions};
+  u.jobRole = document.getElementById('perms-jobrole').value;
+  u.role = document.getElementById('perms-sysrole').value;
+  closePermsMo();
+  renderUsers();
+  toast('Permissions saved for '+u.name,'s');
+  // If this user is currently logged in, refresh their nav
+  if(CU && CU.id === u.id){
+    CU.permissions = u.permissions;
+    CU.jobRole = u.jobRole;
+    CU.role = u.role;
+    applyUserPermissionsToNav(CU);
+  }
+}
 
 /* DELETE */
 function promptDel(t,id){delT={t,id};document.getElementById('del-mo').classList.add('open');}
@@ -3876,6 +4351,126 @@ function geoTestMyPos(){
     },
     {timeout:12000,maximumAge:0,enableHighAccuracy:true}
   );
+}
+
+/* =============================================
+   RESET SYSTEM DATA
+   ============================================= */
+function renderResetPage(){
+  const counts = {
+    sales: DB.sales.length,
+    production: DB.production.length,
+    rawmats: DB.rawmats.length,
+    expenses: DB.expenses.length,
+    attendance: (DB.attendance||[]).length,
+  };
+  // Update count labels on checkboxes
+  const labels = {sales:'sale', production:'batch', rawmats:'lot', expenses:'expense', attendance:'record'};
+  for(const [key, count] of Object.entries(counts)){
+    const el = document.getElementById('reset-'+key+'-count');
+    if(el) el.textContent = count + ' ' + labels[key] + (count!==1?'s':'');
+    const tot = document.getElementById('rs-total-'+key);
+    if(tot) tot.textContent = count;
+  }
+  // Sync checkbox visual state
+  ['sales','production','rawmats','expenses','attendance'].forEach(k=>{
+    const chk = document.getElementById('reset-'+k);
+    const chkEl = document.getElementById('reset-'+k+'-chk');
+    if(chk && chkEl) chkEl.classList.toggle('on', chk.checked);
+  });
+}
+
+function toggleResetCheck(id){
+  const chk = document.getElementById(id);
+  if(!chk) return;
+  chk.checked = !chk.checked;
+  const chkEl = document.getElementById(id+'-chk');
+  if(chkEl) chkEl.classList.toggle('on', chk.checked);
+}
+
+function resetSelectAll(val){
+  ['sales','production','rawmats','expenses','attendance'].forEach(k=>{
+    const chk = document.getElementById('reset-'+k);
+    const chkEl = document.getElementById('reset-'+k+'-chk');
+    if(chk) chk.checked = val;
+    if(chkEl) chkEl.classList.toggle('on', val);
+  });
+}
+
+function onResetConfirmInput(){
+  const val = (document.getElementById('reset-confirm-input').value||'').trim().toUpperCase();
+  const btn = document.getElementById('reset-go-btn');
+  const ready = val === 'RESET';
+  btn.disabled = !ready;
+  btn.style.opacity = ready ? '1' : '.45';
+  btn.style.cursor = ready ? 'pointer' : 'not-allowed';
+}
+
+function promptResetConfirm(){
+  // Build summary of what will be deleted
+  const selected = ['sales','production','rawmats','expenses','attendance'].filter(k=>{
+    const chk = document.getElementById('reset-'+k);
+    return chk && chk.checked;
+  });
+  if(!selected.length){ toast('Select at least one data type to clear','e'); return; }
+  const nameMap = {sales:'Sales',production:'Production batches',rawmats:'Raw material inventory',expenses:'Expenses',attendance:'Attendance records'};
+  const list = selected.map(k=>`• ${nameMap[k]} (${DB[k==='attendance'?'attendance':k]?.length||0} records)`).join('\n');
+  const sumEl = document.getElementById('reset-mo-summary');
+  if(sumEl) sumEl.innerHTML = 'You are about to permanently delete:<br><br><span style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--red-m);line-height:2">'
+    + selected.map(k=>`<strong>${nameMap[k]}</strong> (${(k==='attendance'?DB.attendance:DB[k])?.length||0} records)`).join('<br>')
+    + '</span><br><br>This will also delete all matching documents from Firebase.';
+  document.getElementById('reset-mo').classList.add('open');
+}
+
+function closeResetMo(){
+  document.getElementById('reset-mo').classList.remove('open');
+}
+
+async function executeReset(){
+  const btn = document.getElementById('reset-final-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader"></i> Deleting…';
+
+  const selected = ['sales','production','rawmats','expenses','attendance'].filter(k=>{
+    const chk = document.getElementById('reset-'+k);
+    return chk && chk.checked;
+  });
+
+  // Firebase collection names (attendance is local-only, no Firebase collection)
+  const fbCollections = {sales:'sales', production:'production', rawmats:'rawmats', expenses:'expenses'};
+
+  for(const key of selected){
+    // Delete from Firebase
+    if(window.fsReady && fbCollections[key]){
+      try{
+        const snap = await fsGetDocs(fsCol(fbCollections[key]));
+        const delPromises = [];
+        snap.forEach(d => delPromises.push(fsDeleteDoc(fsDoc(fbCollections[key], d.id))));
+        await Promise.all(delPromises);
+      } catch(e){ console.warn('Firebase reset error for', key, e); }
+    }
+    // Clear local DB
+    if(key==='attendance') DB.attendance=[];
+    else DB[key]=[];
+  }
+
+  // Close modal and reset UI
+  closeResetMo();
+  document.getElementById('reset-confirm-input').value='';
+  onResetConfirmInput();
+
+  // Re-render everything
+  updateExpPanel(); updateProdPanel(); renderRecentSales();
+  updateRMPanel(); renderRawMat(''); renderInvSummary('');
+  updateStockHint(); populateBatchSelect(); populateMatLotSelect();
+  if(CU && (CU.role!=='staff'||canAccess('dash'))){ renderDash(); renderAS(''); renderAP(); renderAE(); renderAttAdmin(''); }
+  renderAttMy(); updateAttStatusBar();
+  renderResetPage();
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-database-x"></i> Yes, permanently delete';
+
+  toast('Selected data cleared successfully ✓','s');
 }
 
 initDRBars();
