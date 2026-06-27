@@ -1273,6 +1273,18 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <tbody id="att-admin-tbody"></tbody>
           </table></div>
         </div>
+
+        <!-- Login Session Log -->
+        <div class="card" style="margin-top:1.25rem">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+            <div class="card-title" style="margin-bottom:0"><i class="ti ti-key"></i> Login session log</div>
+            <div class="sbar"><i class="ti ti-search"></i><input type="text" placeholder="Search user…" oninput="renderLoginSessions(this.value)"></div>
+          </div>
+          <div class="tw"><table class="dt">
+            <thead><tr><th>Date</th><th>User</th><th>Role</th><th>Logged in</th><th>Logged out</th><th>Active duration</th></tr></thead>
+            <tbody id="login-sessions-tbody"></tbody>
+          </table></div>
+        </div>
       </div>
 
       <!-- STORE LOCATION SETTINGS (ADMIN) -->
@@ -1987,6 +1999,26 @@ function finaliseLogin(user){
   // ---- ATTENDANCE: log sign-in ----
   attSignIn(user);
   startAttClock();
+
+  // ---- LOGIN SESSION: record app login ----
+  DB.loginSessions = DB.loginSessions || [];
+  const _sess = {
+    id: DB.nid(),
+    userId: user.id,
+    name: user.name,
+    role: user.role,
+    loginAt: new Date().toISOString(),
+    logoutAt: null,
+    duration: null
+  };
+  DB.loginSessions.push(_sess);
+  window._currentSession = _sess;
+  if(window.fsReady){
+    const {id:_,...sClean} = _sess;
+    fsAddDoc(fsCol('login_sessions'), sClean)
+      .then(ref=>{ _sess._fbId = ref.id; })
+      .catch(e=>console.warn('FS session write:',e));
+  }
 }
 
 function applyUserPermissionsToNav(user){
@@ -2035,11 +2067,32 @@ async function loadFromFirebase(){
         }
       });
     }
+    // Load attendance records from Firebase
+    const attSnap = await fsGetDocs(fsCol('attendance'));
+    attSnap.forEach(d=>{
+      const data={...d.data(),_fbId:d.id};
+      if(!DB.attendance.find(r=>r._fbId===data._fbId)){
+        if(!data.id) data.id=DB.nid();
+        DB.attendance.push(data);
+      }
+    });
+    // Load login sessions from Firebase
+    DB.loginSessions = DB.loginSessions || [];
+    const sessSnap = await fsGetDocs(fsCol('login_sessions'));
+    sessSnap.forEach(d=>{
+      const data={...d.data(),_fbId:d.id};
+      if(!DB.loginSessions.find(r=>r._fbId===data._fbId)){
+        if(!data.id) data.id=DB.nid();
+        DB.loginSessions.push(data);
+      }
+    });
     // Re-render everything with fresh data
     updateExpPanel();updateProdPanel();renderRecentSales();
     updateRMPanel();renderRawMat('');renderInvSummary('');
     updateStockHint();populateBatchSelect();populateMatLotSelect();
     if(CU&&(CU.role!=='staff'||canAccess('dash'))) renderDash();
+    updateAttStatusBar(); renderAttMy();
+    if(CU&&(CU.role!=='staff'||canAccess('att-admin'))){ renderAttAdmin(''); renderLoginSessions(''); }
     toast('Data synced ✓','s');
   } catch(e){
     console.warn('Firebase load error:',e);
@@ -2073,6 +2126,11 @@ function checkAutoSignOut(){
       r.autoSignOut = true;
       changed = true;
       if(CU && r.userId===CU.id) closedCurrentUser = true;
+      // Sync auto sign-out to Firestore
+      if(window.fsReady && r._fbId){
+        fsUpdateDoc(fsDoc('attendance', r._fbId), {signOut: r.signOut, autoSignOut: true})
+          .catch(e=>console.warn('FS auto-signout update:',e));
+      }
     }
   });
   if(!changed) return;
@@ -2102,7 +2160,7 @@ function attSignIn(user){
   // Don't double-create if somehow already open
   const existing = DB.attendance.find(r=>r.userId===user.id && r.date===todayKey && !r.signOut);
   if(!existing){
-    DB.attendance.push({
+    const rec = {
       id: DB.nid(),
       userId: user.id,
       name: user.name,
@@ -2110,7 +2168,15 @@ function attSignIn(user){
       date: todayKey,
       signIn: now.toISOString(),
       signOut: null
-    });
+    };
+    DB.attendance.push(rec);
+    // Save to Firestore
+    if(window.fsReady){
+      const {id:_,...clean} = rec;
+      fsAddDoc(fsCol('attendance'), clean)
+        .then(ref=>{ rec._fbId=ref.id; })
+        .catch(e=>console.warn('FS attendance write:',e));
+    }
   }
   updateAttStatusBar();
   renderAttMy();
@@ -2140,6 +2206,11 @@ function confirmSignOut(){
   const rec = DB.attendance.find(r=>r.userId===CU.id && r.date===todayKey && !r.signOut);
   if(rec){
     rec.signOut = new Date().toISOString();
+    // Update Firestore
+    if(window.fsReady && rec._fbId){
+      fsUpdateDoc(fsDoc('attendance', rec._fbId), {signOut: rec.signOut})
+        .catch(e=>console.warn('FS attendance signOut update:',e));
+    }
   }
   updateAttStatusBar();
   renderAttMy();
@@ -2242,6 +2313,33 @@ function exportAttCSV(){
   a.click(); toast('Attendance exported!','s');
 }
 
+function renderLoginSessions(q){
+  DB.loginSessions = DB.loginSessions || [];
+  q = (q||'').toLowerCase();
+  const rows = DB.loginSessions
+    .filter(r=>!q || r.name.toLowerCase().includes(q))
+    .slice().reverse();
+  const tb = document.getElementById('login-sessions-tbody');
+  if(!tb) return;
+  if(!rows.length){
+    tb.innerHTML='<tr><td colspan="6"><div class="empty"><i class="ti ti-key"></i><p>No login sessions recorded yet</p></div></td></tr>';
+    return;
+  }
+  tb.innerHTML = rows.map(r=>{
+    const date = r.loginAt ? r.loginAt.split('T')[0] : '—';
+    const active = !r.logoutAt;
+    const dur = r.duration || (active ? '<span class="att-signout-pending">Active now</span>' : '—');
+    return `<tr>
+      <td>${fmtDate(date)}</td>
+      <td style="font-weight:500">${r.name}</td>
+      <td><span class="badge ${r.role==='admin'?'rp-admin':'rp-staff'}" style="font-size:9px">${r.role}</span></td>
+      <td style="font-family:'DM Mono',monospace">${fmtTime(r.loginAt)}</td>
+      <td style="font-family:'DM Mono',monospace">${r.logoutAt ? fmtTime(r.logoutAt) : '<span class="att-signout-pending">Active</span>'}</td>
+      <td style="font-family:'DM Mono',monospace">${dur}</td>
+    </tr>`;
+  }).join('');
+}
+
 function fmtTime(iso){
   if(!iso) return '—';
   return new Date(iso).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
@@ -2259,6 +2357,19 @@ function calcDuration(inIso, outIso){
    ============================================= */
 function doLogout(){
   if(_attClockInterval){ clearInterval(_attClockInterval); _attClockInterval=null; }
+  // ---- LOGIN SESSION: record logout time ----
+  if(window._currentSession){
+    const sess = window._currentSession;
+    sess.logoutAt = new Date().toISOString();
+    const diff = Math.max(0, new Date(sess.logoutAt) - new Date(sess.loginAt));
+    const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000);
+    sess.duration = (h?h+'h ':'')+(m+'m');
+    if(window.fsReady && sess._fbId){
+      fsUpdateDoc(fsDoc('login_sessions', sess._fbId), {logoutAt: sess.logoutAt, duration: sess.duration})
+        .catch(e=>console.warn('FS session logout update:',e));
+    }
+    window._currentSession = null;
+  }
   CU=null;
   document.getElementById('app').classList.remove('on');
   document.getElementById('login-screen').style.display='flex';
@@ -2287,7 +2398,7 @@ function goPage(name,btn){
     prod:updateProdPanel,rawmat:()=>{renderRawMat('');updateRMPanel();renderInvSummary('');updateRmAltIdPreview();},
     sale:()=>{ updateStockHint(); },
     attendance:()=>{updateAttStatusBar();renderAttMy();},
-    'att-admin':()=>renderAttAdmin(''),
+    'att-admin':()=>{ renderAttAdmin(''); renderLoginSessions(''); },
     'geo-settings':()=>renderGeoSettings(),
     reset:()=>renderResetPage()};
   if(map[name])map[name]();
@@ -4361,7 +4472,7 @@ function renderResetPage(){
     production: DB.production.length,
     rawmats: DB.rawmats.length,
     expenses: DB.expenses.length,
-    attendance: (DB.attendance||[]).length,
+    attendance: (DB.attendance||[]).length + (DB.loginSessions||[]).length,
   };
   // Update count labels on checkboxes
   const labels = {sales:'sale', production:'batch', rawmats:'lot', expenses:'expense', attendance:'record'};
@@ -4435,8 +4546,8 @@ async function executeReset(){
     return chk && chk.checked;
   });
 
-  // Firebase collection names (attendance is local-only, no Firebase collection)
-  const fbCollections = {sales:'sales', production:'production', rawmats:'rawmats', expenses:'expenses'};
+  // Firebase collection names
+  const fbCollections = {sales:'sales', production:'production', rawmats:'rawmats', expenses:'expenses', attendance:'attendance'};
 
   for(const key of selected){
     // Delete from Firebase
@@ -4449,8 +4560,19 @@ async function executeReset(){
       } catch(e){ console.warn('Firebase reset error for', key, e); }
     }
     // Clear local DB
-    if(key==='attendance') DB.attendance=[];
-    else DB[key]=[];
+    if(key==='attendance'){
+      DB.attendance=[];
+      // Also clear login sessions from Firestore
+      DB.loginSessions=[];
+      if(window.fsReady){
+        try{
+          const sessSnap = await fsGetDocs(fsCol('login_sessions'));
+          const dp=[];
+          sessSnap.forEach(d=>dp.push(fsDeleteDoc(fsDoc('login_sessions',d.id))));
+          await Promise.all(dp);
+        } catch(e){ console.warn('Firebase reset login_sessions:',e); }
+      }
+    } else { DB[key]=[]; }
   }
 
   // Close modal and reset UI
@@ -4462,7 +4584,7 @@ async function executeReset(){
   updateExpPanel(); updateProdPanel(); renderRecentSales();
   updateRMPanel(); renderRawMat(''); renderInvSummary('');
   updateStockHint(); populateBatchSelect(); populateMatLotSelect();
-  if(CU && (CU.role!=='staff'||canAccess('dash'))){ renderDash(); renderAS(''); renderAP(); renderAE(); renderAttAdmin(''); }
+  if(CU && (CU.role!=='staff'||canAccess('dash'))){ renderDash(); renderAS(''); renderAP(); renderAE(); renderAttAdmin(''); renderLoginSessions(''); }
   renderAttMy(); updateAttStatusBar();
   renderResetPage();
 
