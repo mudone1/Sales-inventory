@@ -2085,7 +2085,7 @@ function checkAutoSignOut(){
     renderAttMy();
     updateAttStatusBar();
   }
-  if(closedCurrentUser){
+  if(closedCurrentUser && CU && CU.role!=='admin' && CU.role!=='manager'){
     toast("It's past 9:00 PM (store closing time) — you were automatically signed out because you didn't sign out yourself. Please remember to sign out at the end of your shift.",'e');
     setTimeout(()=>doLogout(), 3000);
   }
