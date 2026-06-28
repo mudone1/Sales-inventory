@@ -17,12 +17,12 @@
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyDJfwKEof_lHzTXSjRGRMZUs1NlDEmYhZ8",
-    authDomain: "a-lect-water.firebaseapp.com",
-    projectId: "a-lect-water",
-    storageBucket: "a-lect-water.firebasestorage.app",
-    messagingSenderId: "224694385808",
-    appId: "1:224694385808:web:495fdbd0be242cf6c7ac15"
+    apiKey: "AIzaSyCBLFD-b_4FG0JlMeIy2iIgKMLr3w7LHYY",
+    authDomain: "spring-xcel-water.firebaseapp.com",
+    projectId: "spring-xcel-water",
+    storageBucket: "spring-xcel-water.firebasestorage.app",
+    messagingSenderId: "413128829523",
+    appId: "1:413128829523:web:99443b9de7a10d424c74a6"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -492,6 +492,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
       <div class="field"><label>Username</label><input type="text" id="lu" placeholder="your username" autocomplete="username"></div>
       <div class="field"><label>PIN</label><input type="password" id="lp" placeholder="••••" autocomplete="current-password"></div>
       <button class="btn btn-primary btn-full" onclick="doLogin()"><i class="ti ti-arrow-right"></i> Sign in</button>
+      <p class="demo-hint">Staff: <code>staff</code> / <code>1234</code><br>Admin: <code>admin</code> / <code>admin99</code><br>Manager: <code>manager</code> / <code>mgr456</code></p>
     </div>
   </div>
 </div>
@@ -554,7 +555,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
                 <div class="field full">
                   <label>Sale type</label>
                   <div class="mpills" id="stype-pills">
-                    <button class="mpill sel" onclick="selSaleType('walkin',this)"><i class="ti ti-building-store"></i> Walk-in (Factory)</button>
+                    <button class="mpill sel" onclick="selSaleType('walkin',this)"><i class="ti ti-building-store"></i> Sales in factory</button>
                     <button class="mpill" onclick="selSaleType('supply',this)"><i class="ti ti-truck-delivery"></i> Driver (Supply)</button>
                   </div>
                 </div>
@@ -793,8 +794,8 @@ table.dt tbody tr:hover td{background:var(--surf2);}
                       </select>
                     </div>
                     <div class="field" style="margin:0">
-                      <label>Bundles used</label>
-                      <input type="number" id="p-mat-packing-qty" min="0" step="1" placeholder="e.g. 2" oninput="validateMatQty('packing')">
+                      <label>Packs used</label>
+                      <input type="number" id="p-mat-packing-qty" min="0" step="1" placeholder="e.g. 20" oninput="validateMatQty('packing')">
                     </div>
                   </div>
                   <div style="font-size:11px;color:var(--amb-m);margin-top:6px" id="p-mat-packing-hint">Select a packing lot to see availability</div>
@@ -880,26 +881,21 @@ table.dt tbody tr:hover td{background:var(--surf2);}
                 </div>
               </div>
 
-              <!-- PACKING BAG fields (bundles) -->
+              <!-- PACKING BAG fields (packs) -->
               <div id="rm-bundle-fields" style="display:none;margin-top:.5rem">
                 <div class="fg">
                   <div class="field">
-                    <label>Unit cost per bundle (₦)</label>
-                    <input type="number" id="rm-bundle-cost" placeholder="e.g. 5000" min="0" oninput="recalcBundleSummary()">
+                    <label>Unit cost per pack (₦)</label>
+                    <input type="number" id="rm-bundle-cost" placeholder="e.g. 500" min="0" oninput="recalcBundleSummary()">
                   </div>
                   <div class="field">
-                    <label>Quantity (bundles)</label>
-                    <input type="number" id="rm-bundle-qty" placeholder="e.g. 3" min="1" step="1" oninput="recalcBundleSummary()">
+                    <label>Quantity (packs)</label>
+                    <input type="number" id="rm-bundle-qty" placeholder="e.g. 30" min="1" step="1" oninput="recalcBundleSummary()">
                   </div>
                 </div>
                 <div class="mat-calc">
-                  <div class="mc-row"><span>Bundles</span><span id="rm-bundle-count">0</span></div>
-                  <div class="mc-row"><span>Total packs <span style="font-size:10.5px;font-weight:400;color:var(--txt3)">(× 10 packs / bundle)</span></span><span id="rm-bundle-packs">0 packs</span></div>
+                  <div class="mc-row"><span>Packs</span><span id="rm-bundle-count">0</span></div>
                   <div class="mc-row hl"><span>Total amount</span><span id="rm-bundle-amount">₦0</span></div>
-                </div>
-                <div style="font-size:11.5px;color:var(--txt3);margin-top:4px;padding:.5rem .75rem;background:var(--amb-l);border-radius:var(--r);border:1px solid #e8c97a">
-                  <i class="ti ti-info-circle" style="color:var(--amb-m)"></i>
-                  Each bundle contains <strong style="color:var(--amb)">10 packs</strong>. Total packs = bundles × 10.
                 </div>
               </div>
               <div class="fg">
@@ -948,10 +944,10 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <div class="mc t"><div class="mc-ico"><i class="ti ti-archive"></i></div><div class="mc-lbl">Printed Rolls KG remaining</div><div class="mc-val" id="inv-kg-left">0.00</div><div class="mc-sub">available stock</div></div>
           </div>
           <div class="mrow" style="margin-top:0.5rem">
-            <div class="mc a"><div class="mc-ico"><i class="ti ti-package"></i></div><div class="mc-lbl">Bundles received</div><div class="mc-val" id="inv-pb-in">0</div><div class="mc-sub">packing bags</div></div>
-            <div class="mc r"><div class="mc-ico"><i class="ti ti-flame"></i></div><div class="mc-lbl">Bundles consumed</div><div class="mc-val" id="inv-pb-used">0</div><div class="mc-sub">in production</div></div>
-            <div class="mc g"><div class="mc-ico"><i class="ti ti-archive"></i></div><div class="mc-lbl">Bundles remaining</div><div class="mc-val" id="inv-pb-left">0</div><div class="mc-sub" id="inv-pb-packs-sub">0 packs available</div></div>
-            <div class="mc b"><div class="mc-ico"><i class="ti ti-stack-2"></i></div><div class="mc-lbl">Active packing lots</div><div class="mc-val" id="inv-pb-lots">0</div><div class="mc-sub">with bundles left</div></div>
+            <div class="mc a"><div class="mc-ico"><i class="ti ti-package"></i></div><div class="mc-lbl">Packs received</div><div class="mc-val" id="inv-pb-in">0</div><div class="mc-sub">packing bags</div></div>
+            <div class="mc r"><div class="mc-ico"><i class="ti ti-flame"></i></div><div class="mc-lbl">Packs consumed</div><div class="mc-val" id="inv-pb-used">0</div><div class="mc-sub">in production</div></div>
+            <div class="mc g"><div class="mc-ico"><i class="ti ti-archive"></i></div><div class="mc-lbl">Packs remaining</div><div class="mc-val" id="inv-pb-left">0</div><div class="mc-sub" id="inv-pb-packs-sub">available</div></div>
+            <div class="mc b"><div class="mc-ico"><i class="ti ti-stack-2"></i></div><div class="mc-lbl">Active packing lots</div><div class="mc-val" id="inv-pb-lots">0</div><div class="mc-sub">with packs left</div></div>
           </div>
           <div class="card" style="padding:0;overflow:hidden">
             <div style="padding:.9rem 1.2rem;background:var(--surf2);border-bottom:1.5px solid var(--brd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px">
@@ -1032,11 +1028,11 @@ table.dt tbody tr:hover td{background:var(--surf2);}
         <!-- WALK-IN SALES -->
         <div class="card" style="padding:0;overflow:hidden;margin-bottom:1.1rem">
           <div style="padding:.75rem 1.2rem;background:var(--surf2);border-bottom:1.5px solid var(--brd)">
-            <div class="card-title" style="margin:0"><i class="ti ti-building-store" style="color:var(--grn-m)"></i> Walk-in (Factory) Sales</div>
+            <div class="card-title" style="margin:0"><i class="ti ti-building-store" style="color:var(--grn-m)"></i> Sales in factory</div>
           </div>
           <div class="tw"><table class="dt">
             <thead><tr><th>Date</th><th>Product</th><th>Qty</th><th>Price</th><th>Amount</th><th>Damaged</th><th>Method</th></tr></thead>
-            <tbody id="my-walkin-tbody"><tr><td colspan="7"><div class="empty"><i class="ti ti-building-store"></i><p>No walk-in sales recorded yet</p></div></td></tr></tbody>
+            <tbody id="my-walkin-tbody"><tr><td colspan="7"><div class="empty"><i class="ti ti-building-store"></i><p>No factory sales recorded yet</p></div></td></tr></tbody>
           </table></div>
         </div>
 
@@ -1098,12 +1094,12 @@ table.dt tbody tr:hover td{background:var(--surf2);}
           <div class="mc g"><div class="mc-ico"><i class="ti ti-archive"></i></div><div class="mc-lbl">KG remaining</div><div class="mc-val" id="d-rm-left">0.00</div><div class="mc-sub">available</div></div>
           <div class="mc b"><div class="mc-ico"><i class="ti ti-stack-2"></i></div><div class="mc-lbl">Active printed rolls lots</div><div class="mc-val" id="d-rm-lots">0</div><div class="mc-sub">with KG remaining</div></div>
         </div>
-        <div style="font-size:9.5px;font-weight:700;color:var(--txt3);letter-spacing:.09em;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:6px"><i class="ti ti-package" style="font-size:13px;color:#c08a18"></i> Packing Bags — Bundle inventory</div>
+        <div style="font-size:9.5px;font-weight:700;color:var(--txt3);letter-spacing:.09em;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:6px"><i class="ti ti-package" style="font-size:13px;color:#c08a18"></i> Packing Bags — Pack inventory</div>
         <div class="mrow" style="margin-top:0;margin-bottom:1.1rem">
-          <div class="mc a"><div class="mc-ico"><i class="ti ti-package"></i></div><div class="mc-lbl">Bundles received</div><div class="mc-val" id="d-pb-in">0</div><div class="mc-sub">all time</div></div>
-          <div class="mc r"><div class="mc-ico"><i class="ti ti-flame"></i></div><div class="mc-lbl">Bundles used</div><div class="mc-val" id="d-pb-used">0</div><div class="mc-sub">in production</div></div>
-          <div class="mc g"><div class="mc-ico"><i class="ti ti-archive"></i></div><div class="mc-lbl">Bundles remaining</div><div class="mc-val" id="d-pb-left">0</div><div class="mc-sub" id="d-pb-packs-sub">0 packs available</div></div>
-          <div class="mc b"><div class="mc-ico"><i class="ti ti-stack-2"></i></div><div class="mc-lbl">Active packing lots</div><div class="mc-val" id="d-pb-lots">0</div><div class="mc-sub">with bundles left</div></div>
+          <div class="mc a"><div class="mc-ico"><i class="ti ti-package"></i></div><div class="mc-lbl">Packs received</div><div class="mc-val" id="d-pb-in">0</div><div class="mc-sub">all time</div></div>
+          <div class="mc r"><div class="mc-ico"><i class="ti ti-flame"></i></div><div class="mc-lbl">Packs used</div><div class="mc-val" id="d-pb-used">0</div><div class="mc-sub">in production</div></div>
+          <div class="mc g"><div class="mc-ico"><i class="ti ti-archive"></i></div><div class="mc-lbl">Packs remaining</div><div class="mc-val" id="d-pb-left">0</div><div class="mc-sub" id="d-pb-packs-sub">available</div></div>
+          <div class="mc b"><div class="mc-ico"><i class="ti ti-stack-2"></i></div><div class="mc-lbl">Active packing lots</div><div class="mc-val" id="d-pb-lots">0</div><div class="mc-sub">with packs left</div></div>
         </div>
 
         <!-- RAW MATERIAL CHARTS -->
@@ -1113,7 +1109,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <div class="cbox"><canvas id="ch-mat-cat" aria-label="Material by category"></canvas></div>
           </div>
           <div class="card card-sm">
-            <div class="card-title"><i class="ti ti-chart-bar"></i> Top lots — received vs consumed (KG or bundles)</div>
+            <div class="card-title"><i class="ti ti-chart-bar"></i> Top lots — received vs consumed (KG or packs)</div>
             <div class="cbox"><canvas id="ch-mat-lots" aria-label="Lots bar chart"></canvas></div>
           </div>
         </div>
@@ -1157,7 +1153,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <button class="btn btn-outline btn-sm" onclick="exportCSV('production')"><i class="ti ti-download"></i> Export CSV</button>
           </div>
           <div class="tw"><table class="dt">
-            <thead><tr><th>Date</th><th>Batch</th><th>Printed Rolls Lot</th><th>Rolls KG</th><th>Packing Lot</th><th>Bundles</th><th>Type</th><th>Qty</th><th>Material cost</th><th>Logged by</th><th>Note</th><th></th></tr></thead>
+            <thead><tr><th>Date</th><th>Batch</th><th>Printed Rolls Lot</th><th>Rolls KG</th><th>Packing Lot</th><th>Packs</th><th>Type</th><th>Qty</th><th>Material cost</th><th>Logged by</th><th>Note</th><th></th></tr></thead>
             <tbody id="ap-tbody"></tbody>
           </table></div>
         </div>
@@ -1271,18 +1267,6 @@ table.dt tbody tr:hover td{background:var(--surf2);}
           <div class="tw"><table class="dt">
             <thead><tr><th>Date</th><th>Staff</th><th>Sign-in</th><th>Sign-out</th><th>Duration</th><th>Status</th></tr></thead>
             <tbody id="att-admin-tbody"></tbody>
-          </table></div>
-        </div>
-
-        <!-- Login Session Log -->
-        <div class="card" style="margin-top:1.25rem">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
-            <div class="card-title" style="margin-bottom:0"><i class="ti ti-key"></i> Login session log</div>
-            <div class="sbar"><i class="ti ti-search"></i><input type="text" placeholder="Search user…" oninput="renderLoginSessions(this.value)"></div>
-          </div>
-          <div class="tw"><table class="dt">
-            <thead><tr><th>Date</th><th>User</th><th>Role</th><th>Logged in</th><th>Logged out</th><th>Active duration</th></tr></thead>
-            <tbody id="login-sessions-tbody"></tbody>
           </table></div>
         </div>
       </div>
@@ -1839,12 +1823,15 @@ function doLogin(){
   ['login-err','login-geo-err'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('show');el.style.display='none';});
   if(!user){document.getElementById('login-err').classList.add('show');document.getElementById('login-err').style.display='flex';return;}
 
-  // Admins/managers still get geo-checked but can bypass via the link
   _pendingLoginUser = user;
 
-  // Check if already signed out today (for staff only — admins are not blocked)
-  if(user.role==='staff'){
-    const todayKey = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const isAfterHours = now.getHours() >= AUTO_SIGNOUT_HOUR;
+  const hasGeoBypass = user.role!=='staff' || (user.permissions&&user.permissions.actions&&user.permissions.actions['geo_bypass']);
+
+  // Check if already signed out today — staff are blocked, admins/bypass users can re-enter after hours
+  if(user.role==='staff' && !hasGeoBypass){
+    const todayKey = now.toISOString().split('T')[0];
     const todayRec = DB.attendance.find(r=>r.userId===user.id && r.date===todayKey && r.signOut);
     if(todayRec){
       const geoErr = document.getElementById('login-geo-err');
@@ -1853,7 +1840,13 @@ function doLogin(){
     }
   }
 
-  // Show geofence overlay and start checking
+  // After 9pm: skip geo check entirely for admins/bypass users
+  if(isAfterHours && hasGeoBypass){
+    finaliseLogin(user);
+    return;
+  }
+
+  // Normal flow — show geofence overlay
   _geoMode = 'login';
   document.getElementById('geo-overlay').classList.remove('hidden');
   geoCheck();
@@ -1999,26 +1992,6 @@ function finaliseLogin(user){
   // ---- ATTENDANCE: log sign-in ----
   attSignIn(user);
   startAttClock();
-
-  // ---- LOGIN SESSION: record app login ----
-  DB.loginSessions = DB.loginSessions || [];
-  const _sess = {
-    id: DB.nid(),
-    userId: user.id,
-    name: user.name,
-    role: user.role,
-    loginAt: new Date().toISOString(),
-    logoutAt: null,
-    duration: null
-  };
-  DB.loginSessions.push(_sess);
-  window._currentSession = _sess;
-  if(window.fsReady){
-    const {id:_,...sClean} = _sess;
-    fsAddDoc(fsCol('login_sessions'), sClean)
-      .then(ref=>{ _sess._fbId = ref.id; })
-      .catch(e=>console.warn('FS session write:',e));
-  }
 }
 
 function applyUserPermissionsToNav(user){
@@ -2067,32 +2040,11 @@ async function loadFromFirebase(){
         }
       });
     }
-    // Load attendance records from Firebase
-    const attSnap = await fsGetDocs(fsCol('attendance'));
-    attSnap.forEach(d=>{
-      const data={...d.data(),_fbId:d.id};
-      if(!DB.attendance.find(r=>r._fbId===data._fbId)){
-        if(!data.id) data.id=DB.nid();
-        DB.attendance.push(data);
-      }
-    });
-    // Load login sessions from Firebase
-    DB.loginSessions = DB.loginSessions || [];
-    const sessSnap = await fsGetDocs(fsCol('login_sessions'));
-    sessSnap.forEach(d=>{
-      const data={...d.data(),_fbId:d.id};
-      if(!DB.loginSessions.find(r=>r._fbId===data._fbId)){
-        if(!data.id) data.id=DB.nid();
-        DB.loginSessions.push(data);
-      }
-    });
     // Re-render everything with fresh data
     updateExpPanel();updateProdPanel();renderRecentSales();
     updateRMPanel();renderRawMat('');renderInvSummary('');
     updateStockHint();populateBatchSelect();populateMatLotSelect();
     if(CU&&(CU.role!=='staff'||canAccess('dash'))) renderDash();
-    updateAttStatusBar(); renderAttMy();
-    if(CU&&(CU.role!=='staff'||canAccess('att-admin'))){ renderAttAdmin(''); renderLoginSessions(''); }
     toast('Data synced ✓','s');
   } catch(e){
     console.warn('Firebase load error:',e);
@@ -2126,11 +2078,6 @@ function checkAutoSignOut(){
       r.autoSignOut = true;
       changed = true;
       if(CU && r.userId===CU.id) closedCurrentUser = true;
-      // Sync auto sign-out to Firestore
-      if(window.fsReady && r._fbId){
-        fsUpdateDoc(fsDoc('attendance', r._fbId), {signOut: r.signOut, autoSignOut: true})
-          .catch(e=>console.warn('FS auto-signout update:',e));
-      }
     }
   });
   if(!changed) return;
@@ -2143,7 +2090,7 @@ function checkAutoSignOut(){
     renderAttMy();
     updateAttStatusBar();
   }
-  if(closedCurrentUser && CU && CU.role!=='admin' && CU.role!=='manager'){
+  if(closedCurrentUser){
     toast("It's past 9:00 PM (store closing time) — you were automatically signed out because you didn't sign out yourself. Please remember to sign out at the end of your shift.",'e');
     setTimeout(()=>doLogout(), 3000);
   }
@@ -2160,7 +2107,7 @@ function attSignIn(user){
   // Don't double-create if somehow already open
   const existing = DB.attendance.find(r=>r.userId===user.id && r.date===todayKey && !r.signOut);
   if(!existing){
-    const rec = {
+    DB.attendance.push({
       id: DB.nid(),
       userId: user.id,
       name: user.name,
@@ -2168,15 +2115,7 @@ function attSignIn(user){
       date: todayKey,
       signIn: now.toISOString(),
       signOut: null
-    };
-    DB.attendance.push(rec);
-    // Save to Firestore
-    if(window.fsReady){
-      const {id:_,...clean} = rec;
-      fsAddDoc(fsCol('attendance'), clean)
-        .then(ref=>{ rec._fbId=ref.id; })
-        .catch(e=>console.warn('FS attendance write:',e));
-    }
+    });
   }
   updateAttStatusBar();
   renderAttMy();
@@ -2206,11 +2145,6 @@ function confirmSignOut(){
   const rec = DB.attendance.find(r=>r.userId===CU.id && r.date===todayKey && !r.signOut);
   if(rec){
     rec.signOut = new Date().toISOString();
-    // Update Firestore
-    if(window.fsReady && rec._fbId){
-      fsUpdateDoc(fsDoc('attendance', rec._fbId), {signOut: rec.signOut})
-        .catch(e=>console.warn('FS attendance signOut update:',e));
-    }
   }
   updateAttStatusBar();
   renderAttMy();
@@ -2313,33 +2247,6 @@ function exportAttCSV(){
   a.click(); toast('Attendance exported!','s');
 }
 
-function renderLoginSessions(q){
-  DB.loginSessions = DB.loginSessions || [];
-  q = (q||'').toLowerCase();
-  const rows = DB.loginSessions
-    .filter(r=>!q || r.name.toLowerCase().includes(q))
-    .slice().reverse();
-  const tb = document.getElementById('login-sessions-tbody');
-  if(!tb) return;
-  if(!rows.length){
-    tb.innerHTML='<tr><td colspan="6"><div class="empty"><i class="ti ti-key"></i><p>No login sessions recorded yet</p></div></td></tr>';
-    return;
-  }
-  tb.innerHTML = rows.map(r=>{
-    const date = r.loginAt ? r.loginAt.split('T')[0] : '—';
-    const active = !r.logoutAt;
-    const dur = r.duration || (active ? '<span class="att-signout-pending">Active now</span>' : '—');
-    return `<tr>
-      <td>${fmtDate(date)}</td>
-      <td style="font-weight:500">${r.name}</td>
-      <td><span class="badge ${r.role==='admin'?'rp-admin':'rp-staff'}" style="font-size:9px">${r.role}</span></td>
-      <td style="font-family:'DM Mono',monospace">${fmtTime(r.loginAt)}</td>
-      <td style="font-family:'DM Mono',monospace">${r.logoutAt ? fmtTime(r.logoutAt) : '<span class="att-signout-pending">Active</span>'}</td>
-      <td style="font-family:'DM Mono',monospace">${dur}</td>
-    </tr>`;
-  }).join('');
-}
-
 function fmtTime(iso){
   if(!iso) return '—';
   return new Date(iso).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
@@ -2357,19 +2264,6 @@ function calcDuration(inIso, outIso){
    ============================================= */
 function doLogout(){
   if(_attClockInterval){ clearInterval(_attClockInterval); _attClockInterval=null; }
-  // ---- LOGIN SESSION: record logout time ----
-  if(window._currentSession){
-    const sess = window._currentSession;
-    sess.logoutAt = new Date().toISOString();
-    const diff = Math.max(0, new Date(sess.logoutAt) - new Date(sess.loginAt));
-    const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000);
-    sess.duration = (h?h+'h ':'')+(m+'m');
-    if(window.fsReady && sess._fbId){
-      fsUpdateDoc(fsDoc('login_sessions', sess._fbId), {logoutAt: sess.logoutAt, duration: sess.duration})
-        .catch(e=>console.warn('FS session logout update:',e));
-    }
-    window._currentSession = null;
-  }
   CU=null;
   document.getElementById('app').classList.remove('on');
   document.getElementById('login-screen').style.display='flex';
@@ -2398,7 +2292,7 @@ function goPage(name,btn){
     prod:updateProdPanel,rawmat:()=>{renderRawMat('');updateRMPanel();renderInvSummary('');updateRmAltIdPreview();},
     sale:()=>{ updateStockHint(); },
     attendance:()=>{updateAttStatusBar();renderAttMy();},
-    'att-admin':()=>{ renderAttAdmin(''); renderLoginSessions(''); },
+    'att-admin':()=>renderAttAdmin(''),
     'geo-settings':()=>renderGeoSettings(),
     reset:()=>renderResetPage()};
   if(map[name])map[name]();
@@ -2556,7 +2450,7 @@ function selSaleType(t, el){
   document.getElementById('supply-fields').style.display = t==='supply' ? 'contents' : 'none';
   document.getElementById('r-body-walkin').style.display = t==='walkin' ? '' : 'none';
   document.getElementById('r-body-supply').style.display = t==='supply' ? '' : 'none';
-  document.getElementById('r-head-title').textContent = t==='walkin' ? 'Sale receipt' : 'Supply sale receipt';
+  document.getElementById('r-head-title').textContent = t==='walkin' ? 'Factory sale receipt' : 'Supply sale receipt';
   document.getElementById('r-lock-note').innerHTML = '<i class="ti ti-lock" style="font-size:11px"></i> Revenue figures are admin-only';
   if(t==='supply') document.getElementById('cash-tracker').classList.add('hidden');
   updateR();
@@ -2902,11 +2796,14 @@ function finalizeSale(doPrint){
     fsAddDoc(fsCol('sales'), clean).then(ref=>{ sale._fbId=ref.id; }).catch(e=>console.warn('FS sale write:',e));
   }
   document.getElementById('confirm-sale-mo').classList.remove('open');
-  showOk('sale-ok'); clearSale(); toast(sale.type==='supply'?'Supply log recorded!':'Sale recorded!','s');
+  showOk('sale-ok'); clearSale(); toast(sale.type==='supply'?'Supply log recorded!':'Factory sale recorded!','s');
   renderRecentSales();
   if(doPrint) printReceipt(sale);
   pendingSale=null;
   updateStockHint();
+  // Scroll back to top so the form is visible again on mobile
+  const contentEl = document.querySelector('.content');
+  if(contentEl) contentEl.scrollTop = 0;
 }
 
 function reprintSale(id){
@@ -3035,7 +2932,7 @@ function rawmatAvailable(r){
 }
 /* ── rawmat availability helpers ── */
 function rawmatAvailBundles(r){
-  // for packing bags: track by bundles consumed
+  // packing bags: bundles field now stores packs directly
   const used=DB.production.filter(p=>p.matPackingLotId===r.id).reduce((a,p)=>a+(p.matPackingBundles||0),0);
   return Math.max(0, (r.bundles||0)-used);
 }
@@ -3063,7 +2960,7 @@ function populateMatLotSelect(){
   } else {
     packingSel.innerHTML='<option value="">— Select packing lot —</option>'+packingLots.slice().reverse().map(r=>{
       const avail=rawmatAvailBundles(r);
-      return `<option value="${r.id}">${r.altId||('RM-'+String(r.id).padStart(4,'0'))} — ${matLabel(r.category)} · ${avail} bundle${avail!==1?'s':''} avail (${avail*10} packs)</option>`;
+      return `<option value="${r.id}">${r.altId||('RM-'+String(r.id).padStart(4,'0'))} — ${matLabel(r.category)} · ${avail} pack${avail!==1?'s':''} avail</option>`;
     }).join('');
     if(packingLots.some(r=>String(r.id)===curPacking)) packingSel.value=curPacking;
   }
@@ -3090,7 +2987,7 @@ function onMatLotChange(type){
     if(!sel.value){ hint.textContent='Select a packing lot to see availability'; qtyInput.removeAttribute('max'); return; }
     const r=DB.rawmats.find(x=>String(x.id)===sel.value);
     const avail=r?rawmatAvailBundles(r):0;
-    hint.textContent=avail+' bundle'+(avail!==1?'s':'')+' available ('+avail*10+' packs)';
+    hint.textContent=avail+' pack'+(avail!==1?'s':'')+' available';
     qtyInput.max=avail;
   }
   updateBatchMetricsPreview();
@@ -3117,8 +3014,8 @@ function validateMatQty(type){
     const avail=r?rawmatAvailBundles(r):0;
     const val=parseInt(qtyInput.value)||0;
     hint.innerHTML=val>avail
-      ?'<span style="color:var(--red-m)">Only '+avail+' bundle'+(avail!==1?'s':'')+' available</span>'
-      :avail+' bundle'+(avail!==1?'s':'')+' available ('+avail*10+' packs)';
+      ?'<span style="color:var(--red-m)">Only '+avail+' pack'+(avail!==1?'s':'')+' available</span>'
+      :avail+' pack'+(avail!==1?'s':'')+' available';
   }
   updateBatchMetricsPreview();
 }
@@ -3155,8 +3052,8 @@ function submitProd(){
     const lot=DB.rawmats.find(r=>String(r.id)===packingLotRaw);
     if(lot){
       const avail=rawmatAvailBundles(lot);
-      if(packingBundles<=0){toast('Enter bundles used for the packing lot','e');return;}
-      if(packingBundles>avail){toast('Only '+avail+' bundle'+(avail!==1?'s':'')+' available in that packing lot','e');return;}
+      if(packingBundles<=0){toast('Enter packs used for the packing lot','e');return;}
+      if(packingBundles>avail){toast('Only '+avail+' pack'+(avail!==1?'s':'')+' available in that packing lot','e');return;}
       matPackingLotId=lot.id;
       matPackingLabel=(lot.altId||'RM-'+String(lot.id).padStart(4,'0'))+' — '+matLabel(lot.category);
       matPackingBundles=packingBundles;
@@ -3241,7 +3138,7 @@ function updateBatchMetricsPreview(){
   const _s=id=>document.getElementById(id);
   if(_s('p-batchqty'))_s('p-batchqty').textContent=qty.toLocaleString();
   if(_s('p-batchkg'))_s('p-batchkg').textContent=sachetQty>0?sachetQty.toFixed(2)+' kg':'—';
-  if(_s('p-batchbdl'))_s('p-batchbdl').textContent=packingBdl>0?packingBdl+' bundles ('+(packingBdl*10)+' packs)':'—';
+  if(_s('p-batchbdl'))_s('p-batchbdl').textContent=packingBdl>0?packingBdl+' packs':'—';
   if(_s('p-batchcost'))_s('p-batchcost').textContent='₦'+totalCost.toLocaleString(undefined,{maximumFractionDigits:2});
   if(_s('p-batchperkg'))_s('p-batchperkg').textContent=(sachetQty>0&&qty>0)?perKg.toFixed(2)+' bags/kg':'—';
 }
@@ -3289,11 +3186,9 @@ function recalcRollSummary(){
 function recalcBundleSummary(){
   const qty=parseInt(document.getElementById('rm-bundle-qty')?.value)||0;
   const cost=parseFloat(document.getElementById('rm-bundle-cost')?.value)||0;
-  const packs=qty*10;
   const amount=qty*cost;
   const el=id=>document.getElementById(id);
   if(el('rm-bundle-count')) el('rm-bundle-count').textContent=qty;
-  if(el('rm-bundle-packs')) el('rm-bundle-packs').textContent=packs.toLocaleString()+' packs';
   if(el('rm-bundle-amount')) el('rm-bundle-amount').textContent='₦'+amount.toLocaleString(undefined,{maximumFractionDigits:2});
 }
 function prefillUnitCost(){
@@ -3333,11 +3228,11 @@ function submitRawMat(){
   const matName=c=>{const m=MAT_CATS.find(x=>x.code===c);return m?m.name:c;};
   let noRoll=0,qtyKg=0,unitCost=0,amount=0,rolls=[],bundles=0,totalPacks=0;
   if(isPackingBag){
-    bundles=parseInt(document.getElementById('rm-bundle-qty').value)||0;
+    bundles=parseInt(document.getElementById('rm-bundle-qty').value)||0; // 'bundles' field now stores packs directly
     unitCost=parseFloat(document.getElementById('rm-bundle-cost').value)||0;
-    if(!bundles){toast('Enter quantity in bundles','e');return;}
-    if(!unitCost){toast('Enter unit cost per bundle','e');return;}
-    totalPacks=bundles*10;
+    if(!bundles){toast('Enter quantity in packs','e');return;}
+    if(!unitCost){toast('Enter unit cost per pack','e');return;}
+    totalPacks=bundles; // packs entered directly — no ×10 conversion
     amount=bundles*unitCost;
     qtyKg=0;
   } else {
@@ -3360,7 +3255,7 @@ function submitRawMat(){
   updateRMPanel(); renderRawMat(''); updateBatchMetricsPreview(); populateMatLotSelect(); renderInvSummary(''); updateRmAltIdPreview();
   // Show ID popup
   document.getElementById('matid-code').textContent=altId;
-  const subLine=isPackingBag?bundles+' bundles ('+totalPacks+' packs)':qtyKg.toFixed(2)+' kg';
+  const subLine=isPackingBag?totalPacks+' packs':qtyKg.toFixed(2)+' kg';
   document.getElementById('matid-sub').textContent=matName(category)+' · '+subLine+' · '+fmtDate(date);
   document.getElementById('matid-mo').classList.add('open');
 }
@@ -3391,9 +3286,9 @@ function renderRawMat(q){
     <td><span style="font-family:'DM Mono',monospace;font-size:11.5px;font-weight:700;color:#1a5fcb;background:var(--grn-l);padding:3px 7px;border-radius:5px">${r.altId||'—'}</span></td>
     <td>${fmtDate(r.date)}</td>
     <td><span class="badge bt">${matName(r.category)}</span></td>
-    <td>${r.isPackingBag?r.bundles+' bundles':r.noRoll+' rolls'}</td>
+    <td>${r.isPackingBag?r.bundles+' packs':r.noRoll+' rolls'}</td>
     <td style="font-weight:600">${r.isPackingBag?(r.totalPacks+' packs'):r.qtyKg.toFixed(2)+' kg'}</td>
-    <td>${r.isPackingBag?'₦'+r.unitCost.toLocaleString()+'/bundle':'₦'+r.unitCost.toLocaleString()+'/kg'}</td>
+    <td>${r.isPackingBag?'₦'+r.unitCost.toLocaleString()+'/pack':'₦'+r.unitCost.toLocaleString()+'/kg'}</td>
     <td style="font-weight:600">₦${r.amount.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
     <td class="fig-cell" title="${r.isPackingBag?'':r.rolls.join(', ')}">${r.isPackingBag?'—':r.rolls.join(', ')}</td>
     <td>${r.staff}</td>
@@ -3427,7 +3322,7 @@ function renderInvSummary(q){
   if(s('inv-pb-in'))s('inv-pb-in').textContent=totPbIn;
   if(s('inv-pb-used'))s('inv-pb-used').textContent=totPbUsed;
   if(s('inv-pb-left'))s('inv-pb-left').textContent=totPbLeft;
-  if(s('inv-pb-packs-sub'))s('inv-pb-packs-sub').textContent=(totPbLeft*10).toLocaleString()+' packs available';
+  if(s('inv-pb-packs-sub'))s('inv-pb-packs-sub').textContent=totPbLeft.toLocaleString()+' packs available';
   if(s('inv-pb-lots'))s('inv-pb-lots').textContent=activePbLots;
 
   // table
@@ -3445,8 +3340,8 @@ function renderInvSummary(q){
       const depleted=pbAvail<=0;
       const low=!depleted&&pbAvail<(r.bundles||0)*.25;
       badge=depleted?'<span class="badge br">Depleted</span>':low?'<span class="badge ba">Low</span>':'<span class="badge bg">In stock</span>';
-      consumedCell=pbUsed>0?pbUsed+' bundle'+(pbUsed!==1?'s':'')+'<span style="color:var(--txt3);font-size:11px"> ('+pbUsed*10+' pks)</span>':'—';
-      availCell=`<span style="font-weight:600;color:${depleted?'var(--red-m)':low?'var(--amb-m)':'var(--grn)'}">${pbAvail} bundle${pbAvail!==1?'s':''}<span style="font-size:11px;color:var(--txt3)"> (${pbAvail*10} pks)</span></span>`;
+      consumedCell=pbUsed>0?pbUsed+' pack'+(pbUsed!==1?'s':''):'—';
+      availCell=`<span style="font-weight:600;color:${depleted?'var(--red-m)':low?'var(--amb-m)':'var(--grn)'}">${pbAvail} pack${pbAvail!==1?'s':''}</span>`;
     } else {
       const consumed=rawmatConsumed(r.id);
       const avail=rawmatAvailable(r);
@@ -3460,7 +3355,7 @@ function renderInvSummary(q){
       <td><span style="font-family:'DM Mono',monospace;font-size:11.5px;font-weight:700;color:#1a5fcb;background:var(--grn-l);padding:3px 7px;border-radius:5px">${r.altId||'—'}</span></td>
       <td>${fmtDate(r.date)}</td>
       <td><span class="badge ${r.isPackingBag?'ba':'bt'}">${matName(r.category)}</span></td>
-      <td style="font-weight:600">${r.isPackingBag?(r.totalPacks||0)+' packs ('+r.bundles+' bdl)':r.qtyKg.toFixed(2)+' kg'}</td>
+      <td style="font-weight:600">${r.isPackingBag?(r.totalPacks||r.bundles||0)+' packs':r.qtyKg.toFixed(2)+' kg'}</td>
       <td>${consumedCell}</td>
       <td>${availCell}</td>
       <td style="min-width:100px">
@@ -3578,7 +3473,7 @@ function renderMySales(){
   const wtb=document.getElementById('my-walkin-tbody');
   const walkinAll=all.filter(s=>s.type==='walkin');
   if(!walkinAll.length){
-    wtb.innerHTML='<tr><td colspan="7"><div class="empty"><i class="ti ti-building-store"></i><p>No walk-in sales recorded yet</p></div></td></tr>';
+    wtb.innerHTML='<tr><td colspan="7"><div class="empty"><i class="ti ti-building-store"></i><p>No factory sales recorded yet</p></div></td></tr>';
   } else {
     wtb.innerHTML=walkinAll.slice().reverse().map(s=>{
       const v=s.voided;
@@ -3648,7 +3543,7 @@ function renderRecentSales(q){
   tb.innerHTML=d.slice().reverse().map(s=>{
     const v=s.voided;
     const sty=v?'style="text-decoration:line-through;opacity:.55"':'';
-    const typeBadge=s.type==='supply'?'<span class="badge ba">Supply</span>':'<span class="badge bg">Walk-in</span>';
+    const typeBadge=s.type==='supply'?'<span class="badge ba">Supply</span>':'<span class="badge bg">Factory</span>';
     if(s.type==='supply'){
       return `<tr ${sty}>
         <td><button class="btn btn-outline btn-sm" onclick="reprintSale(${s.id})" title="Print receipt" style="gap:4px"><i class="ti ti-printer"></i> Print</button></td>
@@ -3706,7 +3601,7 @@ function renderAS(q){
       </tr>`;
     }
     return `<tr ${sty}>
-    <td>${fmtDate(s.date)}</td><td>${s.staff}</td><td><span class="badge bg">Walk-in</span></td><td>${s.product}</td>
+    <td>${fmtDate(s.date)}</td><td>${s.staff}</td><td><span class="badge bg">Factory</span></td><td>${s.product}</td>
     <td>${s.qty}</td><td>₦${s.price.toLocaleString()}</td>
     <td style="font-weight:600">₦${s.amount.toLocaleString()}</td>
     <td>${s.damaged>0?`<span style="color:var(--red)">${s.damaged}</span>`:'—'}</td>
@@ -3772,7 +3667,7 @@ function renderAP(){
     <td>${p.matSachetLotId?`<span class="badge bt">${p.matSachetLabel||p.matLotLabel||'—'}</span>`:(p.matLotId?`<span class="badge bt">${p.matLotLabel}</span>`:'—')}</td>
     <td>${(p.matSachetQtyUsed||p.matQtyUsed||0)>0?((p.matSachetQtyUsed||p.matQtyUsed)).toFixed(2)+' kg':'—'}</td>
     <td>${p.matPackingLotId?`<span class="badge ba">${p.matPackingLabel||'—'}</span>`:'—'}</td>
-    <td>${(p.matPackingBundles||0)>0?p.matPackingBundles+' bdl ('+(p.matPackingBundles*10)+' pks)':'—'}</td>
+    <td>${(p.matPackingBundles||0)>0?p.matPackingBundles+' pks':'—'}</td>
     <td>${p.type}</td><td style="font-weight:600">${p.qty.toLocaleString()}</td>
     <td style="font-weight:600">${totalMatCost>0?'₦'+totalMatCost.toLocaleString(undefined,{maximumFractionDigits:2}):'—'}</td>
     <td>${p.staff}</td>
@@ -3904,7 +3799,7 @@ function renderDash(){
   if(_s('d-pb-in'))_s('d-pb-in').textContent=totPbIn;
   if(_s('d-pb-used'))_s('d-pb-used').textContent=totPbUsed;
   if(_s('d-pb-left'))_s('d-pb-left').textContent=totPbLeft;
-  if(_s('d-pb-packs-sub'))_s('d-pb-packs-sub').textContent=(totPbLeft*10).toLocaleString()+' packs available';
+  if(_s('d-pb-packs-sub'))_s('d-pb-packs-sub').textContent=totPbLeft.toLocaleString()+' packs available';
   if(_s('d-pb-lots'))_s('d-pb-lots').textContent=activePbLots;
 
   /* ── Chart: material cost by category (₦) — includes both sachet & packing bags ── */
@@ -3921,9 +3816,9 @@ function renderDash(){
     options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'DM Sans'},boxWidth:10,padding:12,color:'#546050'}}}}
   });
 
-  /* ── Chart: top 6 lots bar (received vs consumed — KG for sachet, bundles for packing) ── */
+  /* ── Chart: top 6 lots bar (received vs consumed — KG for rolls, packs for packing) ── */
   const topLots=dashRM.slice().reverse().slice(0,6);
-  const topLabels=topLots.map(r=>(r.altId||('RM-'+String(r.id).padStart(4,'0')))+(r.isPackingBag?' (bdl)':''));
+  const topLabels=topLots.map(r=>(r.altId||('RM-'+String(r.id).padStart(4,'0')))+(r.isPackingBag?' (pks)':''));
   const topReceived=topLots.map(r=>r.isPackingBag?(r.bundles||0):r.qtyKg);
   const topConsumed=topLots.map(r=>r.isPackingBag?pbConsumed(r):rawmatConsumed(r.id));
   if(chMatLots)chMatLots.destroy();
@@ -3932,8 +3827,8 @@ function renderDash(){
     data:{
       labels:topLabels,
       datasets:[
-        {label:'Received (kg / bdl)',data:topReceived,backgroundColor:'rgba(26,95,203,0.25)',borderColor:'#1a5fcb',borderWidth:2,borderRadius:4},
-        {label:'Consumed (kg / bdl)',data:topConsumed,backgroundColor:'rgba(192,138,24,0.25)',borderColor:'#c08a18',borderWidth:2,borderRadius:4}
+        {label:'Received (kg / pks)',data:topReceived,backgroundColor:'rgba(26,95,203,0.25)',borderColor:'#1a5fcb',borderWidth:2,borderRadius:4},
+        {label:'Consumed (kg / pks)',data:topConsumed,backgroundColor:'rgba(192,138,24,0.25)',borderColor:'#c08a18',borderWidth:2,borderRadius:4}
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'DM Sans'},boxWidth:10,padding:8,color:'#546050'}}},scales:{x:{ticks:{font:{size:10,family:'DM Mono'},color:'#7a94b0'},grid:{display:false}},y:{ticks:{font:{size:11},color:'#7a94b0'},grid:{color:'rgba(220,229,240,.6)'},beginAtZero:true}}}
@@ -3985,7 +3880,7 @@ function renderDash(){
         <div style="flex:1">
           <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--txt3);margin-top:2px">
-            <span>${v.used} bundle${v.used!==1?'s':''} used of ${v.in} bundle${v.in!==1?'s':''} (${v.used*10} / ${v.in*10} packs)</span>
+            <span>${v.used} pack${v.used!==1?'s':''} used of ${v.in} pack${v.in!==1?'s':''}</span>
             <span style="font-family:'DM Mono',monospace">₦${v.cost.toLocaleString(undefined,{maximumFractionDigits:0})}</span>
           </div>
         </div>
@@ -4472,7 +4367,7 @@ function renderResetPage(){
     production: DB.production.length,
     rawmats: DB.rawmats.length,
     expenses: DB.expenses.length,
-    attendance: (DB.attendance||[]).length + (DB.loginSessions||[]).length,
+    attendance: (DB.attendance||[]).length,
   };
   // Update count labels on checkboxes
   const labels = {sales:'sale', production:'batch', rawmats:'lot', expenses:'expense', attendance:'record'};
@@ -4546,8 +4441,8 @@ async function executeReset(){
     return chk && chk.checked;
   });
 
-  // Firebase collection names
-  const fbCollections = {sales:'sales', production:'production', rawmats:'rawmats', expenses:'expenses', attendance:'attendance'};
+  // Firebase collection names (attendance is local-only, no Firebase collection)
+  const fbCollections = {sales:'sales', production:'production', rawmats:'rawmats', expenses:'expenses'};
 
   for(const key of selected){
     // Delete from Firebase
@@ -4560,19 +4455,8 @@ async function executeReset(){
       } catch(e){ console.warn('Firebase reset error for', key, e); }
     }
     // Clear local DB
-    if(key==='attendance'){
-      DB.attendance=[];
-      // Also clear login sessions from Firestore
-      DB.loginSessions=[];
-      if(window.fsReady){
-        try{
-          const sessSnap = await fsGetDocs(fsCol('login_sessions'));
-          const dp=[];
-          sessSnap.forEach(d=>dp.push(fsDeleteDoc(fsDoc('login_sessions',d.id))));
-          await Promise.all(dp);
-        } catch(e){ console.warn('Firebase reset login_sessions:',e); }
-      }
-    } else { DB[key]=[]; }
+    if(key==='attendance') DB.attendance=[];
+    else DB[key]=[];
   }
 
   // Close modal and reset UI
@@ -4584,7 +4468,7 @@ async function executeReset(){
   updateExpPanel(); updateProdPanel(); renderRecentSales();
   updateRMPanel(); renderRawMat(''); renderInvSummary('');
   updateStockHint(); populateBatchSelect(); populateMatLotSelect();
-  if(CU && (CU.role!=='staff'||canAccess('dash'))){ renderDash(); renderAS(''); renderAP(); renderAE(); renderAttAdmin(''); renderLoginSessions(''); }
+  if(CU && (CU.role!=='staff'||canAccess('dash'))){ renderDash(); renderAS(''); renderAP(); renderAE(); renderAttAdmin(''); }
   renderAttMy(); updateAttStatusBar();
   renderResetPage();
 
