@@ -1816,103 +1816,19 @@ const MAT_CATS=[
   ]},
 ];
 let CU=null,delT={t:null,id:null},sM='CASH',chPay=null,chExp=null;
-function populateMatSelects(){
-  const parent=document.getElementById('rm-cat-parent');
-  if(parent){
-    parent.innerHTML='<option value="">— Select category —</option>'+
-      MAT_CATS.map(m=>`<option value="${m.code}">${m.name}</option>`).join('');
-  }
-  // Reset sub
-  const sub=document.getElementById('rm-cat');
-  const subField=document.getElementById('rm-subcat-field');
-  if(sub) sub.innerHTML='<option value="">— Select sub-category —</option>';
-  if(subField) subField.style.display='none';
-}
-function onRmCatParentChange(){
-  const parent=document.getElementById('rm-cat-parent');
-  const sub=document.getElementById('rm-cat');
-  const subField=document.getElementById('rm-subcat-field');
-  if(!parent||!sub||!subField) return;
-  const code=parent.value;
-  const mat=MAT_CATS.find(m=>m.code===code);
-  const isPackingBag = code==='A0002';
-  // Show/hide sachet vs bundle fields
-  const sachetFields=document.getElementById('rm-sachet-fields');
-  const bundleFields=document.getElementById('rm-bundle-fields');
-  const costField=document.getElementById('rm-cost-field');
-  if(sachetFields) sachetFields.style.display=isPackingBag?'none':'';
-  if(bundleFields) bundleFields.style.display=isPackingBag?'':'none';
-  if(costField) costField.style.display=isPackingBag?'none':'';
-  if(mat&&mat.subs&&mat.subs.length){
-    sub.innerHTML='<option value="">— Select sub-category —</option>'+
-      mat.subs.map(s=>`<option value="${s.code}">${s.name}</option>`).join('');
-    subField.style.display='';
-    sub.value='';
-  } else {
-    sub.innerHTML=`<option value="${code}">${mat?mat.name:code}</option>`;
-    sub.value=code;
-    subField.style.display='none';
-  }
-  if(!isPackingBag) prefillUnitCost();
-  else recalcBundleSummary();
-}
-populateMatSelects();
-populateMatLotSelect();
-// Init new-user permission preview
-setTimeout(()=>{ if(document.getElementById('nu-perm-preview')) onNewUserJobRoleChange(); }, 0);
-
-/* =============================================
-   GEOFENCE CONFIG — configurable by admin via UI
-   ============================================= */
-function geoLoadConfig(){
-  try{
-    const raw=localStorage.getItem('xcel_geo_cfg');
-    if(raw) return JSON.parse(raw);
-  }catch(e){}
-  return {lat:null,lng:null,radius:200};
-}
-function geoSaveConfig(cfg){
-  try{ localStorage.setItem('xcel_geo_cfg', JSON.stringify(cfg)); }catch(e){}
-}
-let GEOCFG = geoLoadConfig();
-
-function getStoreLat(){ return GEOCFG.lat; }
-function getStoreLng(){ return GEOCFG.lng; }
-function getStoreRadius(){ return GEOCFG.radius||200; }
-
-/* =============================================
-   ATTENDANCE DATA  (stored in DB.attendance)
-   ============================================= */
-DB.attendance = DB.attendance || [];
-
-/* =============================================
-   GEO HELPERS
-   ============================================= */
-function geoDistance(lat1,lon1,lat2,lon2){
-  const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-// State for pending login (geofence check is async)
 let _pendingLoginUser = null;
-// Geofence can be triggered for two purposes: 'login' (sign-in) or 'signout' (sign-out).
-// Logging out of the app (closing the session) is NOT the same as ending the
-// shift — staff can log out and log back in and their sign-in time/elapsed
-// duration carries on unchanged. Only an actual SIGN OUT ends the shift, and
-// because of that, sign-out must also be geofence-verified.
 let _geoMode = 'login';
-
-/* =============================================
-   AUTO SIGN-OUT HOUR — must be declared before doLogin()
-   ============================================= */
+let _attClockInterval = null;
+let _attTickCount = 0;
+let sType='walkin';
+let spM='CASH';
+let pendingSale=null;
+let recentSalesScope='today';
+let voidTargetId=null;
+let chMatCat=null, chMatLots=null;
+let _permsUserId = null;
 const AUTO_SIGNOUT_HOUR = 21; // 9pm, 24h clock
-
 const TODAY = new Date().toISOString().split('T')[0];
-
-/* =============================================
-   DATE RANGE FILTERS (My Sales, Dashboard, All Sales, All Production, All Expenses)
-   ============================================= */
 const DR_CFG = {
   mysales:{render:()=>renderMySales(), label:'My sales'},
   dash:{render:()=>renderDash(), label:'Dashboard'},
@@ -1923,7 +1839,6 @@ const DR_CFG = {
 let DR = {mysales:{from:null,to:null},dash:{from:null,to:null},asales:{from:null,to:null},aprod:{from:null,to:null},aexp:{from:null,to:null}};
 const EXP_CATS_BASE = ['Operator','Fuel','Repair','Driver','Maintenance','Equipment & Machinery',
   'Labor & Staff','Logistics','Regulatory','Admin','Marketing','Security','Miscellaneous'];
-
 const ALL_PAGES = [
   {key:'sale',   label:'Record sale',          icon:'ti-shopping-cart'},
   {key:'prod',   label:'Log production',       icon:'ti-packages'},
@@ -2214,7 +2129,6 @@ async function loadFromFirebase(){
 /* =============================================
    ATTENDANCE LOGIC
    ============================================= */
-let _attClockInterval = null;
 
 /* =============================================
    AUTO SIGN-OUT  (store closes 7pm — by 9pm, anyone
@@ -2333,7 +2247,6 @@ function updateAttStatusBar(){
   }
 }
 
-let _attTickCount = 0;
 function startAttClock(){
   if(_attClockInterval) clearInterval(_attClockInterval);
   _attTickCount = 0;
@@ -2585,7 +2498,6 @@ function openDatePicker(){
   inp.addEventListener('blur', ()=>{ inp.style.pointerEvents='none'; inp.style.opacity='0'; inp.style.position='absolute'; inp.style.width='1px'; inp.style.height='1px'; }, {once:true});
 }
 
-let sType='walkin';
 function selSaleType(t, el){
   sType=t;
   document.querySelectorAll('#stype-pills .mpill').forEach(p=>p.classList.remove('sel'));
@@ -2617,7 +2529,6 @@ function onDateChange(){
   updateR();
 }
 
-let spM='CASH';
 function selMSp(m, el){
   spM = m;
   document.querySelectorAll('#mpills-sp .mpill').forEach(p=>p.classList.remove('sel'));
@@ -2776,7 +2687,6 @@ function updateStockHint(){
   }
 }
 
-let pendingSale=null;
 
 function submitSale(){
   if(sType==='supply'){
@@ -3956,7 +3866,6 @@ function renderMySales(){
 }
 
 /* RECENT SALES (on the Record Sale page itself) */
-let recentSalesScope='today';
 function setRecentSalesScope(scope){
   recentSalesScope=scope;
   document.getElementById('rs-scope-today').classList.toggle('sel', scope==='today');
@@ -4053,7 +3962,6 @@ function renderAS(q){
 }
 
 /* VOID SALE (manager/admin only) — reversible, struck-through, excluded from totals */
-let voidTargetId=null;
 function promptVoid(id){
   const s=DB.sales.find(x=>x.id===id);
   if(!s)return;
@@ -4129,7 +4037,6 @@ function renderAE(){
 }
 
 /* DASHBOARD */
-let chMatCat=null, chMatLots=null;
 function renderDash(){
   const activeSales=DB.sales.filter(s=>!s.voided && inDR('dash',s.date));
   const dashProd=DB.production.filter(p=>inDR('dash',p.date));
@@ -4362,6 +4269,91 @@ function renderDash(){
    ============================================= */
 
 // All pages and actions that can be individually toggled
+function populateMatSelects(){
+  const parent=document.getElementById('rm-cat-parent');
+  if(parent){
+    parent.innerHTML='<option value="">— Select category —</option>'+
+      MAT_CATS.map(m=>`<option value="${m.code}">${m.name}</option>`).join('');
+  }
+  // Reset sub
+  const sub=document.getElementById('rm-cat');
+  const subField=document.getElementById('rm-subcat-field');
+  if(sub) sub.innerHTML='<option value="">— Select sub-category —</option>';
+  if(subField) subField.style.display='none';
+}
+function onRmCatParentChange(){
+  const parent=document.getElementById('rm-cat-parent');
+  const sub=document.getElementById('rm-cat');
+  const subField=document.getElementById('rm-subcat-field');
+  if(!parent||!sub||!subField) return;
+  const code=parent.value;
+  const mat=MAT_CATS.find(m=>m.code===code);
+  const isPackingBag = code==='A0002';
+  // Show/hide sachet vs bundle fields
+  const sachetFields=document.getElementById('rm-sachet-fields');
+  const bundleFields=document.getElementById('rm-bundle-fields');
+  const costField=document.getElementById('rm-cost-field');
+  if(sachetFields) sachetFields.style.display=isPackingBag?'none':'';
+  if(bundleFields) bundleFields.style.display=isPackingBag?'':'none';
+  if(costField) costField.style.display=isPackingBag?'none':'';
+  if(mat&&mat.subs&&mat.subs.length){
+    sub.innerHTML='<option value="">— Select sub-category —</option>'+
+      mat.subs.map(s=>`<option value="${s.code}">${s.name}</option>`).join('');
+    subField.style.display='';
+    sub.value='';
+  } else {
+    sub.innerHTML=`<option value="${code}">${mat?mat.name:code}</option>`;
+    sub.value=code;
+    subField.style.display='none';
+  }
+  if(!isPackingBag) prefillUnitCost();
+  else recalcBundleSummary();
+}
+populateMatSelects();
+populateMatLotSelect();
+// Init new-user permission preview
+setTimeout(()=>{ if(document.getElementById('nu-perm-preview')) onNewUserJobRoleChange(); }, 0);
+
+/* =============================================
+   GEOFENCE CONFIG — configurable by admin via UI
+   ============================================= */
+function geoLoadConfig(){
+  try{
+    const raw=localStorage.getItem('xcel_geo_cfg');
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {lat:null,lng:null,radius:200};
+}
+function geoSaveConfig(cfg){
+  try{ localStorage.setItem('xcel_geo_cfg', JSON.stringify(cfg)); }catch(e){}
+}
+let GEOCFG = geoLoadConfig();
+
+function getStoreLat(){ return GEOCFG.lat; }
+function getStoreLng(){ return GEOCFG.lng; }
+function getStoreRadius(){ return GEOCFG.radius||200; }
+
+/* =============================================
+   ATTENDANCE DATA  (stored in DB.attendance)
+   ============================================= */
+DB.attendance = DB.attendance || [];
+
+/* =============================================
+   GEO HELPERS
+   ============================================= */
+function geoDistance(lat1,lon1,lat2,lon2){
+  const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+
+/* =============================================
+   AUTO SIGN-OUT HOUR — must be declared before doLogin()
+   ============================================= */
+/* =============================================
+   DATE RANGE FILTERS (My Sales, Dashboard, All Sales, All Production, All Expenses)
+   ============================================= */
 function defaultPermsForJobRole(jobRole){
   const def = JOB_ROLE_DEFAULTS[jobRole] || JOB_ROLE_DEFAULTS.sales;
   const pages = {};
@@ -4444,7 +4436,6 @@ function addUser(){
 function toggleUser(id){const u=DB.users.find(x=>x.id===id);if(u){u.active=!u.active;renderUsers();}}
 
 /* ── Permissions editor modal ── */
-let _permsUserId = null;
 
 function openPermsMo(userId){
   const u = DB.users.find(x=>x.id===userId);
