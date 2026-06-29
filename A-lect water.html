@@ -2979,11 +2979,9 @@ function matLabel(code){
 /* MATERIAL INVENTORY — each "Log raw materials used" entry is a lot; available qty
    is derived live from how much production has already drawn against it */
 function rawmatConsumed(lotId){
-  // Use String() comparison to handle mixed number/string IDs that can occur after Firebase reload
-  const lid=String(lotId);
-  const fromProd = DB.production.filter(p=>(String(p.matSachetLotId)===lid||String(p.matLotId)===lid)).reduce((a,p)=>a+(p.matSachetQtyUsed||p.matQtyUsed||0),0);
+  const fromProd = DB.production.filter(p=>(p.matSachetLotId===lotId||p.matLotId===lotId)).reduce((a,p)=>a+(p.matSachetQtyUsed||p.matQtyUsed||0),0);
   // Also count kg consumed by reconciliation closing entries (leftover saved to RLT)
-  const fromRecon = (DB.reconciliations||[]).filter(r=>String(r.sourceLotId)===lid).reduce((a,r)=>a+(r.kgConsumed||0),0);
+  const fromRecon = (DB.reconciliations||[]).filter(r=>r.sourceLotId===lotId).reduce((a,r)=>a+(r.kgConsumed||0),0);
   return fromProd + fromRecon;
 }
 function rawmatAvailable(r){
@@ -2992,9 +2990,7 @@ function rawmatAvailable(r){
 /* ── rawmat availability helpers ── */
 function rawmatAvailBundles(r){
   // packing bags: bundles field now stores packs directly
-  // Use String() comparison to handle mixed number/string IDs that can occur after Firebase reload
-  const rid=String(r.id);
-  const used=DB.production.filter(p=>String(p.matPackingLotId)===rid).reduce((a,p)=>a+(p.matPackingBundles||0),0);
+  const used=DB.production.filter(p=>p.matPackingLotId===r.id).reduce((a,p)=>a+(p.matPackingBundles||0),0);
   return Math.max(0, (r.bundles||0)-used);
 }
 
