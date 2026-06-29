@@ -3592,7 +3592,7 @@ function submitRawMat(){
   if(isPackingBag){
     packs=parseInt(document.getElementById('rm-bundle-qty').value)||0;
     unitCost=parseFloat(document.getElementById('rm-bundle-cost').value)||0;
-    if(!bundles){toast('Enter quantity in packs','e');return;}
+    if(!packs){toast('Enter quantity in packs','e');return;}
     if(!unitCost){toast('Enter unit cost per pack','e');return;}
     amount=packs*unitCost;
     qtyKg=0;
