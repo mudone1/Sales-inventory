@@ -3005,7 +3005,7 @@ function rawmatAvailBundles(r){
   // Use String() comparison to handle mixed number/string IDs that can occur after Firebase reload
   const rid=String(r.id);
   const used=DB.production.filter(p=>String(p.matPackingLotId)===rid).reduce((a,p)=>a+(p.matPackingBundles||0),0);
-  const total = r.packs || r.bundles || r.totalPacks || 0; // packs is canonical; bundles/totalPacks are legacy field names
+  const total = r.packs || r.bundles || r.totalPacks || r.qty || 0; // packs is canonical; bundles/totalPacks/qty are legacy field names
   return Math.max(0, total-used);
 }
 
@@ -3315,7 +3315,8 @@ function populateMatLotSelect(){
   // PACKING BAG lots (A0002)
   const packingSel=document.getElementById('p-mat-packing'); if(!packingSel) return;
   const curPacking=packingSel.value;
-  const packingLots=DB.rawmats.filter(r=>r.isPackingBag && rawmatAvailBundles(r)>0);
+  // Fallback to category-code check (A0002*) in case isPackingBag is missing on older records
+  const packingLots=DB.rawmats.filter(r=>(r.isPackingBag || String(r.category||'').startsWith('A0002')) && rawmatAvailBundles(r)>0);
   if(!packingLots.length){
     packingSel.innerHTML='<option value="">No packing lots in inventory</option>';
   } else {
@@ -3661,7 +3662,7 @@ function renderRawMat(q){
 /* INVENTORY SUMMARY (overview table + metrics) */
 function renderInvSummary(q){
   const sachetRM=DB.rawmats.filter(r=>!r.isPackingBag);
-  const packingRM=DB.rawmats.filter(r=>r.isPackingBag);
+  const packingRM=DB.rawmats.filter(r=>r.isPackingBag || String(r.category||'').startsWith('A0002'));
 
   // Sachet KG metrics
   const totKgIn=sachetRM.reduce((a,r)=>a+r.qtyKg,0);
@@ -4016,7 +4017,7 @@ function renderAP(){
     // Compute material cost live from lot records
     const sachetLot=p.matSachetLotId?DB.rawmats.find(r=>r.id===p.matSachetLotId):null;
     const sachetCost=sachetLot&&(p.matSachetQtyUsed||0)>0?(p.matSachetQtyUsed)*sachetLot.unitCost:0;
-    const packingLot=p.matPackingLotId?DB.rawmats.find(r=>r.id===p.matPackingLotId):null;
+    const packingLot=p.matPackingLotId?DB.rawmats.find(r=>String(r.id)===String(p.matPackingLotId)):null;
     const packingCost=packingLot&&(p.matPackingBundles||0)>0?(p.matPackingBundles)*packingLot.unitCost:0;
     const totalMatCost=sachetCost+packingCost;
     return`<tr>
@@ -4132,7 +4133,7 @@ function renderDash(){
   /* ── Raw material analysis ── */
   const allRM=DB.rawmats; // all time for inventory context
   const sachetRM=allRM.filter(r=>!r.isPackingBag);
-  const packingRM=allRM.filter(r=>r.isPackingBag);
+  const packingRM=allRM.filter(r=>r.isPackingBag || String(r.category||'').startsWith('A0002'));
 
   // Sachet bag metrics (KG-based)
   const totRmIn=sachetRM.reduce((a,r)=>a+r.qtyKg,0);
