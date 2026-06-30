@@ -2119,6 +2119,10 @@ async function loadFromFirebase(){
             const existing=DB[col].find(r=>String(r.id)===idStr);
             if(existing && !existing._fbId) existing._fbId=data._fbId;
           }
+          // Keep the local id counter ahead of every id we've ever seen from Firebase,
+          // so newly-created local records never collide with an existing loaded record's id
+          const numId=Number(data.id);
+          if(!isNaN(numId) && numId>DB._id) DB._id=numId;
         }
       });
     }
@@ -2997,7 +3001,8 @@ function rawmatConsumed(lotId){
   return fromProd + fromRecon;
 }
 function rawmatAvailable(r){
-  return Math.max(0, +(r.qtyKg - rawmatConsumed(r.id)).toFixed(2));
+  const totalKg = (r.qtyKg!=null?r.qtyKg:(r.totalKg!=null?r.totalKg:(r.kg!=null?r.kg:0))); // qtyKg is canonical; totalKg/kg are legacy fallbacks
+  return Math.max(0, +(totalKg - rawmatConsumed(r.id)).toFixed(2));
 }
 /* ── rawmat availability helpers ── */
 function rawmatAvailBundles(r){
@@ -3272,7 +3277,8 @@ function populateMatLotSelect(){
   const curSachet=sachetSel.value;
 
   // Split into remainder lots (RLT/) and regular lots — remainders always go first
-  const allSachetLots = DB.rawmats.filter(r=>!r.isPackingBag && rawmatAvailable(r)>0);
+  // Treat a record as a sachet/roll lot unless it's explicitly flagged or categorized as a packing bag
+  const allSachetLots = DB.rawmats.filter(r=>!(r.isPackingBag || String(r.category||'').startsWith('A0002')) && rawmatAvailable(r)>0);
   const remainderLots = allSachetLots.filter(r=>r.isRemainder);
   const regularLots   = allSachetLots.filter(r=>!r.isRemainder);
   const hasActiveRemainders = remainderLots.length > 0;
