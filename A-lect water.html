@@ -527,6 +527,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
       <button class="nav-item" onclick="goPage('attendance',this)" id="nav-attendance"><i class="ti ti-calendar-check"></i> Attendance</button>
 
       <div class="sb-sec admin-nav" style="display:none">Admin</div>
+      <button class="nav-item admin-nav" style="display:none" onclick="goPage('prodcalc',this)" id="nav-prodcalc"><i class="ti ti-calculator"></i> Prod Calculator</button>
       <button class="nav-item admin-nav" style="display:none" onclick="goPage('dash',this)" id="nav-dash"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
       <button class="nav-item admin-nav" style="display:none" onclick="goPage('asales',this)" id="nav-asales"><i class="ti ti-table"></i> All sales</button>
       <button class="nav-item admin-nav" style="display:none" onclick="goPage('aprod',this)" id="nav-aprod"><i class="ti ti-building-factory-2"></i> All production</button>
@@ -952,6 +953,64 @@ table.dt tbody tr:hover td{background:var(--surf2);}
           </div>
         </div>
 
+      </div>
+
+      <!-- PRODUCTION CALCULATOR -->
+      <div class="page" id="page-prodcalc">
+        <div class="ph"><div><div class="ph-title">Production Calculator</div><div class="ph-sub">Track KG used vs. bags produced and monitor the division (yield) rate per entry</div></div></div>
+
+        <div class="card" style="margin-bottom:1.1rem">
+          <div class="card-title" id="pc-form-title"><i class="ti ti-calculator"></i> New entry</div>
+          <div class="fg">
+            <div class="field">
+              <label>Date</label>
+              <input type="date" id="pc-date" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" onchange="dateChangeG('pc-date','pc-date-label')">
+              <button class="date-btn" id="pc-date-btn" type="button" onclick="openDatePickerG('pc-date')">
+                <i class="ti ti-calendar"></i>
+                <span class="db-label" id="pc-date-label">Today</span>
+                <span class="db-change">tap to change</span>
+              </button>
+            </div>
+            <div class="field"><label>Total KG used</label><input type="number" id="pc-kg" placeholder="e.g. 120.5" min="0" step="0.01" oninput="updatePcDivisionPreview()"></div>
+            <div class="field"><label>Quantity of bags produced</label><input type="number" id="pc-bags" placeholder="e.g. 1500" min="0" step="1" oninput="updatePcDivisionPreview()"></div>
+            <div class="field">
+              <label>Division (bags ÷ kg)</label>
+              <input type="text" id="pc-division-preview" readonly value="—" style="font-family:'DM Mono',monospace;font-weight:700;color:#1a5fcb;background:var(--grn-xl);border-color:var(--grn-m);cursor:default">
+            </div>
+            <div class="field full"><label>Note (optional)</label><input type="text" id="pc-note" placeholder="Machine, batch, comments…"></div>
+          </div>
+          <div class="f-actions">
+            <button class="btn btn-primary" id="pc-submit-btn" onclick="submitPc()"><i class="ti ti-check"></i> Add entry</button>
+            <button class="btn btn-outline" id="pc-cancel-btn" onclick="clearPc()" style="display:none"><i class="ti ti-x"></i> Cancel edit</button>
+          </div>
+        </div>
+
+        <div class="mrow" style="margin-bottom:1.1rem">
+          <div class="mc b"><div class="mc-ico"><i class="ti ti-stack-2"></i></div><div class="mc-lbl">Total entries</div><div class="mc-val" id="pc-count">0</div><div class="mc-sub">logged</div></div>
+          <div class="mc g"><div class="mc-ico"><i class="ti ti-packages"></i></div><div class="mc-lbl">Total bags</div><div class="mc-val" id="pc-total-bags">0</div><div class="mc-sub">produced</div></div>
+          <div class="mc a"><div class="mc-ico"><i class="ti ti-weight"></i></div><div class="mc-lbl">Total KG</div><div class="mc-val" id="pc-total-kg">0.00</div><div class="mc-sub">used</div></div>
+          <div class="mc t"><div class="mc-ico"><i class="ti ti-divide"></i></div><div class="mc-lbl">Overall avg. division</div><div class="mc-val" id="pc-avg-division">0.00</div><div class="mc-sub">bags / kg</div></div>
+        </div>
+
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:.75rem 1.2rem;background:var(--surf2);border-bottom:1.5px solid var(--brd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <div class="card-title" style="margin:0"><i class="ti ti-table"></i> Production entries</div>
+            <button class="btn btn-outline btn-sm" onclick="exportCSV('prodcalc')"><i class="ti ti-download"></i> Export CSV</button>
+          </div>
+          <div class="tw"><table class="dt">
+            <thead><tr><th>Date</th><th>Total KG used</th><th>Bags produced</th><th>Division</th><th>Note</th><th></th></tr></thead>
+            <tbody id="pc-tbody"><tr><td colspan="6"><div class="empty"><i class="ti ti-calculator"></i><p>No entries logged yet</p></div></td></tr></tbody>
+            <tfoot id="pc-tfoot" style="display:none">
+              <tr style="font-weight:700;background:var(--surf2);border-top:2px solid var(--brd)">
+                <td>Totals</td>
+                <td id="pc-foot-kg">0.00</td>
+                <td id="pc-foot-bags">0</td>
+                <td id="pc-foot-division">0.00</td>
+                <td colspan="2">Overall average division</td>
+              </tr>
+            </tfoot>
+          </table></div>
+        </div>
       </div>
 
       <!-- RAW MATERIAL INVENTORY -->
@@ -1875,7 +1934,7 @@ const DB={
     {id:2,name:'Owner',username:'admin',password:'admin99',role:'admin',jobRole:'manager',active:true},
     {id:3,name:'Manager',username:'manager',password:'mgr456',role:'manager',jobRole:'manager',active:true},
   ],
-  sales:[],production:[],expenses:[],rawmats:[],reconciliations:[],attendance:[],
+  sales:[],production:[],expenses:[],rawmats:[],reconciliations:[],attendance:[],prodcalc:[],
   _id:100,nid(){return++this._id;}
 };
 const MAT_CATS=[
@@ -1894,6 +1953,7 @@ let sType='walkin';
 let spM='CASH';
 let spStage='going';
 let spSelectedTripId=null;
+let pcEditId=null;
 let pendingSale=null;
 let recentSalesScope='today';
 let voidTargetId=null;
@@ -1921,6 +1981,7 @@ const ALL_PAGES = [
   {key:'rawmat', label:'Raw material inv.',    icon:'ti-box-seam'},
   {key:'exp',    label:'Log expense',          icon:'ti-receipt-2'},
   {key:'mysales',label:'My sales',             icon:'ti-clock-hour-4'},
+  {key:'prodcalc', label:'Prod Calculator',    icon:'ti-calculator'},
   {key:'dash',   label:'Dashboard',            icon:'ti-layout-dashboard'},
   {key:'asales', label:'All sales',            icon:'ti-table'},
   {key:'aprod',  label:'All production',       icon:'ti-building-factory-2'},
@@ -2179,7 +2240,7 @@ async function loadFromFirebase(){
   }
   toast('Syncing data…','');
   try{
-    const cols=['sales','production','expenses','rawmats'];
+    const cols=['sales','production','expenses','rawmats','prodcalc'];
     for(const col of cols){
       const snap=await fsGetDocs(fsCol(col));
       snap.forEach(d=>{
@@ -2451,6 +2512,7 @@ function goPage(name,btn){
   if(btn)btn.classList.add('active');
   const map={mysales:renderMySales,dash:renderDash,asales:()=>renderAS(''),aprod:renderAP,aexp:renderAE,users:renderUsers,
     prod:()=>{updateProdPanel(); populateMatLotSelect(); populateMachines(); populateReconLotSelect(); renderActiveRemainders(); renderReconHistory();},rawmat:()=>{renderRawMat('');updateRMPanel();renderInvSummary('');updateRmAltIdPreview();},
+    prodcalc:()=>{ renderPc(); },
     sale:()=>{ updateStockHint(); if(sType==='supply' && spStage==='return') populateSpTripSelect(); },
     attendance:()=>{updateAttStatusBar();renderAttMy();},
     'att-admin':()=>renderAttAdmin(''),
@@ -2461,9 +2523,9 @@ function goPage(name,btn){
 }
 
 function setDates(){
-  // s-date, rm-date, p-date and e-date are all handled by date buttons (show Today by default)
-  ['p-date','e-date','rm-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['p-date-label','e-date-label','rm-date-label'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Today';});
+  // s-date, rm-date, p-date, e-date and pc-date are all handled by date buttons (show Today by default)
+  ['p-date','e-date','rm-date','pc-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['p-date-label','e-date-label','rm-date-label','pc-date-label'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Today';});
 }
 
 /* SALE */
@@ -2558,7 +2620,7 @@ function openDatePickerG(inputId){
   inp.style.height = '100vh';
   inp.style.zIndex = '9999';
   inp.style.pointerEvents = 'all';
-  inp.showPicker ? inp.showPicker() : inp.click();
+  try{ inp.showPicker ? inp.showPicker() : inp.click(); }catch(e){ inp.click(); }
   inp.addEventListener('blur', ()=>{ inp.style.pointerEvents='none'; inp.style.opacity='0'; inp.style.position='absolute'; inp.style.width='1px'; inp.style.height='1px'; }, {once:true});
 }
 function dateChangeG(inputId, labelId, cb){
@@ -2585,7 +2647,7 @@ function openDatePicker(){
   inp.style.height = '100vh';
   inp.style.zIndex = '9999';
   inp.style.pointerEvents = 'all';
-  inp.showPicker ? inp.showPicker() : inp.click();
+  try{ inp.showPicker ? inp.showPicker() : inp.click(); }catch(e){ inp.click(); }
   inp.addEventListener('blur', ()=>{ inp.style.pointerEvents='none'; inp.style.opacity='0'; inp.style.position='absolute'; inp.style.width='1px'; inp.style.height='1px'; }, {once:true});
 }
 
@@ -4143,6 +4205,131 @@ function updateExpPanel(){
     <span class="prog-val">₦${(v/1000).toFixed(1)}k</span></div>`).join('');
 }
 
+/* =============================================
+   PRODUCTION CALCULATOR — KG used vs bags produced, division (yield) tracking
+   ============================================= */
+function updatePcDivisionPreview(){
+  const kg=parseFloat(document.getElementById('pc-kg').value)||0;
+  const bags=parseFloat(document.getElementById('pc-bags').value)||0;
+  const el=document.getElementById('pc-division-preview');
+  if(!el) return;
+  el.value = kg>0 ? (bags/kg).toFixed(4) : '—';
+}
+
+function submitPc(){
+  const dateVal=document.getElementById('pc-date').value;
+  const date=dateVal||TODAY;
+  const kg=parseFloat(document.getElementById('pc-kg').value);
+  const bags=parseFloat(document.getElementById('pc-bags').value);
+  const note=document.getElementById('pc-note').value;
+
+  if(!kg||kg<=0){toast('Enter the total KG used','e');return;}
+  if(bags===undefined||bags===null||isNaN(bags)||bags<0){toast('Enter the quantity of bags produced','e');return;}
+
+  const division=bags/kg;
+
+  if(pcEditId){
+    // ── EDIT — update existing record ──
+    const rec=DB.prodcalc.find(r=>r.id===pcEditId);
+    if(!rec){toast('Entry not found','e');clearPc();return;}
+    Object.assign(rec,{date,kg,bags,division,note});
+    if(window.fsReady && rec._fbId){
+      const clean=Object.fromEntries(Object.entries(rec).filter(([,v])=>v!==undefined));
+      fsUpdateDoc(fsDoc('prodcalc', rec._fbId), clean).catch(e=>console.warn('FS prodcalc update:',e));
+    }
+    toast('Entry updated!','s');
+  } else {
+    // ── ADD — new record ──
+    const rec={id:DB.nid(),date,kg,bags,division,note,staff:CU.name,staffId:CU.id,ts:Date.now()};
+    DB.prodcalc.push(rec);
+    if(window.fsReady){
+      const clean=Object.fromEntries(Object.entries(rec).filter(([,v])=>v!==undefined));
+      fsAddDoc(fsCol('prodcalc'), clean).then(ref=>{ rec._fbId=ref.id; }).catch(e=>console.warn('FS prodcalc write:',e));
+    }
+    toast('Entry added!','s');
+  }
+  clearPc();
+  renderPc();
+}
+
+function editPc(id){
+  const rec=DB.prodcalc.find(r=>r.id===id);
+  if(!rec) return;
+  pcEditId=id;
+  document.getElementById('pc-date').value=rec.date===TODAY?'':rec.date;
+  document.getElementById('pc-date-label').textContent = rec.date===TODAY ? 'Today' : (()=>{
+    const [y,m,d]=rec.date.split('-');
+    const months='Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+    return parseInt(d)+' '+months[parseInt(m)-1]+' '+y.slice(2);
+  })();
+  document.getElementById('pc-kg').value=rec.kg;
+  document.getElementById('pc-bags').value=rec.bags;
+  document.getElementById('pc-note').value=rec.note||'';
+  updatePcDivisionPreview();
+  document.getElementById('pc-form-title').innerHTML='<i class="ti ti-edit"></i> Edit entry';
+  document.getElementById('pc-submit-btn').innerHTML='<i class="ti ti-check"></i> Update entry';
+  document.getElementById('pc-cancel-btn').style.display='';
+  document.querySelector('#page-prodcalc .card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function deletePc(id){
+  promptDel('prodcalc', id);
+}
+
+function clearPc(){
+  pcEditId=null;
+  ['pc-kg','pc-bags','pc-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('pc-division-preview').value='—';
+  document.getElementById('pc-date').value='';
+  document.getElementById('pc-date-label').textContent='Today';
+  document.getElementById('pc-form-title').innerHTML='<i class="ti ti-calculator"></i> New entry';
+  document.getElementById('pc-submit-btn').innerHTML='<i class="ti ti-check"></i> Add entry';
+  document.getElementById('pc-cancel-btn').style.display='none';
+}
+
+function renderPc(){
+  const tb=document.getElementById('pc-tbody');
+  const tf=document.getElementById('pc-tfoot');
+  if(!tb) return;
+  const rows=DB.prodcalc.slice().sort((a,b)=>(a.ts||0)-(b.ts||0));
+
+  document.getElementById('pc-count').textContent=rows.length;
+
+  if(!rows.length){
+    tb.innerHTML='<tr><td colspan="6"><div class="empty"><i class="ti ti-calculator"></i><p>No entries logged yet</p></div></td></tr>';
+    tf.style.display='none';
+    document.getElementById('pc-total-bags').textContent='0';
+    document.getElementById('pc-total-kg').textContent='0.00';
+    document.getElementById('pc-avg-division').textContent='0.00';
+    return;
+  }
+
+  tb.innerHTML=rows.slice().reverse().map(r=>`
+    <tr>
+      <td>${fmtDate(r.date)}</td>
+      <td style="font-family:'DM Mono',monospace">${r.kg.toFixed(2)}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:600">${r.bags.toLocaleString()}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:700;color:#1a5fcb">${r.division.toFixed(4)}</td>
+      <td style="color:var(--txt3);font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.note||'—'}</td>
+      <td style="display:flex;gap:5px">
+        <button class="btn btn-outline btn-sm" onclick="editPc(${r.id})" title="Edit"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="deletePc(${r.id})" title="Delete"><i class="ti ti-trash"></i></button>
+      </td>
+    </tr>`).join('');
+
+  const totalKg=rows.reduce((a,r)=>a+r.kg,0);
+  const totalBags=rows.reduce((a,r)=>a+r.bags,0);
+  const avgDivision=totalKg>0 ? totalBags/totalKg : 0;
+
+  document.getElementById('pc-total-bags').textContent=totalBags.toLocaleString();
+  document.getElementById('pc-total-kg').textContent=totalKg.toFixed(2);
+  document.getElementById('pc-avg-division').textContent=avgDivision.toFixed(4);
+  document.getElementById('pc-foot-kg').textContent=totalKg.toFixed(2);
+  document.getElementById('pc-foot-bags').textContent=totalBags.toLocaleString();
+  document.getElementById('pc-foot-division').textContent=avgDivision.toFixed(4);
+  tf.style.display='';
+}
+
 /* MY SALES */
 function renderMySales(){
   const all=DB.sales.filter(s=>s.staffId===CU.id && inDR('mysales',s.date));
@@ -4930,6 +5117,7 @@ function confirmDel(){
   if(delType==='production'){renderAP();populateBatchSelect();updateBatchMetricsPreview();populateMatLotSelect();}
   if(delType==='expenses')renderAE();
   if(delType==='rawmats'){renderRawMat('');updateRMPanel();updateBatchMetricsPreview();renderAP();populateMatLotSelect();renderInvSummary('');}
+  if(delType==='prodcalc'){ if(pcEditId===delT.id) clearPc(); renderPc(); }
 }
 
 /* EXPORT */
