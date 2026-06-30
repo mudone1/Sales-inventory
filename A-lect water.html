@@ -584,6 +584,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
                 <div class="field"><label>Quantity (bags)</label><input type="number" id="s-qty" placeholder="e.g. 50" min="1" oninput="updateR();updateStockHint()"><div id="s-stock-hint" style="margin-top:5px;font-size:12px;color:var(--txt3)"></div></div>
                 <div class="field"><label>Price per bag (₦)</label><input type="number" id="s-price" placeholder="e.g. 210" min="0" oninput="updateR()"></div>
                 <div class="field"><label>Damaged / returned</label><input type="number" id="s-dmg" value="0" min="0" oninput="updateR()"></div>
+                <div class="field"><label>Qty exchanged (leaking, post-sale)</label><input type="number" id="s-exchange" value="0" min="0" oninput="updateR();updateStockHint()"></div>
 
                 <!-- PAYMENT METHOD -->
                 <div class="field full">
@@ -626,48 +627,78 @@ table.dt tbody tr:hover td{background:var(--surf2);}
                 <div class="field full"><label>Note (optional)</label><input type="text" id="s-note" placeholder="Customer name, delivery details…"></div>
                 </div>
 
-                <!-- DRIVER (SUPPLY) FIELDS — stock movement only, no money amount -->
+                <!-- DRIVER (SUPPLY) FIELDS — two-step: going out, then return -->
                 <div id="supply-fields" style="display:none">
-                <div class="field">
-                  <label>Driver name</label>
-                  <input type="text" id="sp-driver" placeholder="e.g. Musa">
-                </div>
-                <div class="field">
-                  <label>Product</label>
-                  <select id="sp-product" onchange="updateR();updateStockHint()">
-                    <option>Pure water 50CL</option><option>Dispenser water</option><option>Bottle water 50CL</option>
-                  </select>
-                </div>
-                <div class="field"><label>Qty of bags carried</label><input type="number" id="sp-carried" placeholder="e.g. 100" min="0" oninput="updateR();updateStockHint()"><div id="sp-stock-hint" style="margin-top:5px;font-size:12px;color:var(--txt3)"></div></div>
-                <div class="field"><label>Qty sold</label><input type="number" id="sp-sold" placeholder="e.g. 92" min="0" oninput="updateR()"></div>
-                <div class="field"><label>Price per bag (₦)</label><input type="number" id="sp-price" placeholder="e.g. 210" min="0" oninput="updateR()"></div>
-                <div class="field"><label>Qty leakage</label><input type="number" id="sp-leak" value="0" min="0" oninput="updateR()"></div>
-                <div class="field"><label>Qty leakage exchanged</label><input type="number" id="sp-leak-ex" value="0" min="0" oninput="updateR()"></div>
-                <div class="field"><label>Extra packing bags (packs)</label><input type="number" id="sp-extra" value="0" min="0" oninput="updateR()"></div>
-
-                <!-- PAYMENT METHOD (Driver/Supply) -->
                 <div class="field full">
-                  <label>Payment method</label>
-                  <div class="mpills" id="mpills-sp">
-                    <button class="mpill sel" onclick="selMSp('CASH',this)"><i class="ti ti-cash"></i> Cash</button>
-                    <button class="mpill" onclick="selMSp('TRANSFER',this)"><i class="ti ti-building-bank"></i> Transfer</button>
-                    <button class="mpill" onclick="selMSp('POS',this)"><i class="ti ti-credit-card"></i> POS</button>
-                    <button class="mpill" onclick="selMSp('SPLIT_CT',this)"><i class="ti ti-layout-columns"></i> Cash+Transfer</button>
-                    <button class="mpill" onclick="selMSp('SPLIT_CP',this)"><i class="ti ti-layout-columns"></i> Cash+POS</button>
+                  <label>Trip stage</label>
+                  <div class="mpills" id="sp-stage-pills">
+                    <button class="mpill sel" onclick="selSpStage('going',this)"><i class="ti ti-truck-delivery"></i> New trip (going out)</button>
+                    <button class="mpill" onclick="selSpStage('return',this)"><i class="ti ti-corner-down-left"></i> Update trip (returning)</button>
                   </div>
                 </div>
-                <div class="split-fields hidden full" id="split-fields-sp">
-                  <div class="split-label" id="split-lbl-sp">Split amounts</div>
-                  <div class="field" style="margin:0">
-                    <label>Cash portion (₦)</label>
-                    <input type="number" id="sp-cash-split" placeholder="0" min="0" oninput="updateR()">
+
+                <!-- GOING OUT — new trip -->
+                <div id="sp-going-fields">
+                  <div class="field">
+                    <label>Driver name</label>
+                    <input type="text" id="sp-driver" placeholder="e.g. Musa">
                   </div>
-                  <div class="field" style="margin:0">
-                    <label id="split-other-lbl-sp">Transfer portion (₦)</label>
-                    <input type="number" id="sp-other-split" placeholder="0" min="0" oninput="updateR()">
+                  <div class="field">
+                    <label>Product</label>
+                    <select id="sp-product" onchange="updateR();updateStockHint()">
+                      <option>Pure water 50CL</option><option>Dispenser water</option><option>Bottle water 50CL</option>
+                    </select>
                   </div>
+                  <div class="field"><label>Price per bag (₦)</label><input type="number" id="sp-price" placeholder="e.g. 210" min="0" oninput="updateR()"></div>
+                  <div class="field"><label>Qty of bags carried</label><input type="number" id="sp-carried" placeholder="e.g. 100" min="0" oninput="updateR();updateStockHint()"><div id="sp-stock-hint" style="margin-top:5px;font-size:12px;color:var(--txt3)"></div></div>
+                  <div class="field full"><label>Qty extra bags carried</label><input type="number" id="sp-extra" value="0" min="0" oninput="updateR();updateStockHint()"></div>
+                  <div class="field full"><label>Note (optional)</label><input type="text" id="sp-note" placeholder="Route, vehicle, comments…"></div>
                 </div>
-                <div class="field full"><label>Note (optional)</label><input type="text" id="sp-note" placeholder="Route, vehicle, comments…"></div>
+
+                <!-- RETURNING — update an open trip -->
+                <div id="sp-return-fields" style="display:none">
+                  <div class="field full">
+                    <label>Select trip to update</label>
+                    <select id="sp-trip-select" onchange="onSpTripSelect()">
+                      <option value="">— Select an open trip —</option>
+                    </select>
+                  </div>
+                  <div id="sp-trip-summary" class="field full" style="display:none;background:var(--surf2);border:1.5px solid var(--brd);border-radius:var(--r);padding:.75rem 1rem;margin-bottom:.2rem">
+                    <div style="font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.5rem">Trip details (locked)</div>
+                    <div class="r-row"><span class="rl">Driver</span><span class="rv" id="sp-sum-driver">—</span></div>
+                    <div class="r-row"><span class="rl">Product</span><span class="rv" id="sp-sum-product">—</span></div>
+                    <div class="r-row"><span class="rl">Unit price</span><span class="rv" id="sp-sum-price">—</span></div>
+                    <div class="r-row"><span class="rl">Bags carried</span><span class="rv" id="sp-sum-carried">0</span></div>
+                    <div class="r-row"><span class="rl">Extra bags carried</span><span class="rv" id="sp-sum-extra">0</span></div>
+                  </div>
+                  <div class="field"><label>Qty sold</label><input type="number" id="sp-sold" placeholder="e.g. 92" min="0" oninput="updateR()" disabled></div>
+                  <div class="field"><label>Qty leakage exchanged</label><input type="number" id="sp-leak-ex" value="0" min="0" oninput="updateR()" disabled></div>
+                  <div class="field full"><label>Qty damaged/return</label><input type="number" id="sp-dmg" value="0" min="0" oninput="updateR()" disabled></div>
+
+                  <!-- PAYMENT METHOD (Driver/Supply return) -->
+                  <div class="field full">
+                    <label>Payment method</label>
+                    <div class="mpills" id="mpills-sp">
+                      <button class="mpill sel" onclick="selMSp('CASH',this)"><i class="ti ti-cash"></i> Cash</button>
+                      <button class="mpill" onclick="selMSp('TRANSFER',this)"><i class="ti ti-building-bank"></i> Transfer</button>
+                      <button class="mpill" onclick="selMSp('POS',this)"><i class="ti ti-credit-card"></i> POS</button>
+                      <button class="mpill" onclick="selMSp('SPLIT_CT',this)"><i class="ti ti-layout-columns"></i> Cash+Transfer</button>
+                      <button class="mpill" onclick="selMSp('SPLIT_CP',this)"><i class="ti ti-layout-columns"></i> Cash+POS</button>
+                    </div>
+                  </div>
+                  <div class="split-fields hidden full" id="split-fields-sp">
+                    <div class="split-label" id="split-lbl-sp">Split amounts</div>
+                    <div class="field" style="margin:0">
+                      <label>Cash portion (₦)</label>
+                      <input type="number" id="sp-cash-split" placeholder="0" min="0" oninput="updateR()">
+                    </div>
+                    <div class="field" style="margin:0">
+                      <label id="split-other-lbl-sp">Transfer portion (₦)</label>
+                      <input type="number" id="sp-other-split" placeholder="0" min="0" oninput="updateR()">
+                    </div>
+                  </div>
+                  <div class="field full"><label>Return note (optional)</label><input type="text" id="sp-return-note" placeholder="Anything to add about the return…"></div>
+                </div>
                 </div>
               </div>
               <div class="f-actions">
@@ -685,6 +716,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
               <div class="r-row"><span class="rl">Quantity</span><span class="rv" id="r-qty">—</span></div>
               <div class="r-row"><span class="rl">Unit price</span><span class="rv" id="r-price">₦—</span></div>
               <div class="r-row"><span class="rl">Damaged</span><span class="rv" id="r-dmg" style="color:var(--red)">0 units</span></div>
+              <div class="r-row"><span class="rl">Exchanged (leaking)</span><span class="rv" id="r-exchange">0 units</span></div>
               <div class="r-row"><span class="rl">Method</span><span class="rv" id="r-method">CASH</span></div>
               <div class="r-row" id="r-split-cash-row" style="display:none"><span class="rl">&nbsp;&nbsp;↳ Cash</span><span class="rv" id="r-split-cash">₦0</span></div>
               <div class="r-row" id="r-split-other-row" style="display:none"><span class="rl" id="r-split-other-lbl">&nbsp;&nbsp;↳ Transfer</span><span class="rv" id="r-split-other">₦0</span></div>
@@ -692,14 +724,14 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <div class="r-body" id="r-body-supply" style="display:none">
               <div class="r-row"><span class="rl">Driver</span><span class="rv" id="rs-driver">—</span></div>
               <div class="r-row"><span class="rl">Product</span><span class="rv" id="rs-prod">—</span></div>
-              <div class="r-row"><span class="rl">Bags carried</span><span class="rv" id="rs-carried">0</span></div>
-              <div class="r-row"><span class="rl">Bags sold</span><span class="rv" id="rs-sold">0</span></div>
               <div class="r-row"><span class="rl">Unit price</span><span class="rv" id="rs-price">₦—</span></div>
-              <div class="r-row"><span class="rl">Leakage</span><span class="rv" id="rs-leak" style="color:var(--red)">0</span></div>
-              <div class="r-row"><span class="rl">Leakage exchanged</span><span class="rv" id="rs-leak-ex">0</span></div>
-              <div class="r-row"><span class="rl">Extra packing bags (packs)</span><span class="rv" id="rs-extra">0</span></div>
-              <div class="r-row"><span class="rl">Outstanding bags</span><span class="rv" id="rs-outstanding">0</span></div>
-              <div class="r-row"><span class="rl">Method</span><span class="rv" id="rs-method">CASH</span></div>
+              <div class="r-row"><span class="rl">Bags carried</span><span class="rv" id="rs-carried">0</span></div>
+              <div class="r-row" id="rs-extra-row"><span class="rl">Extra bags carried</span><span class="rv" id="rs-extra">0</span></div>
+              <div class="r-row" id="rs-sold-row" style="display:none"><span class="rl">Bags sold</span><span class="rv" id="rs-sold">0</span></div>
+              <div class="r-row" id="rs-leak-ex-row" style="display:none"><span class="rl">Leakage exchanged</span><span class="rv" id="rs-leak-ex">0</span></div>
+              <div class="r-row" id="rs-dmg-row" style="display:none"><span class="rl">Damaged/return</span><span class="rv" id="rs-dmg" style="color:var(--red)">0</span></div>
+              <div class="r-row" id="rs-outstanding-row" style="display:none"><span class="rl">Outstanding bags</span><span class="rv" id="rs-outstanding">0</span></div>
+              <div class="r-row" id="rs-method-row" style="display:none"><span class="rl">Method</span><span class="rv" id="rs-method">CASH</span></div>
               <div class="r-row" id="rs-split-cash-row" style="display:none"><span class="rl">&nbsp;&nbsp;↳ Cash</span><span class="rv" id="rs-split-cash">₦0</span></div>
               <div class="r-row" id="rs-split-other-row" style="display:none"><span class="rl" id="rs-split-other-lbl">&nbsp;&nbsp;↳ Transfer</span><span class="rv" id="rs-split-other">₦0</span></div>
             </div>
@@ -1120,7 +1152,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
           <div class="mc g"><div class="mc-ico"><i class="ti ti-shopping-cart"></i></div><div class="mc-lbl">Transactions</div><div class="mc-val" id="my-txn">0</div><div class="mc-sub">entries</div></div>
           <div class="mc a"><div class="mc-ico"><i class="ti ti-packages"></i></div><div class="mc-lbl">Bags sold</div><div class="mc-val" id="my-bags">0</div><div class="mc-sub">units</div></div>
           <div class="mc t"><div class="mc-ico"><i class="ti ti-truck-delivery"></i></div><div class="mc-lbl">Driver trips</div><div class="mc-val" id="my-drv-trips">0</div><div class="mc-sub">supply runs</div></div>
-          <div class="mc r"><div class="mc-ico"><i class="ti ti-droplet-off"></i></div><div class="mc-lbl">Total leakage</div><div class="mc-val" id="my-drv-leak">0</div><div class="mc-sub">bags lost</div></div>
+          <div class="mc r"><div class="mc-ico"><i class="ti ti-droplet-off"></i></div><div class="mc-lbl">Leakage exchanged</div><div class="mc-val" id="my-drv-leak">0</div><div class="mc-sub">bags swapped</div></div>
           <div class="mc a"><div class="mc-ico"><i class="ti ti-receipt"></i></div><div class="mc-lbl">Outstanding bags</div><div class="mc-val" id="my-drv-outstanding">0</div><div class="mc-sub">yet to return</div></div>
         </div>
 
@@ -1142,8 +1174,8 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <div class="card-title" style="margin:0"><i class="ti ti-user-check" style="color:#c08a18"></i> Supply trip log</div>
           </div>
           <div class="tw"><table class="dt">
-            <thead><tr><th>Date</th><th>Driver</th><th>Product</th><th>Carried</th><th>Sold</th><th>Sell Rate</th><th>Leakage</th><th>Exch</th><th>Outstanding</th><th>Price</th><th>Amount</th><th>Method</th></tr></thead>
-            <tbody id="my-supply-tbody"><tr><td colspan="12"><div class="empty"><i class="ti ti-truck-delivery"></i><p>No supply trips recorded yet</p></div></td></tr></tbody>
+            <thead><tr><th>Date</th><th>Driver</th><th>Product</th><th>Status</th><th>Carried</th><th>Extra</th><th>Sold</th><th>Sell Rate</th><th>Exch</th><th>Outstanding</th><th>Price</th><th>Amount</th><th>Method</th></tr></thead>
+            <tbody id="my-supply-tbody"><tr><td colspan="13"><div class="empty"><i class="ti ti-truck-delivery"></i><p>No supply trips recorded yet</p></div></td></tr></tbody>
           </table></div>
         </div>
       </div>
@@ -1171,7 +1203,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
           <div class="mc a"><div class="mc-ico"><i class="ti ti-truck-delivery"></i></div><div class="mc-lbl">Supply trips</div><div class="mc-val" id="d-drv-trips">0</div><div class="mc-sub">dispatch runs</div></div>
           <div class="mc b"><div class="mc-ico"><i class="ti ti-packages"></i></div><div class="mc-lbl">Bags carried</div><div class="mc-val" id="d-drv-carried">0</div><div class="mc-sub">total dispatched</div></div>
           <div class="mc g"><div class="mc-ico"><i class="ti ti-shopping-cart"></i></div><div class="mc-lbl">Bags sold</div><div class="mc-val" id="d-drv-sold">0</div><div class="mc-sub">by drivers</div></div>
-          <div class="mc r"><div class="mc-ico"><i class="ti ti-droplet-off"></i></div><div class="mc-lbl">Leakage</div><div class="mc-val" id="d-drv-leak">0</div><div class="mc-sub">bags lost</div></div>
+          <div class="mc r"><div class="mc-ico"><i class="ti ti-droplet-off"></i></div><div class="mc-lbl">Leakage exchanged</div><div class="mc-val" id="d-drv-leak">0</div><div class="mc-sub">bags swapped</div></div>
           <div class="mc t"><div class="mc-ico"><i class="ti ti-receipt"></i></div><div class="mc-lbl">Outstanding bags</div><div class="mc-val" id="d-drv-outstanding">0</div><div class="mc-sub">yet to return</div></div>
           <div class="mc g"><div class="mc-ico"><i class="ti ti-cash"></i></div><div class="mc-lbl">Driver revenue</div><div class="mc-val" id="d-drv-rev">₦0</div><div class="mc-sub">from supply sales</div></div>
         </div>
@@ -1180,7 +1212,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <div class="card-title" style="margin:0"><i class="ti ti-user-check" style="color:#c08a18"></i> Per-driver breakdown</div>
           </div>
           <div class="tw"><table class="dt">
-            <thead><tr><th>Driver</th><th>Trips</th><th>Product</th><th>Carried</th><th>Sold</th><th>Sell Rate</th><th>Leakage</th><th>Outstanding</th><th>Revenue</th><th>Method</th></tr></thead>
+            <thead><tr><th>Driver</th><th>Trips</th><th>Product</th><th>Carried</th><th>Sold</th><th>Sell Rate</th><th>Exch</th><th>Outstanding</th><th>Revenue</th><th>Method</th></tr></thead>
             <tbody id="d-drv-tbody"><tr><td colspan="10"><div class="empty"><i class="ti ti-truck-delivery"></i><p>No driver supply sales recorded yet</p></div></td></tr></tbody>
           </table></div>
         </div>
@@ -1251,7 +1283,7 @@ table.dt tbody tr:hover td{background:var(--surf2);}
             <button class="btn btn-outline btn-sm" onclick="exportCSV('sales')"><i class="ti ti-download"></i> Export CSV</button>
           </div>
           <div class="tw"><table class="dt">
-            <thead><tr><th>Date</th><th>Staff</th><th>Type</th><th>Product</th><th>Qty</th><th>Unit ₦</th><th>Amount</th><th>Damaged</th><th>Method</th><th>Carried/Leak/Exch/Extra</th><th>Cash Rcvd</th><th>Change</th><th>Net Cash</th><th>Note</th><th></th></tr></thead>
+            <thead><tr><th>Date</th><th>Staff</th><th>Type</th><th>Product</th><th>Qty</th><th>Unit ₦</th><th>Amount</th><th>Damaged</th><th>Method</th><th>Carried/Extra/Exch/Dmg</th><th>Cash Rcvd</th><th>Change</th><th>Net Cash</th><th>Note</th><th></th></tr></thead>
             <tbody id="as-tbody"></tbody>
           </table></div>
         </div>
@@ -1776,6 +1808,10 @@ table.dt tbody tr:hover td{background:var(--surf2);}
           <span style="color:var(--sb-text)">Damaged / returned</span>
           <span style="color:var(--red-m);font-family:'DM Mono',monospace" id="csm-dmg">0</span>
         </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12.5px;border-bottom:1px dashed var(--sb-brd)" id="csm-exch-row">
+          <span style="color:var(--sb-text)">Exchanged (leaking)</span>
+          <span style="color:#d0e8ff;font-family:'DM Mono',monospace" id="csm-exch">0</span>
+        </div>
         <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12.5px;border-bottom:1px dashed var(--sb-brd)" id="csm-method-row">
           <span style="color:var(--sb-text)">Payment method</span>
           <span style="color:#d0e8ff" id="csm-method">—</span>
@@ -1786,16 +1822,12 @@ table.dt tbody tr:hover td{background:var(--surf2);}
         </div>
         <!-- SUPPLY-ONLY ROWS -->
         <div id="csm-supply-rows" style="display:none">
-          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12.5px;border-bottom:1px dashed var(--sb-brd)">
-            <span style="color:var(--sb-text)">Leakage</span>
-            <span style="color:var(--red-m);font-family:'DM Mono',monospace" id="csm-leak">0</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12.5px;border-bottom:1px dashed var(--sb-brd)">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12.5px;border-bottom:1px dashed var(--sb-brd)" id="csm-leak-ex-row">
             <span style="color:var(--sb-text)">Leakage exchanged</span>
             <span style="color:#d0e8ff;font-family:'DM Mono',monospace" id="csm-leak-ex">0</span>
           </div>
-          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12.5px;border-bottom:1px dashed var(--sb-brd)">
-            <span style="color:var(--sb-text)">Extra packing bags (packs)</span>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12.5px;border-bottom:1px dashed var(--sb-brd)" id="csm-extra-row">
+            <span style="color:var(--sb-text)" id="csm-extra-lbl">Extra bags carried</span>
             <span style="color:#d0e8ff;font-family:'DM Mono',monospace" id="csm-extra">0</span>
           </div>
         </div>
@@ -1860,6 +1892,8 @@ let _attClockInterval = null;
 let _attTickCount = 0;
 let sType='walkin';
 let spM='CASH';
+let spStage='going';
+let spSelectedTripId=null;
 let pendingSale=null;
 let recentSalesScope='today';
 let voidTargetId=null;
@@ -2417,7 +2451,7 @@ function goPage(name,btn){
   if(btn)btn.classList.add('active');
   const map={mysales:renderMySales,dash:renderDash,asales:()=>renderAS(''),aprod:renderAP,aexp:renderAE,users:renderUsers,
     prod:()=>{updateProdPanel(); populateMatLotSelect(); populateMachines(); populateReconLotSelect(); renderActiveRemainders(); renderReconHistory();},rawmat:()=>{renderRawMat('');updateRMPanel();renderInvSummary('');updateRmAltIdPreview();},
-    sale:()=>{ updateStockHint(); },
+    sale:()=>{ updateStockHint(); if(sType==='supply' && spStage==='return') populateSpTripSelect(); },
     attendance:()=>{updateAttStatusBar();renderAttMy();},
     'att-admin':()=>renderAttAdmin(''),
     'geo-settings':()=>renderGeoSettings(),
@@ -2565,9 +2599,64 @@ function selSaleType(t, el){
   document.getElementById('r-body-supply').style.display = t==='supply' ? '' : 'none';
   document.getElementById('r-head-title').textContent = t==='walkin' ? 'Factory sale receipt' : 'Supply sale receipt';
   document.getElementById('r-lock-note').innerHTML = '<i class="ti ti-lock" style="font-size:11px"></i> Revenue figures are admin-only';
-  if(t==='supply') document.getElementById('cash-tracker').classList.add('hidden');
+  if(t==='supply'){
+    document.getElementById('cash-tracker').classList.add('hidden');
+    selSpStage('going', document.querySelector('#sp-stage-pills .mpill'));
+  }
   updateR();
   updateStockHint();
+}
+
+function selSpStage(stage, el){
+  spStage=stage;
+  document.querySelectorAll('#sp-stage-pills .mpill').forEach(p=>p.classList.remove('sel'));
+  if(el) el.classList.add('sel');
+  document.getElementById('sp-going-fields').style.display = stage==='going' ? '' : 'none';
+  document.getElementById('sp-return-fields').style.display = stage==='return' ? '' : 'none';
+  if(stage==='return'){
+    spSelectedTripId=null;
+    populateSpTripSelect();
+    document.getElementById('sp-trip-summary').style.display='none';
+    ['sp-sold','sp-leak-ex','sp-dmg'].forEach(id=>{const e=document.getElementById(id); if(e){e.value=''; e.disabled=true;}});
+  }
+  updateR();
+  updateStockHint();
+}
+
+function populateSpTripSelect(){
+  const sel=document.getElementById('sp-trip-select');
+  if(!sel) return;
+  const openTrips=DB.sales.filter(s=>s.type==='supply' && s.tripStatus==='open' && !s.voided);
+  if(!openTrips.length){
+    sel.innerHTML='<option value="">No open trips — start a new trip first</option>';
+  } else {
+    sel.innerHTML='<option value="">— Select an open trip —</option>'+openTrips.slice().reverse().map(s=>
+      `<option value="${s.id}">${s.driver} — ${s.product} — ${s.carried} carried (${fmtDate(s.date)})</option>`
+    ).join('');
+  }
+}
+
+function onSpTripSelect(){
+  const sel=document.getElementById('sp-trip-select');
+  spSelectedTripId=sel.value||null;
+  const summary=document.getElementById('sp-trip-summary');
+  const inputs=['sp-sold','sp-leak-ex','sp-dmg'];
+  if(!spSelectedTripId){
+    summary.style.display='none';
+    inputs.forEach(id=>{const e=document.getElementById(id); if(e){e.value=''; e.disabled=true;}});
+    updateR();
+    return;
+  }
+  const trip=DB.sales.find(s=>String(s.id)===spSelectedTripId);
+  if(!trip){ updateR(); return; }
+  document.getElementById('sp-sum-driver').textContent=trip.driver;
+  document.getElementById('sp-sum-product').textContent=trip.product;
+  document.getElementById('sp-sum-price').textContent='₦'+(trip.price||0).toLocaleString();
+  document.getElementById('sp-sum-carried').textContent=trip.carried||0;
+  document.getElementById('sp-sum-extra').textContent=trip.extra||0;
+  summary.style.display='';
+  inputs.forEach(id=>{const e=document.getElementById(id); if(e){e.disabled=false;}});
+  updateR();
 }
 
 function onDateChange(){
@@ -2625,34 +2714,62 @@ function selM(m, el){
 
 function updateR(){
   if(sType==='supply'){
-    const carried=parseFloat(document.getElementById('sp-carried').value)||0;
-    const sold=parseFloat(document.getElementById('sp-sold').value)||0;
-    const price=parseFloat(document.getElementById('sp-price').value)||0;
-    const leak=parseFloat(document.getElementById('sp-leak').value)||0;
-    const leakEx=parseFloat(document.getElementById('sp-leak-ex').value)||0;
-    const extra=parseFloat(document.getElementById('sp-extra').value)||0;
-    const outstanding=Math.max(0, carried-sold-leak);
-    const amount=sold*price;
-    document.getElementById('rs-driver').textContent=document.getElementById('sp-driver').value||'—';
-    document.getElementById('rs-prod').textContent=document.getElementById('sp-product').value||'—';
-    document.getElementById('rs-carried').textContent=carried;
-    document.getElementById('rs-sold').textContent=sold;
-    document.getElementById('rs-price').textContent=price?'₦'+price.toLocaleString():'₦—';
-    document.getElementById('rs-leak').textContent=leak;
-    document.getElementById('rs-leak-ex').textContent=leakEx;
-    document.getElementById('rs-extra').textContent=extra;
-    document.getElementById('rs-outstanding').textContent=outstanding;
-    document.getElementById('rs-method').textContent=spM.replace('_',' + ');
-    document.getElementById('r-total').textContent='\u20a6'+amount.toLocaleString();
-    const isSplit = spM==='SPLIT_CT'||spM==='SPLIT_CP';
-    document.getElementById('rs-split-cash-row').style.display = isSplit ? 'flex' : 'none';
-    document.getElementById('rs-split-other-row').style.display = isSplit ? 'flex' : 'none';
-    if(isSplit){
-      const cashSplit=parseFloat(document.getElementById('sp-cash-split').value)||0;
-      const otherSplit=parseFloat(document.getElementById('sp-other-split').value)||0;
-      document.getElementById('rs-split-cash').textContent='\u20a6'+cashSplit.toLocaleString();
-      document.getElementById('rs-split-other').textContent='\u20a6'+otherSplit.toLocaleString();
-      document.getElementById('rs-split-other-lbl').textContent='\u00a0\u00a0\u21b3 '+(spM==='SPLIT_CT'?'Transfer':'POS');
+    if(spStage==='going'){
+      const carried=parseFloat(document.getElementById('sp-carried').value)||0;
+      const extra=parseFloat(document.getElementById('sp-extra').value)||0;
+      const price=parseFloat(document.getElementById('sp-price').value)||0;
+      document.getElementById('rs-driver').textContent=document.getElementById('sp-driver').value||'—';
+      document.getElementById('rs-prod').textContent=document.getElementById('sp-product').value||'—';
+      document.getElementById('rs-price').textContent=price?'₦'+price.toLocaleString():'₦—';
+      document.getElementById('rs-carried').textContent=carried;
+      document.getElementById('rs-extra-row').style.display='flex';
+      document.getElementById('rs-extra').textContent=extra;
+      document.getElementById('rs-sold-row').style.display='none';
+      document.getElementById('rs-leak-ex-row').style.display='none';
+      document.getElementById('rs-dmg-row').style.display='none';
+      document.getElementById('rs-outstanding-row').style.display='none';
+      document.getElementById('rs-method-row').style.display='none';
+      document.getElementById('rs-split-cash-row').style.display='none';
+      document.getElementById('rs-split-other-row').style.display='none';
+      document.getElementById('r-total').textContent='No money recorded yet — return leg only';
+    } else {
+      const trip=DB.sales.find(s=>String(s.id)===spSelectedTripId);
+      const carried=trip?(trip.carried||0):0;
+      const extra=trip?(trip.extra||0):0;
+      const price=trip?(trip.price||0):0;
+      const sold=parseFloat(document.getElementById('sp-sold').value)||0;
+      const leakEx=parseFloat(document.getElementById('sp-leak-ex').value)||0;
+      const dmg=parseFloat(document.getElementById('sp-dmg').value)||0;
+      const adjCarried=Math.max(0,carried-leakEx);
+      const outstanding=Math.max(0, adjCarried-sold-dmg);
+      const amount=sold*price;
+      document.getElementById('rs-driver').textContent=trip?trip.driver:'—';
+      document.getElementById('rs-prod').textContent=trip?trip.product:'—';
+      document.getElementById('rs-price').textContent=price?'₦'+price.toLocaleString():'₦—';
+      document.getElementById('rs-carried').textContent=carried;
+      document.getElementById('rs-extra-row').style.display='flex';
+      document.getElementById('rs-extra').textContent=Math.max(0,extra-leakEx);
+      document.getElementById('rs-sold-row').style.display='flex';
+      document.getElementById('rs-sold').textContent=sold;
+      document.getElementById('rs-leak-ex-row').style.display='flex';
+      document.getElementById('rs-leak-ex').textContent=leakEx;
+      document.getElementById('rs-dmg-row').style.display='flex';
+      document.getElementById('rs-dmg').textContent=dmg;
+      document.getElementById('rs-outstanding-row').style.display='flex';
+      document.getElementById('rs-outstanding').textContent=outstanding;
+      document.getElementById('rs-method-row').style.display='flex';
+      document.getElementById('rs-method').textContent=spM.replace('_',' + ');
+      document.getElementById('r-total').textContent='\u20a6'+amount.toLocaleString();
+      const isSplit = spM==='SPLIT_CT'||spM==='SPLIT_CP';
+      document.getElementById('rs-split-cash-row').style.display = isSplit ? 'flex' : 'none';
+      document.getElementById('rs-split-other-row').style.display = isSplit ? 'flex' : 'none';
+      if(isSplit){
+        const cashSplit=parseFloat(document.getElementById('sp-cash-split').value)||0;
+        const otherSplit=parseFloat(document.getElementById('sp-other-split').value)||0;
+        document.getElementById('rs-split-cash').textContent='\u20a6'+cashSplit.toLocaleString();
+        document.getElementById('rs-split-other').textContent='\u20a6'+otherSplit.toLocaleString();
+        document.getElementById('rs-split-other-lbl').textContent='\u00a0\u00a0\u21b3 '+(spM==='SPLIT_CT'?'Transfer':'POS');
+      }
     }
     const dateVal = document.getElementById('s-date').value;
     document.getElementById('r-date').textContent = (!dateVal||dateVal===TODAY) ? 'Today' : document.getElementById('s-date-label').textContent;
@@ -2661,12 +2778,14 @@ function updateR(){
   const qty   = parseFloat(document.getElementById('s-qty').value)||0;
   const price = parseFloat(document.getElementById('s-price').value)||0;
   const dmg   = parseFloat(document.getElementById('s-dmg').value)||0;
+  const exch  = parseFloat(document.getElementById('s-exchange')?.value)||0;
   const total = qty * price;
 
   document.getElementById('r-prod').textContent   = document.getElementById('s-product').value||'\u2014';
   document.getElementById('r-qty').textContent    = qty ? qty+' bags' : '\u2014';
   document.getElementById('r-price').textContent  = price ? '\u20a6'+price.toLocaleString() : '\u20a6\u2014';
   document.getElementById('r-dmg').textContent    = dmg+' units';
+  if(document.getElementById('r-exchange')) document.getElementById('r-exchange').textContent = exch+' units';
   document.getElementById('r-method').textContent = sM.replace('_',' + ');
   document.getElementById('r-total').textContent  = '\u20a6'+total.toLocaleString();
 
@@ -2715,8 +2834,8 @@ function getAvailableBagsForSale(product){
   const sold = DB.sales
     .filter(s => !s.voided && s.product === product)
     .reduce((a, s) => {
-      if(s.type === 'walkin') return a + (s.qty || 0);
-      if(s.type === 'supply') return a + (s.carried || 0); // carried = bags dispatched
+      if(s.type === 'walkin') return a + (s.qty || 0) + (s.exchange || 0);
+      if(s.type === 'supply') return a + (s.carried || 0) + (s.extra || 0); // carried+extra = bags dispatched on the going leg
       return a;
     }, 0);
   return Math.max(0, produced - sold);
@@ -2724,21 +2843,38 @@ function getAvailableBagsForSale(product){
 
 function updateStockHint(){
   const isSupply = sType === 'supply';
+  if(isSupply && spStage!=='going'){
+    // Return leg doesn't draw new stock from inventory — nothing to check here
+    return;
+  }
   const productEl = document.getElementById(isSupply ? 'sp-product' : 's-product');
-  const qtyEl     = document.getElementById(isSupply ? 'sp-carried' : 's-qty');
   const hintEl    = document.getElementById(isSupply ? 'sp-stock-hint' : 's-stock-hint');
   if(!productEl || !hintEl) return;
 
   const product = productEl.value;
   const avail   = getAvailableBagsForSale(product);
-  const entered = parseFloat(qtyEl ? qtyEl.value : 0) || 0;
-  const none    = avail === 0;
-  const over    = entered > avail;
+  let primary, entered;
+  if(isSupply){
+    const carried=parseFloat(document.getElementById('sp-carried')?.value)||0;
+    const extra=parseFloat(document.getElementById('sp-extra')?.value)||0;
+    primary = carried;
+    entered = carried+extra;
+  } else {
+    const qty=parseFloat(document.getElementById('s-qty')?.value)||0;
+    const exch=parseFloat(document.getElementById('s-exchange')?.value)||0;
+    primary = qty;
+    entered = qty+exch;
+  }
+  const none       = avail === 0;
+  const overPrimary= primary > avail;
+  const over       = entered > avail;
 
   if(none){
     hintEl.innerHTML = '<span style="color:var(--red-m);font-weight:600"><i class="ti ti-alert-triangle" style="font-size:11px"></i> No bags available in production inventory</span>';
+  } else if(overPrimary){
+    hintEl.innerHTML = '<span style="color:var(--red-m);font-weight:600"><i class="ti ti-alert-triangle" style="font-size:11px"></i> Only <strong>'+avail.toLocaleString()+'</strong> bags available — reduce '+(isSupply?'bags carried':'quantity')+'</span>';
   } else if(over){
-    hintEl.innerHTML = '<span style="color:var(--red-m);font-weight:600"><i class="ti ti-alert-triangle" style="font-size:11px"></i> Only <strong>'+avail.toLocaleString()+'</strong> bags available — reduce quantity</span>';
+    hintEl.innerHTML = '<span style="color:var(--red-m);font-weight:600"><i class="ti ti-alert-triangle" style="font-size:11px"></i> Only <strong>'+avail.toLocaleString()+'</strong> bags available — reduce '+(isSupply?'extra bags':'exchange qty')+'</span>';
   } else {
     hintEl.innerHTML = '<span style="color:var(--grn)"><i class="ti ti-package" style="font-size:11px"></i> <strong>'+avail.toLocaleString()+'</strong> bags available in production inventory</span>';
   }
@@ -2749,70 +2885,133 @@ function submitSale(){
   if(sType==='supply'){
     const dateVal = document.getElementById('s-date').value;
     const date    = dateVal || TODAY;
-    const driver  = document.getElementById('sp-driver').value.trim();
-    const product = document.getElementById('sp-product').value;
-    const carried = parseFloat(document.getElementById('sp-carried').value);
-    const sold    = parseFloat(document.getElementById('sp-sold').value);
-    const price   = parseFloat(document.getElementById('sp-price').value);
-    const leak    = parseFloat(document.getElementById('sp-leak').value)||0;
-    const leakEx  = parseFloat(document.getElementById('sp-leak-ex').value)||0;
-    const extra   = parseFloat(document.getElementById('sp-extra').value)||0;
-    const note    = document.getElementById('sp-note').value;
+    const g = id => document.getElementById(id);
 
-    if(!driver){toast('Enter the driver name','e');return;}
-    if(!carried||!sold){toast('Fill in bags carried and bags sold','e');return;}
-    if(!price){toast('Enter the price per bag','e');return;}
+    if(spStage==='going'){
+      const driver  = document.getElementById('sp-driver').value.trim();
+      const product = document.getElementById('sp-product').value;
+      const price   = parseFloat(document.getElementById('sp-price').value);
+      const carried = parseFloat(document.getElementById('sp-carried').value);
+      const extra   = parseFloat(document.getElementById('sp-extra').value)||0;
+      const note    = document.getElementById('sp-note').value;
 
-    // ── STOCK CHECK ──
-    const _spAvail = getAvailableBagsForSale(product);
-    if(carried > _spAvail){
-      toast('Only '+_spAvail.toLocaleString()+' bags available in production — reduce bags carried','e');
-      updateStockHint();
+      if(!driver){toast('Enter the driver name','e');return;}
+      if(!carried){toast('Enter the quantity of bags carried','e');return;}
+      if(!price){toast('Enter the price per bag','e');return;}
+
+      // ── STOCK CHECK — bags carried must individually fit available stock, then carried+extra together must also fit ──
+      const _spAvail = getAvailableBagsForSale(product);
+      if(carried > _spAvail){
+        toast('Only '+_spAvail.toLocaleString()+' bags available in production — reduce bags carried','e');
+        updateStockHint();
+        return;
+      }
+      if((carried+extra) > _spAvail){
+        toast('Only '+_spAvail.toLocaleString()+' bags available in production — reduce extra bags carried','e');
+        updateStockHint();
+        return;
+      }
+
+      pendingSale = {
+        type:'supply', date, product, driver, price,
+        carried, extra, tripStatus:'open',
+        qty:0, sold:0, leakEx:0, damaged:0, outstanding:carried,
+        amount:0, method:null,
+        note, staff:CU.name, staffId:CU.id, voided:false
+      };
+
+      g('csm-product').textContent    = product+' — '+driver;
+      g('csm-qty-label').textContent  = carried+' bags carried'+(extra>0?' + '+extra+' extra':'');
+      g('csm-price-box').style.display='';
+      g('csm-unit-price').textContent = '₦'+price.toLocaleString();
+      g('csm-qty-row').style.display='flex';
+      g('csm-qty').textContent=carried;
+      g('csm-dmg-row').style.display='none';
+      g('csm-exch-row').style.display='none';
+      g('csm-method-row').style.display='none';
+      g('csm-split-row').style.display='none';
+      g('csm-supply-rows').style.display='block';
+      g('csm-leak-ex-row').style.display='none';
+      g('csm-extra-row').style.display=extra>0?'flex':'none';
+      g('csm-extra-lbl').textContent='Extra bags carried';
+      g('csm-extra').textContent=extra;
+      g('csm-total-lbl').textContent='Trip status';
+      g('csm-total-sub').textContent='No money recorded — update this trip when the driver returns';
+      g('csm-total').textContent='Out on trip';
+      g('csm-print-btn').style.display='none';
+      const noteRow = g('csm-note-row');
+      if(note){ g('csm-note').textContent=note; noteRow.style.display='flex'; }
+      else { noteRow.style.display='none'; }
+
+      document.getElementById('confirm-sale-mo').classList.add('open');
       return;
     }
 
-    const outstanding=Math.max(0, carried-sold-leak);
-    const amount=sold*price;
+    // ── RETURN LEG — update an existing open trip ──
+    if(!spSelectedTripId){toast('Select a trip to update','e');return;}
+    const trip = DB.sales.find(s=>String(s.id)===spSelectedTripId);
+    if(!trip){toast('Trip not found','e');return;}
+
+    const sold   = parseFloat(document.getElementById('sp-sold').value);
+    const leakEx = parseFloat(document.getElementById('sp-leak-ex').value)||0;
+    const dmg    = parseFloat(document.getElementById('sp-dmg').value)||0;
+    const returnNote = document.getElementById('sp-return-note').value;
+
+    if(sold===undefined || sold===null || isNaN(sold)){toast('Enter the quantity sold','e');return;}
+
+    const adjCarried = Math.max(0, (trip.carried||0)-leakEx);
+    const adjExtra    = Math.max(0, (trip.extra||0)-leakEx);
+    if((sold+dmg) > adjCarried){
+      toast('Sold + damaged/return cannot exceed the sellable bags carried ('+adjCarried+')','e');
+      return;
+    }
+
+    const outstanding = Math.max(0, adjCarried-sold-dmg);
+    const amount = sold*(trip.price||0);
     let cashSplit=0, otherSplit=0;
     if(spM==='SPLIT_CT'||spM==='SPLIT_CP'){
       cashSplit=parseFloat(document.getElementById('sp-cash-split').value)||0;
       otherSplit=parseFloat(document.getElementById('sp-other-split').value)||0;
-      if(cashSplit+otherSplit!==amount){toast('Split amounts must add up to the total ('+'\u20a6'+amount.toLocaleString()+')','e');return;}
+      if(cashSplit+otherSplit!==amount){toast('Split amounts must add up to the total ('+'₦'+amount.toLocaleString()+')','e');return;}
     }
 
     pendingSale = {
-      type:'supply', date, product, driver, qty:sold,
-      carried, sold, leak, leakEx, extra, outstanding,
-      price, amount, damaged:0, method:spM,
-      note, staff:CU.name, staffId:CU.id,
+      _isReturnUpdate:true, _tripId:trip.id,
+      type:'supply', date:trip.date, product:trip.product, driver:trip.driver,
+      price:trip.price, carried:adjCarried, extra:adjExtra,
+      qty:sold, sold, leakEx, damaged:dmg, outstanding,
+      amount, method:spM, tripStatus:'completed',
+      note:trip.note, returnNote, staff:trip.staff, staffId:trip.staffId,
       cashSplit, otherSplit, voided:false
     };
 
-    const g = id => document.getElementById(id);
-    g('csm-product').textContent    = product+' — '+driver;
-    g('csm-qty-label').textContent  = sold+' of '+carried+' bags sold';
+    g('csm-product').textContent    = trip.product+' — '+trip.driver;
+    g('csm-qty-label').textContent  = sold+' of '+adjCarried+' bags sold';
     g('csm-price-box').style.display='';
-    g('csm-unit-price').textContent = '\u20a6'+price.toLocaleString();
+    g('csm-unit-price').textContent = '₦'+(trip.price||0).toLocaleString();
     g('csm-qty-row').style.display='flex';
     g('csm-qty').textContent=sold;
     g('csm-dmg-row').style.display='none';
+    g('csm-exch-row').style.display='none';
     g('csm-method-row').style.display='flex';
     g('csm-method').textContent=spM.replace('_',' + ');
     if(spM==='SPLIT_CT'||spM==='SPLIT_CP'){
       g('csm-split-row').style.display='flex';
       g('csm-split-lbl').textContent='Split (cash / other)';
-      g('csm-split-val').textContent='\u20a6'+cashSplit.toLocaleString()+' / \u20a6'+otherSplit.toLocaleString();
+      g('csm-split-val').textContent='₦'+cashSplit.toLocaleString()+' / ₦'+otherSplit.toLocaleString();
     } else { g('csm-split-row').style.display='none'; }
     g('csm-supply-rows').style.display='block';
-    g('csm-leak').textContent=leak;
+    g('csm-leak-ex-row').style.display='flex';
     g('csm-leak-ex').textContent=leakEx;
-    g('csm-extra').textContent=extra;
+    g('csm-extra-row').style.display='flex';
+    g('csm-extra-lbl').textContent='Damaged/return';
+    g('csm-extra').textContent=dmg;
     g('csm-total-lbl').textContent='Total amount';
     g('csm-total-sub').textContent=outstanding+' bags outstanding';
-    g('csm-total').textContent='\u20a6'+amount.toLocaleString();
+    g('csm-total').textContent='₦'+amount.toLocaleString();
     g('csm-print-btn').style.display='';
     const noteRow = g('csm-note-row');
-    if(note){ g('csm-note').textContent=note; noteRow.style.display='flex'; }
+    if(returnNote){ g('csm-note').textContent=returnNote; noteRow.style.display='flex'; }
     else { noteRow.style.display='none'; }
 
     document.getElementById('confirm-sale-mo').classList.add('open');
@@ -2825,16 +3024,17 @@ function submitSale(){
   const qty     = parseFloat(document.getElementById('s-qty').value);
   const price   = parseFloat(document.getElementById('s-price').value);
   const dmg     = parseFloat(document.getElementById('s-dmg').value)||0;
+  const exch    = parseFloat(document.getElementById('s-exchange')?.value)||0;
   const note    = document.getElementById('s-note').value;
   const isSplit = sM==='SPLIT_CT'||sM==='SPLIT_CP';
   const hasCash = sM==='CASH'||isSplit;
 
   if(!qty||!price){toast('Fill in quantity and price','e');return;}
 
-  // ── STOCK CHECK ──
+  // ── STOCK CHECK — qty + exchange bags both leave inventory ──
   const _wiAvail = getAvailableBagsForSale(product);
-  if(qty > _wiAvail){
-    toast('Only '+_wiAvail.toLocaleString()+' bags available in production — reduce quantity','e');
+  if((qty+exch) > _wiAvail){
+    toast('Only '+_wiAvail.toLocaleString()+' bags available in production — reduce quantity/exchange','e');
     updateStockHint();
     return;
   }
@@ -2846,7 +3046,7 @@ function submitSale(){
   const amount = qty*price;
 
   pendingSale = {
-    type:'walkin', date, product, qty, price, damaged:dmg, method:sM,
+    type:'walkin', date, product, qty, price, damaged:dmg, exchange:exch, method:sM,
     note, staff:CU.name, staffId:CU.id, amount,
     cashReceived:received, changeGiven:change, netCash:received-change,
     cashSplit, otherSplit, voided:false
@@ -2857,12 +3057,14 @@ function submitSale(){
   g('csm-price-box').style.display='';
   g('csm-qty-row').style.display='flex';
   g('csm-dmg-row').style.display='flex';
+  g('csm-exch-row').style.display='flex';
+  g('csm-exch').textContent = exch > 0 ? exch+' unit'+(exch===1?'':'s') : '—';
   g('csm-method-row').style.display='flex';
   g('csm-supply-rows').style.display='none';
   g('csm-total-lbl').textContent='Total amount';
   g('csm-print-btn').style.display='';
   g('csm-product').textContent    = product;
-  g('csm-qty-label').textContent  = qty+' bag'+(qty===1?'':'s') + (dmg>0?' · '+dmg+' damaged/returned':'');
+  g('csm-qty-label').textContent  = qty+' bag'+(qty===1?'':'s') + (dmg>0?' · '+dmg+' damaged/returned':'') + (exch>0?' · '+exch+' exchanged':'');
   g('csm-qty').textContent        = qty + ' bag'+(qty===1?'':'s');
   g('csm-unit-price').textContent = '₦'+price.toLocaleString();
   g('csm-dmg').textContent        = dmg > 0 ? dmg+' unit'+(dmg===1?'':'s') : '—';
@@ -2898,6 +3100,30 @@ function genSaleId(id){
 
 function finalizeSale(doPrint){
   if(!pendingSale)return;
+
+  // ── RETURN-LEG UPDATE — modify the existing open trip instead of creating a new record ──
+  if(pendingSale._isReturnUpdate){
+    const trip = DB.sales.find(s=>s.id===pendingSale._tripId);
+    if(!trip){ toast('Trip not found — it may have been removed','e'); pendingSale=null; return; }
+    const { _isReturnUpdate, _tripId, ...updateFields } = pendingSale;
+    Object.assign(trip, updateFields, { ts: trip.ts||Date.now() });
+    if(!trip.saleId) trip.saleId = genSaleId(trip.id);
+    // ── Firebase update ──
+    if(window.fsReady && trip._fbId){
+      const clean=Object.fromEntries(Object.entries(trip).filter(([,v])=>v!==undefined));
+      fsUpdateDoc(fsDoc('sales', trip._fbId), clean).catch(e=>console.warn('FS sale update:',e));
+    }
+    document.getElementById('confirm-sale-mo').classList.remove('open');
+    showOk('sale-ok'); clearSale(); toast('Trip updated — return logged!','s');
+    renderRecentSales();
+    if(doPrint) printReceipt(trip);
+    pendingSale=null;
+    updateStockHint();
+    const contentEl = document.querySelector('.content');
+    if(contentEl) contentEl.scrollTop = 0;
+    return;
+  }
+
   const id=DB.nid();
   const sale={...pendingSale, id, saleId:genSaleId(id), ts:Date.now()};
   DB.sales.push(sale);
@@ -2907,7 +3133,7 @@ function finalizeSale(doPrint){
     fsAddDoc(fsCol('sales'), clean).then(ref=>{ sale._fbId=ref.id; }).catch(e=>console.warn('FS sale write:',e));
   }
   document.getElementById('confirm-sale-mo').classList.remove('open');
-  showOk('sale-ok'); clearSale(); toast(sale.type==='supply'?'Supply log recorded!':'Factory sale recorded!','s');
+  showOk('sale-ok'); clearSale(); toast(sale.type==='supply'?'Trip started — out for delivery!':'Factory sale recorded!','s');
   renderRecentSales();
   if(doPrint) printReceipt(sale);
   pendingSale=null;
@@ -2924,6 +3150,10 @@ function reprintSale(id){
 
 function printReceipt(sale){
   if(!sale)return;
+  if(sale.type==='supply' && sale.tripStatus==='open'){
+    toast('This trip is still out — print the receipt after the driver returns and the trip is updated','e');
+    return;
+  }
   const dt=new Date(sale.ts||Date.now());
   const dateStr=dt.toLocaleDateString('en-GB');
   const timeStr=dt.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
@@ -2961,8 +3191,10 @@ function printReceipt(sale){
       <table class="rcpt-table">
         <thead><tr><th>QTY</th><th>DESC</th><th class="amt">AMT</th></tr></thead>
         <tbody>
-          <tr><td>${sale.qty}</td><td>${sale.product}</td><td class="amt">\u20a6${sale.amount.toLocaleString()}</td></tr>
+          <tr><td>${sale.qty}</td><td>${sale.product}${sale.type==='supply'&&sale.driver?' — '+sale.driver:''}</td><td class="amt">\u20a6${sale.amount.toLocaleString()}</td></tr>
           ${sale.damaged>0?`<tr><td colspan="3" style="font-size:9px;padding-top:2px">(${sale.damaged} unit${sale.damaged>1?'s':''} damaged/returned)</td></tr>`:''}
+          ${sale.type==='supply'&&sale.leakEx>0?`<tr><td colspan="3" style="font-size:9px;padding-top:2px">(${sale.leakEx} unit${sale.leakEx>1?'s':''} leakage exchanged)</td></tr>`:''}
+          ${sale.type==='walkin'&&sale.exchange>0?`<tr><td colspan="3" style="font-size:9px;padding-top:2px">(${sale.exchange} unit${sale.exchange>1?'s':''} exchanged)</td></tr>`:''}
         </tbody>
       </table>
       <div class="rcpt-amt-big">AMT \u20a6${sale.amount.toLocaleString()}</div>
@@ -2989,6 +3221,7 @@ function clearSale(){
     const el=document.getElementById(id); if(el) el.value='';
   });
   document.getElementById('s-dmg').value='0';
+  const sExch=document.getElementById('s-exchange'); if(sExch) sExch.value='0';
   document.getElementById('s-change').value='0';
   // reset date to today
   document.getElementById('s-date').value='';
@@ -3006,18 +3239,30 @@ function clearSale(){
   document.getElementById('r-price').textContent='\u20a6\u2014';
   document.getElementById('r-split-cash-row').style.display='none';
   document.getElementById('r-split-other-row').style.display='none';
-  // reset supply fields
-  ['sp-driver','sp-carried','sp-sold','sp-price','sp-note','sp-cash-split','sp-other-split'].forEach(id=>{
+  // reset supply fields (going leg)
+  ['sp-driver','sp-carried','sp-price','sp-note','sp-cash-split','sp-other-split'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
-  ['sp-leak','sp-leak-ex','sp-extra'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='0';
+  const spExtra=document.getElementById('sp-extra'); if(spExtra) spExtra.value='0';
+  // reset supply fields (return leg)
+  ['sp-sold','sp-leak-ex','sp-dmg'].forEach(id=>{
+    const el=document.getElementById(id); if(el){ el.value=''; el.disabled=true; }
   });
+  const spReturnNote=document.getElementById('sp-return-note'); if(spReturnNote) spReturnNote.value='';
+  spSelectedTripId=null;
+  const tripSel=document.getElementById('sp-trip-select'); if(tripSel) tripSel.value='';
+  const tripSummary=document.getElementById('sp-trip-summary'); if(tripSummary) tripSummary.style.display='none';
   // reset supply payment method to CASH
   spM='CASH';
   document.querySelectorAll('#mpills-sp .mpill').forEach(p=>p.classList.remove('sel'));
-  document.querySelectorAll('#mpills-sp .mpill')[0].classList.add('sel');
+  if(document.querySelectorAll('#mpills-sp .mpill')[0]) document.querySelectorAll('#mpills-sp .mpill')[0].classList.add('sel');
   document.getElementById('split-fields-sp').classList.add('hidden');
+  // reset supply stage back to going
+  spStage='going';
+  document.querySelectorAll('#sp-stage-pills .mpill').forEach(p=>p.classList.remove('sel'));
+  if(document.querySelectorAll('#sp-stage-pills .mpill')[0]) document.querySelectorAll('#sp-stage-pills .mpill')[0].classList.add('sel');
+  const goingFields=document.getElementById('sp-going-fields'); if(goingFields) goingFields.style.display='';
+  const returnFields=document.getElementById('sp-return-fields'); if(returnFields) returnFields.style.display='none';
   // reset sale type back to walk-in
   document.querySelectorAll('#stype-pills .mpill').forEach(p=>p.classList.remove('sel'));
   document.querySelectorAll('#stype-pills .mpill')[0].classList.add('sel');
@@ -3910,7 +4155,7 @@ function renderMySales(){
   document.getElementById('my-txn').textContent=active.length;
   document.getElementById('my-bags').textContent=active.reduce((a,s)=>a+(s.type==='supply'?s.sold:s.qty),0).toLocaleString();
   document.getElementById('my-drv-trips').textContent=supplyActive.length;
-  document.getElementById('my-drv-leak').textContent=supplyActive.reduce((a,s)=>a+(s.leak||0),0).toLocaleString();
+  document.getElementById('my-drv-leak').textContent=supplyActive.reduce((a,s)=>a+(s.leakEx||0),0).toLocaleString();
   document.getElementById('my-drv-outstanding').textContent=supplyActive.reduce((a,s)=>a+(s.outstanding||0),0).toLocaleString();
 
   const mBadge=m=>m==='CASH'?'bg':m==='TRANSFER'?'bb':m==='POS'?'bt':'ba';
@@ -3940,26 +4185,29 @@ function renderMySales(){
   const stb=document.getElementById('my-supply-tbody');
   const supplyAll=all.filter(s=>s.type==='supply');
   if(!supplyAll.length){
-    stb.innerHTML='<tr><td colspan="12"><div class="empty"><i class="ti ti-truck-delivery"></i><p>No supply trips recorded yet</p></div></td></tr>';
+    stb.innerHTML='<tr><td colspan="13"><div class="empty"><i class="ti ti-truck-delivery"></i><p>No supply trips recorded yet</p></div></td></tr>';
   } else {
     stb.innerHTML=supplyAll.slice().reverse().map(s=>{
       const v=s.voided;
       const sty=v?'style="text-decoration:line-through;opacity:.55"':'';
-      const sellRate=s.carried>0?Math.round(s.sold/s.carried*100):0;
+      const isOpen=s.tripStatus==='open';
+      const sellRate=(!isOpen && s.carried>0)?Math.round((s.sold||0)/s.carried*100):0;
       const rateColor=sellRate>=90?'var(--grn)':sellRate>=70?'var(--amb)':'var(--red-m)';
+      const statusBadge=isOpen?'<span class="badge" style="background:#fff3cd;color:#8a6d1a">Out on trip</span>':'<span class="badge bg">Completed</span>';
       return `<tr ${sty}>
         <td>${fmtDate(s.date)}</td>
         <td style="font-weight:600">${s.driver||'—'}</td>
         <td><span class="badge bt">${s.product}</span></td>
+        <td>${statusBadge}</td>
         <td style="font-family:'DM Mono',monospace">${s.carried||0}</td>
-        <td style="font-family:'DM Mono',monospace;font-weight:600">${s.sold||0}</td>
-        <td><span style="font-weight:700;color:${rateColor};font-family:'DM Mono',monospace">${sellRate}%</span></td>
-        <td style="color:var(--red-m);font-family:'DM Mono',monospace">${s.leak||0}</td>
-        <td style="font-family:'DM Mono',monospace">${s.leakEx||0}</td>
-        <td style="color:var(--amb);font-family:'DM Mono',monospace">${s.outstanding||0}</td>
-        <td>₦${s.price.toLocaleString()}</td>
-        <td style="font-weight:600">₦${s.amount.toLocaleString()}</td>
-        <td><span class="badge ${mBadge(s.method)}">${s.method.replace('_',' + ')}</span></td>
+        <td style="font-family:'DM Mono',monospace">${s.extra||0}</td>
+        <td style="font-family:'DM Mono',monospace;font-weight:600">${isOpen?'—':(s.sold||0)}</td>
+        <td>${isOpen?'—':`<span style="font-weight:700;color:${rateColor};font-family:'DM Mono',monospace">${sellRate}%</span>`}</td>
+        <td style="font-family:'DM Mono',monospace">${isOpen?'—':(s.leakEx||0)}</td>
+        <td style="color:var(--amb);font-family:'DM Mono',monospace">${isOpen?'—':(s.outstanding||0)}</td>
+        <td>₦${(s.price||0).toLocaleString()}</td>
+        <td style="font-weight:600">${isOpen?'—':'₦'+(s.amount||0).toLocaleString()}</td>
+        <td>${isOpen||!s.method?'—':`<span class="badge ${mBadge(s.method)}">${s.method.replace('_',' + ')}</span>`}</td>
       </tr>`;
     }).join('');
   }
@@ -3990,12 +4238,13 @@ function renderRecentSales(q){
     const sty=v?'style="text-decoration:line-through;opacity:.55"':'';
     const typeBadge=s.type==='supply'?'<span class="badge ba">Supply</span>':'<span class="badge bg">Factory</span>';
     if(s.type==='supply'){
+      const isOpen=s.tripStatus==='open';
       return `<tr ${sty}>
         <td><button class="btn btn-outline btn-sm" onclick="reprintSale(${s.id})" title="Print receipt" style="gap:4px"><i class="ti ti-printer"></i> Print</button></td>
         <td style="font-family:'DM Mono',monospace;font-size:11.5px;color:var(--txt3)">${s.saleId}</td>
-        <td>${typeBadge}</td><td>${fmtDate(s.date)}</td><td>${s.product}</td><td>${s.sold}/${s.carried}</td>
-        <td style="font-weight:600">₦${s.amount.toLocaleString()}</td>
-        <td><span class="badge ${s.method==='CASH'?'bg':s.method==='TRANSFER'?'bb':s.method==='POS'?'bt':'ba'}">${s.method.replace('_',' + ')}</span></td>
+        <td>${typeBadge}</td><td>${fmtDate(s.date)}</td><td>${s.product}</td><td>${isOpen?'Out: '+(s.carried||0):(s.sold||0)+'/'+(s.carried||0)}</td>
+        <td style="font-weight:600">${isOpen?'—':'₦'+(s.amount||0).toLocaleString()}</td>
+        <td>${isOpen||!s.method?'<span class="badge" style="background:#fff3cd;color:#8a6d1a">Out on trip</span>':`<span class="badge ${s.method==='CASH'?'bg':s.method==='TRANSFER'?'bb':s.method==='POS'?'bt':'ba'}">${s.method.replace('_',' + ')}</span>`}</td>
       </tr>`;
     }
     return `<tr ${sty}>
@@ -4032,14 +4281,16 @@ function renderAS(q){
           : `<button class="btn btn-outline btn-sm" onclick="promptVoid(${s.id})" title="Void sale"><i class="ti ti-ban"></i></button>`)
       : '';
     if(s.type==='supply'){
+      const isOpen=s.tripStatus==='open';
+      const statusTxt=isOpen?'<span class="badge" style="background:#fff3cd;color:#8a6d1a">Out on trip</span>':'';
       return `<tr ${sty}>
         <td>${fmtDate(s.date)}</td><td>${s.staff}</td><td><span class="badge ba">Supply${s.driver?' · '+s.driver:''}</span></td>
-        <td>${s.product}</td><td>${s.sold} sold / ${s.carried} carried</td>
-        <td>₦${s.price.toLocaleString()}</td>
-        <td style="font-weight:600">₦${s.amount.toLocaleString()}</td>
+        <td>${s.product}</td><td>${isOpen?(s.carried||0)+' carried':(s.sold||0)+' sold / '+(s.carried||0)+' carried'}</td>
+        <td>₦${(s.price||0).toLocaleString()}</td>
+        <td style="font-weight:600">${isOpen?statusTxt:'₦'+(s.amount||0).toLocaleString()}</td>
         <td>—</td>
-        <td><span class="badge ${mBadge(s.method)}">${s.method.replace('_',' + ')}</span></td>
-        <td style="font-family:'DM Mono',monospace;font-size:12px">${s.carried}/${s.leak}/${s.leakEx}/${s.extra}</td>
+        <td>${isOpen||!s.method?'—':`<span class="badge ${mBadge(s.method)}">${s.method.replace('_',' + ')}</span>`}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:12px">${s.carried||0}/${s.extra||0}/${s.leakEx||0}/${s.damaged||0}</td>
         <td>—</td><td>—</td><td>—</td>
         <td style="color:var(--txt3);font-size:12px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.note||'—'}</td>
         <td style="display:flex;gap:5px">${voidBtn}<button class="btn btn-danger btn-sm" onclick="promptDel('sales',${s.id})"><i class="ti ti-trash"></i></button></td>
@@ -4051,7 +4302,7 @@ function renderAS(q){
     <td style="font-weight:600">₦${s.amount.toLocaleString()}</td>
     <td>${s.damaged>0?`<span style="color:var(--red)">${s.damaged}</span>`:'—'}</td>
     <td><span class="badge ${`${mBadge(s.method)}`}">${s.method.replace('_',' + ')}</span></td>
-    <td>—</td>
+    <td style="font-family:'DM Mono',monospace;font-size:12px">${s.exchange>0?'Exch: '+s.exchange:'—'}</td>
     <td style="font-family:'DM Mono',monospace;font-size:12px">${s.cashReceived>0?'₦'+s.cashReceived.toLocaleString():'—'}</td>
     <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--red)">${s.changeGiven>0?'₦'+s.changeGiven.toLocaleString():'—'}</td>
     <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--grn)">${s.netCash>0?'₦'+s.netCash.toLocaleString():'—'}</td>
@@ -4163,7 +4414,7 @@ function renderDash(){
   const drvTrips = supplySales.length;
   const drvCarried = supplySales.reduce((a,s) => a + (s.carried||0), 0);
   const drvSold = supplySales.reduce((a,s) => a + (s.sold||0), 0);
-  const drvLeak = supplySales.reduce((a,s) => a + (s.leak||0), 0);
+  const drvLeak = supplySales.reduce((a,s) => a + (s.leakEx||0), 0);
   const drvOutstanding = supplySales.reduce((a,s) => a + (s.outstanding||0), 0);
   const drvRev = supplySales.reduce((a,s) => a + (s.amount||0), 0);
   const _d = id => document.getElementById(id);
@@ -4183,10 +4434,10 @@ function renderDash(){
     d.trips++;
     d.carried += s.carried||0;
     d.sold += s.sold||0;
-    d.leak += s.leak||0;
+    d.leak += s.leakEx||0;
     d.outstanding += s.outstanding||0;
     d.rev += s.amount||0;
-    d.methods[s.method] = (d.methods[s.method]||0) + 1;
+    if(s.method) d.methods[s.method] = (d.methods[s.method]||0) + 1;
   });
   const drvRows = Object.values(drvMap).sort((a,b) => b.rev - a.rev);
   const drvTb = _d('d-drv-tbody');
